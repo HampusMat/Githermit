@@ -1,0 +1,21 @@
+{
+	"name": "nodejs-git-frontend",
+	"version": "1.0.0",
+	"description": "A simple git web-frontend made with nodejs",
+	"main": "app.js",
+	"author": "HampusMat",
+	"license": "MIT",
+	"private": true,
+	"scripts": {
+		"dev": "parcel src/index.html",
+		"build": "parcel build src/index.html"
+	},
+	"dependencies": {
+		"bootstrap": "5.0.0-beta3",
+		"express": "5.0.0-alpha.8"
+	},
+	"devDependencies": {
+		"@parcel/transformer-sass": "2.0.0-beta.2",
+		"parcel": "^2.0.0-beta.2"
+	}
+}
