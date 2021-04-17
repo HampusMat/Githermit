@@ -8,40 +8,20 @@ const base_dir="/home/hampus/Projects/"
 
 router.get("/repos", async function(req, res)
 {
-	fs.readdir(base_dir, (err, files) =>
+	fs.readdir(base_dir, async (err, repo_dirs) =>
 	{
 		if(err) {
 			throw err;
 		}
+		repo_dirs = repo_dirs.filter(repo => repo.endsWith(".git"));
 
-		var repos = {};
+		console.log("Repo dirs: " + repo_dirs);
 
-		files = files.filter(repo => repo.endsWith(".git"));
+		const repos = await git.getBasicRepoInfo(base_dir, repo_dirs);
 
-		let getRepoInfo = new Promise((resolve) =>
-		{
-			files.forEach((repo, index, arr) =>
-			{
-				fs.readFile(`${base_dir}/${repo}/description`, (err, content) =>
-				{
-					let desc = "";
-					
-					if(!err) {
-						desc = content.toString();
-					}
+		console.log("I v1.js\n" + JSON.stringify(repos) + "\n");
 
-					repos[repo.slice(0, -4)] = { "description": desc };
-
-					if(index === arr.length -1) resolve();
-				})
-			});	
-		});
-
-		getRepoInfo.then(() =>
-		{
-			console.log(`Sist: ${JSON.stringify(repos)}`);
-			res.json({ "data": repos });
-		})
+		res.json({ "data": repos });
 	});
 });
 

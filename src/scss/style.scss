@@ -1,0 +1,103 @@
+@use "abstracts/colors";
+@use "abstracts/fonts";
+
+@import "../../node_modules/bootstrap/scss/functions";
+@import "../../node_modules/bootstrap/scss/variables";
+@import "../../node_modules/bootstrap/scss/mixins";
+
+$font-sizes: (
+	1: 2.375rem,
+	2: 2.125rem,
+	3: 2rem,
+	4: 1.5rem,
+	5: 1.3125rem,
+	6: 1rem
+);
+
+@import "../../node_modules/bootstrap/scss/utilities";
+@import "../../node_modules/bootstrap/scss/utilities/api";
+
+@import "../../node_modules/bootstrap/scss/containers";
+@import "../../node_modules/bootstrap/scss/grid";
+
+body {
+	background-color: colors.$background;
+	color: colors.$text;
+	font-family: fonts.$primary;
+}
+
+ul {
+    list-style-type: none;
+	padding: 0;
+}
+
+li {
+	margin-bottom: 25px;
+	div {
+		h2 {
+			margin: 0px;
+		}
+	}
+}
+
+p {
+	margin: 0px;
+}
+
+#title {
+	font-family: fonts.$title;
+	font-weight: 300;
+}
+
+#about {
+	font-weight: 300;
+	font-size: 1.125rem;
+	padding-left: 1px;
+}
+
+#projects-search {
+	align-items: center;
+	form {
+		display: flex;
+		align-items: center;
+		height: 35px;
+		input[type=search] {
+			margin-right: 15px;
+		}
+	}
+}
+
+#repos {
+	margin-top: 25px;
+}
+
+.repo-title {
+	font-size: calc(1.0625rem + 0.25vw);
+}
+
+.repo-desc {
+	font-size: calc(0.875rem + 0.05vw);
+}
+
+.repo-last-updated {
+	display: block;
+	font-size: calc(0.875rem + 0.05vw);
+	font-weight: 300;
+	font-style: italic;
+}
+
+input[type=submit] {
+	background-color: colors.$primary;
+	color: colors.$text;
+	border: 0px;
+	border-radius: 7px;
+	padding: 8px 15px 8px 15px;
+}
+
+a {
+	color: colors.$text;
+	text-decoration: none;
+	&:hover {
+		color: colors.$primary;
+	}
+}
