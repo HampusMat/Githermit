@@ -1,52 +1,63 @@
 const express = require("express");
 const git = require("./git");
 const sanitization = require("./sanitization");
-const fs = require('fs');
 
 const router = express.Router();
-const base_dir="/home/hampus/Projects/"
+
+router.get("/info", function(req, res)
+{
+	res.json({ "data": req.settings });
+	return;
+});
 
 router.get("/repos", async function(req, res)
 {
-	fs.readdir(base_dir, async (err, repo_dirs) =>
-	{
-		if(err) {
-			throw err;
-		}
-		repo_dirs = repo_dirs.filter(repo => repo.endsWith(".git"));
+	let repo_dirs = await git.getRepos(req.settings["base_dir"]);
 
-		console.log("Repo dirs: " + repo_dirs);
+	if(repo_dirs["error"]) {
+		res.status(500).send("Internal server error!");
+		return;
+	}
 
-		const repos = await git.getBasicRepoInfo(base_dir, repo_dirs);
+	repo_dirs = repo_dirs["data"].filter(repo => repo.endsWith(".git"));
+	const repos = await git.getBasicRepoInfo(req.settings["base_dir"], repo_dirs);
+	res.json({ "data": repos });
+});
 
-		console.log("I v1.js\n" + JSON.stringify(repos) + "\n");
+router.get("/repos/:repo", async function(req, res)
+{
+	if(!sanitization.sanitizeRepoName(req.params.repo)) {
+		res.status(400).json({ "error": "Unacceptable git repository name!" });
+		return;
+	}
+	const repo = `${req.params.repo}.git`;
+	const desc = await git.getRepoFile(req.settings["base_dir"], repo, "description");
 
-		res.json({ "data": repos });
-	});
+	res.json({ "data": { "name": req.params.repo, "description": desc } });
 });
 
 router.get("/repos/:repo/log", async function(req, res)
 {
-	if(sanitization.sanitizeRepoName(req.params.repo)) {
-		const repo = `${req.params.repo}.git`;
-		const log = await git.getLog(`${base_dir}/${repo}`);
-
-		if(log["error"]) {
-			if(typeof log["error"] === "string") {
-				res.status(500).json({ "error": log["error"] });
-				return;
-			}
-			switch(log["error"]) {
-				case 404:
-					res.status(404).json({ "error": "Git repository doesn't exist!" });
-					return;
-			}
-			return;
-		}
-		res.json(log);
+	if(!sanitization.sanitizeRepoName(req.params.repo)) {
+		res.status(400).json({ "error": "Unacceptable git repository name!" });
 		return;
 	}
-	res.status(400).json({ "error": "Unacceptable git repository name!" });
+	const repo = `${req.params.repo}.git`;
+	const log = await git.getLog(req.settings["base_dir"], repo);
+
+	if(log["error"]) {
+		if(typeof log["error"] === "string") {
+			res.status(500).json({ "error": log["error"] });
+			return;
+		}
+		switch(log["error"]) {
+			case 404:
+				res.status(404).json({ "error": "Git repository doesn't exist!" });
+				return;
+		}
+		return;
+	}
+	res.json(log);
 });
 
 module.exports = router;

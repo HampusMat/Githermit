@@ -30,9 +30,9 @@ function execGit(path, action , format, args = "")
 	});
 }
 
-async function getLog(path)
+async function getLog(base_dir, path)
 {
-	let log = await execGit(path, "log", log_format);
+	let log = await execGit(`${base_dir}/${path}`, "log", log_format);
 
 	if(!log["error"]) {
 		log["data"] = log["data"].split('\n');
@@ -118,5 +118,22 @@ function getBasicRepoInfo(base_dir, repo_dirs)
 	});
 }
 
+function getRepos(base_dir)
+{
+	return new Promise((resolve) =>
+	{
+		fs.readdir(base_dir, async (err, content) =>
+		{
+			if(err) {
+				resolve({ "error": err });
+				return;
+			}
+			resolve({ "data": content });
+		});
+	});
+}
+
 module.exports.getLog = getLog;
 module.exports.getBasicRepoInfo = getBasicRepoInfo;
+module.exports.getRepos = getRepos;
+module.exports.getRepoFile = getRepoFile;

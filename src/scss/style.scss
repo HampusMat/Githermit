@@ -5,17 +5,30 @@
 @import "../../node_modules/bootstrap/scss/variables";
 @import "../../node_modules/bootstrap/scss/mixins";
 
+$font-size-base: 0.75rem;
+
+$h1-font-size:                $font-size-base * 2.5;
+$h2-font-size:                $font-size-base * 2;
+$h3-font-size:                $font-size-base * 1.75;
+$h4-font-size:                $font-size-base * 1.4;
+$h5-font-size:                $font-size-base * 1.125;
+$h6-font-size:                $font-size-base;
+
 $font-sizes: (
-	1: 2.375rem,
-	2: 2.125rem,
-	3: 2rem,
-	4: 1.5rem,
-	5: 1.3125rem,
-	6: 1rem
+  1: $h1-font-size,
+  2: $h2-font-size,
+  3: $h3-font-size,
+  4: $h4-font-size,
+  5: $h5-font-size,
+  6: $h6-font-size
 );
+
+$navbar-nav-link-padding-x: 1rem;
 
 @import "../../node_modules/bootstrap/scss/utilities";
 @import "../../node_modules/bootstrap/scss/utilities/api";
+@import "../../node_modules/bootstrap/scss/nav";
+@import "../../node_modules/bootstrap/scss/navbar";
 
 @import "../../node_modules/bootstrap/scss/containers";
 @import "../../node_modules/bootstrap/scss/grid";
@@ -51,7 +64,6 @@ p {
 
 #about {
 	font-weight: 300;
-	font-size: 1.125rem;
 	padding-left: 1px;
 }
 
@@ -71,17 +83,8 @@ p {
 	margin-top: 25px;
 }
 
-.repo-title {
-	font-size: calc(1.0625rem + 0.25vw);
-}
-
-.repo-desc {
-	font-size: calc(0.875rem + 0.05vw);
-}
-
 .repo-last-updated {
 	display: block;
-	font-size: calc(0.875rem + 0.05vw);
 	font-weight: 300;
 	font-style: italic;
 }
@@ -99,5 +102,20 @@ a {
 	text-decoration: none;
 	&:hover {
 		color: colors.$primary;
+	}
+}
+
+@media (max-width: 1200px) {
+	.fs-1 {
+		font-size: calc(1.375rem + 0.667vw) !important;
+	}
+	.fs-2 {
+		font-size: calc(1.325rem + 1.584vw) !important;
+	}
+	.fs-3 {
+		font-size: calc(1.3rem + 0.017vw) !important;
+	}
+	.fs-4 {
+		font-size: calc(0.75rem + 0.4vw) !important;
 	}
 }
