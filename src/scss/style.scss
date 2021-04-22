@@ -5,6 +5,17 @@
 @import "../../node_modules/bootstrap/scss/variables";
 @import "../../node_modules/bootstrap/scss/mixins";
 
+$theme-colors: (
+  "primary":    colors.$primary,
+  "secondary":  colors.$secondary,
+  "success":    colors.$success,
+  "info":       $info,
+  "warning":    $warning,
+  "danger":     colors.$danger,
+  "light":      $light,
+  "dark":       $dark
+);
+
 $font-size-base: 0.75rem;
 
 $h1-font-size:                $font-size-base * 2.5;
@@ -23,12 +34,28 @@ $font-sizes: (
   6: $h6-font-size
 );
 
-$navbar-nav-link-padding-x: 1rem;
+$navbar-nav-link-padding-x: 0.5rem;
 
 @import "../../node_modules/bootstrap/scss/utilities";
 @import "../../node_modules/bootstrap/scss/utilities/api";
 @import "../../node_modules/bootstrap/scss/nav";
 @import "../../node_modules/bootstrap/scss/navbar";
+
+$table-cell-padding-x: 1rem;
+$table-cell-padding-y: 0.2rem;
+
+$table-variants: (
+  "primary":    shift-color($primary, $table-bg-scale),
+  "secondary":  shift-color($secondary, $table-bg-scale),
+  "success":    shift-color($success, $table-bg-scale),
+  "info":       shift-color($info, $table-bg-scale),
+  "warning":    shift-color($warning, $table-bg-scale),
+  "danger":     shift-color($danger, $table-bg-scale),
+  "light":      $light,
+  "dark":       colors.$background,
+);
+
+@import "../../node_modules/bootstrap/scss/tables";
 
 @import "../../node_modules/bootstrap/scss/containers";
 @import "../../node_modules/bootstrap/scss/grid";
@@ -60,6 +87,7 @@ p {
 #title {
 	font-family: fonts.$title;
 	font-weight: 300;
+	line-height: 0.6;
 }
 
 #about {
@@ -92,6 +120,7 @@ p {
 input[type=submit] {
 	background-color: colors.$primary;
 	color: colors.$text;
+	font-size: 1rem;
 	border: 0px;
 	border-radius: 7px;
 	padding: 8px 15px 8px 15px;
@@ -101,7 +130,25 @@ a {
 	color: colors.$text;
 	text-decoration: none;
 	&:hover {
-		color: colors.$primary;
+		color: colors.$primary-light;
+	}
+}
+
+#back:hover {
+	fill: colors.$primary-light;
+}
+
+#navbar {
+	line-height: 0;
+}
+
+th {
+	text-align: start;
+}
+
+@include media-breakpoint-down(sm) {
+	.table > :not(caption) > * > * {
+		padding: 0.5rem;
 	}
 }
 

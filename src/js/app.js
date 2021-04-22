@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+
 function request(method, source, data = null)
 {
 	return new Promise(function (resolve, reject){
@@ -20,34 +22,87 @@ function request(method, source, data = null)
 	});
 }
 
+/**
+* Create an HTML element
+* @param {String} tag
+* 	A HTML tag
+*
+* @param {String} id
+* 	An id
+*
+* @param {Array} class_list
+* 	An array of classes
+*
+* @param {Object} attributes
+* 	An object with attributes.
+*
+* @return {HTMLElement}
+*	The resulting element
+*
+*/
+function createElement(tag, id, class_list, attributes)
+{
+	const element = document.createElement(tag);
+
+	if(id) {
+		element.setAttribute("id", id);
+	}
+
+	if(class_list) {
+		class_list.forEach(_class => {
+			element.classList.add(_class);
+		});
+	}
+	
+	if(attributes) {
+		for(const [key, value] of Object.entries(attributes)) {
+			element.setAttribute(key, value);
+		}
+	}
+
+	return element;
+}
+
 async function buildHeader(container, endpoint, title_text, about_text, repo_page = false)
 {
 	const info = JSON.parse(await request("GET", `http://localhost:1337/api/v1/${endpoint}`))["data"];
 
-	const row_div = document.createElement("div");
-	row_div.classList.add("row", "mx-0");
+	const row_div = createElement("div", null, ["row", "mx-0"]);
+	const col_div = createElement("div", "header", ["col", "d-flex", "mt-3"], null);
 
-	const col_div = document.createElement("div");
-	col_div.classList.add("col", "ms-4", "mt-2");
-	col_div.setAttribute("id", "header");
+	const title_div = createElement("div", null, ["d-inline"]);
 
-	const title = document.createElement("a");
-	title.classList.add("fs-1");
-	title.setAttribute("id", "title");
-	title.setAttribute("href", "/");
+	let title;
+
+	switch(repo_page) {
+		case true:
+			title = createElement("span", "title", ["fs-1"]);
+			col_div.classList.add("ms-2");
+			title_div.classList.add("ms-3");
+
+			const back_div = createElement("div", null, ["d-inline"]);
+			const back_link = createElement("a", null, null, { "href": "/" });
+			const back = createBackButtonSVG();
+
+			back_link.appendChild(back);
+			back_div.appendChild(back_link);
+			col_div.appendChild(back_div);
+			break;
+		case false:
+			title = createElement("a", "title", ["fs-1"], { "href": "/" });
+			col_div.classList.add("ms-4");
+			break;
+	}
+
 	title.appendChild(document.createTextNode(info[title_text]));
 
-	const about = document.createElement("p");
-	about.setAttribute("id", "about");
-	about.classList.add("mb-3", "fs-4")
+	const about = createElement("p", "about", ["mb-3", "fs-4"]);
 	about.appendChild(document.createTextNode(info[about_text]));
 
-	col_div.appendChild(title);
-	col_div.appendChild(about);
+	title_div.appendChild(title);
+	title_div.appendChild(about);
 
-	if(repo_page) {
-		buildBackSVG(col_div);
-	}
+	col_div.appendChild(title_div);
 
 	row_div.appendChild(col_div);
 
@@ -56,32 +111,22 @@ async function buildHeader(container, endpoint, title_text, about_text, repo_pag
 
 function buildProjectsHeader(container)
 {
-	const row_div = document.createElement("div");
-	row_div.classList.add("row", "mx-0", "mt-5");
+	const row_div = createElement("div", null, ["row", "mx-0", "mt-5"]);
 
 	// Title column
-	const title_col_div = document.createElement("div");
-	title_col_div.classList.add("col", "ms-4");
-	title_col_div.setAttribute("id", "projects-header");
+	const title_col_div = createElement("div", "projects-header", ["col", "ms-4"]);
 
-	const projects_title = document.createElement("p");
-	projects_title.classList.add("fs-1");
+	const projects_title = createElement("p", null, ["fs-1"]);
 	projects_title.appendChild(document.createTextNode("Projects"));
 
 	title_col_div.appendChild(projects_title);
 
 	// Search column
-	const search_col_div = document.createElement("div");
-	search_col_div.classList.add("col", "d-flex", "justify-content-end");
-	search_col_div.setAttribute("id", "projects-search");
+	const search_col_div = createElement("div", "projects-search", ["col", "d-flex", "justify-content-end"]);
 
-	const form = document.createElement("form");
-	const search = document.createElement("input");
-	search.setAttribute("type", "search");
-	search.setAttribute("name", "q");
-	const submit = document.createElement("input");
-	submit.setAttribute("type", "submit");
-	submit.setAttribute("value", "Search");
+	const form = createElement("form");
+	const search = createElement("input", null, null, { "type": "search", "name": "q" });
+	const submit = createElement("input", null, null, { "type": "submit", "value": "Search" });
 	
 	form.appendChild(search);
 	form.appendChild(submit);
@@ -95,14 +140,10 @@ function buildProjectsHeader(container)
 
 async function buildProjects(container)
 {
-	const row_div = document.createElement("div");
-	row_div.classList.add("row", "mx-0");
-
-	const col_div = document.createElement("div");
-	col_div.classList.add("col", "ms-4");
+	const row_div = createElement("div", null, ["row", "mx-0"], null);
+	const col_div = createElement("div", null, ["col", "ms-4"], null);
 	
-	const list = document.createElement("ul");
-	list.setAttribute("id", "repos");
+	const list = createElement("ul", "repos");
 
 	const repos = JSON.parse(await request("GET", "http://localhost:1337/api/v1/repos"))["data"];
 
@@ -110,23 +151,20 @@ async function buildProjects(container)
 	const search = params.get("q");
 
 	for(const [key, value] of Object.entries(repos)) {
-		const li = document.createElement("li");
-		const repo_div = document.createElement("div");
+		const li = createElement("li");
+		const repo_div = createElement("div");
 
-		const repo_title = document.createElement("p");
-		const link = document.createElement("a");
-		link.setAttribute("href", key);
+		const repo_title = createElement("p", null, ["fs-3"]);
+		const link = createElement("a", null, null, { "href": key });
+
 		link.appendChild(document.createTextNode(key));
 		repo_title.appendChild(link);
-		repo_title.classList.add("fs-3");
 
-		const repo_last_updated = document.createElement("span");
+		const repo_last_updated = createElement("span", null, ["repo-last-updated", "fs-4"]);
 		repo_last_updated.appendChild(document.createTextNode(`Last updated about ${value["last_updated"]} ago`));
-		repo_last_updated.classList.add("repo-last-updated", "fs-4");
 
-		const repo_desc = document.createElement("span");
+		const repo_desc = createElement("span", null, ["fs-4"]);
 		repo_desc.appendChild(document.createTextNode(value["description"]));
-		repo_desc.classList.add("fs-4");
 
 		repo_div.appendChild(repo_title)
 		repo_div.appendChild(repo_last_updated)
@@ -151,39 +189,26 @@ async function buildProjects(container)
 
 function buildRepoNavbar(container, repo, page)
 {
-	const row_div = document.createElement("div");
-	row_div.classList.add("row", "mx-0");
+	const row_div = createElement("div", "navbar", ["row", "mx-0"]);
+	const col_div = createElement("div", "repo-navbar", ["col", "ms-4", "ps-4"]);
 
-	const col_div = document.createElement("div");
-	col_div.classList.add("col", "ms-3");
-	col_div.setAttribute("id", "repo-navbar");
-
-	const nav = document.createElement("nav");
-	nav.classList.add("navbar", "navbar-expand", "navbar-dark");
-
-	const nav_container = document.createElement("div");
-	nav_container.classList.add("container-fluid", "px-0");
-
-	const nav_collapse = document.createElement("div");
-	nav_collapse.classList.add("collapse", "navbar-collapse");
-
-	const nav_nav = document.createElement("ul");
-	nav_nav.classList.add("navbar-nav");
+	const nav = createElement("nav", null, ["navbar", "navbar-expand", "navbar-dark"]);
+	const nav_container = createElement("div", null, ["container-fluid", "px-0"]);
+	const nav_collapse = createElement("div", null, ["collapse", "navbar-collapse"]);
+	const nav_nav = createElement("ul", null, ["navbar-nav"]);
 
 	const nav_items = ["log", "refs", "tree"];
 
 	nav_items.forEach(item =>
 	{
-		const item_li = document.createElement("li");
-		item_li.classList.add("nav-item");
-
-		const item_link = document.createElement("a");
-		item_link.classList.add("nav-link", "fs-3");
+		const item_li = createElement("li", null, ["nav-item"]);
+		const item_link = createElement("a", null, ["nav-link", "fs-3"], { "href": `/${repo}/${item}` });
+		
 		if(item === page) {
 			item_link.classList.add("active");
 			item_link.setAttribute("aria-current", "page");
 		}
-		item_link.setAttribute("href", `/${repo}/${item}`);
+
 		item_link.appendChild(document.createTextNode(item));
 
 		item_li.appendChild(item_link);
@@ -199,12 +224,79 @@ function buildRepoNavbar(container, repo, page)
 	container.appendChild(row_div);
 }
 
-function buildBackSVG(container)
+async function buildLog(container, repo)
+{
+	const row_div = createElement("div", null, ["row", "mx-0"], null);
+	const col_div = createElement("div", null, ["col", "ms-4", "ps-4", "ps-sm-5", "mt-3"], null);
+	
+	const table = createElement("table", "log", ["table", "table-dark", "fs-4"]);
+
+	const log = JSON.parse(await request("GET", `http://localhost:1337/api/v1/repos/${repo}/log`))["data"];
+
+	const thead = createElement("thead");
+	const header_tr = createElement("tr");
+
+	["Subject", "Author", "Date", "Files", "Del/Add"].forEach(header =>
+	{
+		const header_th = createElement("th", null, ["text-secondary"]);
+		header_th.appendChild(document.createTextNode(header));
+		header_tr.appendChild(header_th);
+	});
+
+	thead.appendChild(header_tr);
+	table.appendChild(thead);
+
+	const tbody = createElement("tbody");
+
+	log.forEach(commit =>
+	{
+		const tr = createElement("tr");
+		const subject = createElement("td");
+		subject.appendChild(document.createTextNode(commit["subject"]));
+
+		const author = createElement("td");
+		author.appendChild(document.createTextNode(commit["author"]));
+
+		const date = createElement("td");
+		date.appendChild(document.createTextNode(format(new Date(commit["date"] * 1000), "yyyy-MM-dd hh:mm")));
+		
+		const files_changed = createElement("td");
+		files_changed.appendChild(document.createTextNode(commit["files_changed"]));
+
+		const del_add = createElement("td");
+
+		const deletions = createElement("span", null, ["text-danger"])
+		deletions.appendChild(document.createTextNode(`-${commit["deletions"]}`));
+
+		const insertions = createElement("span", null, ["text-success"])
+		insertions.appendChild(document.createTextNode(`+${commit["insertions"]}`));
+
+		del_add.appendChild(deletions);
+		del_add.appendChild(document.createTextNode(" / "))
+		del_add.appendChild(insertions);
+
+		tr.appendChild(subject);
+		tr.appendChild(author);
+		tr.appendChild(date);
+		tr.appendChild(files_changed);
+		tr.appendChild(del_add)
+
+		tbody.appendChild(tr);
+	});
+	
+	table.appendChild(tbody);
+	col_div.appendChild(table);
+	row_div.appendChild(col_div);
+	container.appendChild(row_div);
+}
+
+function createBackButtonSVG()
 {
 	const xmlns = "http://www.w3.org/2000/svg";
 
 	let svg = document.createElementNS(xmlns, "svg");
 	
+	svg.setAttributeNS(null, "id", "back");
 	svg.setAttributeNS(null, "height", "24px");
 	svg.setAttributeNS(null, "width", "24px");
 	svg.setAttributeNS(null, "viewBox", "0 0 24 24");
@@ -219,15 +311,17 @@ function buildBackSVG(container)
 
 	svg.appendChild(path_one);
 	svg.appendChild(path_two);
-	container.appendChild(svg);
+	
+	return svg;
 }
 
 document.addEventListener("DOMContentLoaded", async function ()
 {
 	let path = window.location.pathname;
 
+	const container = document.getElementById("container");
+
 	if(path === "/") {
-		const container = document.getElementById("container");
 		await buildHeader(container, "info", "title", "about");
 		buildProjectsHeader(container);	
 		buildProjects(container);
@@ -239,9 +333,8 @@ document.addEventListener("DOMContentLoaded", async function ()
 		const repo = path[1];
 		const page = path[2];
 		
-		const container = document.getElementById("container");
-
 		await buildHeader(container, `repos/${repo}`, "name", "description", true);
 		buildRepoNavbar(container, repo, page);
+		buildLog(container, repo);
 	}
 });
