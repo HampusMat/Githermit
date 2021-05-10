@@ -165,9 +165,12 @@ function getCommit(base_dir, repo, hash)
 			diff.forEach((line, index) =>
 			{
 				if(/^diff\ --git a\/[^\ ]+\ b\/[^\ ]+$/.test(line) || index === diff.length - 1) {
-					if(start) {
+					if(start != undefined || start != NaN) {
 						let file_diff = diff.slice(start, index - 1);
 						let chunk_header_index = file_diff.findIndex((line) => /^@@\ -[0-9,]+\ \+[0-9,]+\ @@/.test(line));
+						if(chunk_header_index === -1) {
+							chunk_header_index = file_diff.length;
+						}
 
 						let file_info = {};
 
@@ -177,15 +180,17 @@ function getCommit(base_dir, repo, hash)
 						file_info["from"] = from_to[0];
 						file_info["to"] = from_to[1];
 
-						const chunk_header = /^@@\ (-[0-9,]+)\ (\+[0-9,]+)\ @@(?:\ (.*))?/.exec(file_diff[chunk_header_index]);
+						if(chunk_header_index != file_diff.length) {
+							const chunk_header = /^@@\ (-[0-9,]+)\ (\+[0-9,]+)\ @@(?:\ (.*))?/.exec(file_diff[chunk_header_index]);
 
-						file_info["from_file_range"] = chunk_header[1];
-						file_info["to_file_range"] = chunk_header[2];
+							file_info["from_file_range"] = chunk_header[1];
+							file_info["to_file_range"] = chunk_header[2];
 
-						file_info["diff"] = file_diff.slice(chunk_header_index + 1).join("\n");
+							file_info["diff"] = file_diff.slice(chunk_header_index + 1).join("\n");
 						
-						if(chunk_header[3]) {
-							file_info["diff"] =  chunk_header[3] + file_info["diff"];
+							if(chunk_header[3]) {
+								file_info["diff"] =  chunk_header[3] + file_info["diff"];
+							}
 						}
 
 						header.forEach((line) =>
