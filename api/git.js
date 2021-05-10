@@ -17,7 +17,7 @@ function execGit(path, action, args = [""], error)
 		error({ "error": err });
 	});
 
-	git.stderr.on("data", () => error({ "error": "Failed to communicate with git!" }));
+	git.stderr.on("data", (err) => error({ "error": "Failed to communicate with git!", "message": err.toString() }));
 
 	return git;
 }
@@ -142,7 +142,92 @@ function getRepos(base_dir)
 	});
 }
 
+function getCommit(base_dir, repo, hash)
+{
+	return new Promise((resolve) =>
+	{
+		const git = execGit(`${base_dir}/${repo}`, "show", ['--format=format:\"hash\": \"%H\, \"author\": \"%an <%ae>\", \"date\": \"%at\", \"message\": \"%s\", \"diff\": \"', hash], (err) => resolve(err));
+
+		let commit = [];
+
+		git.stdout.on("data", (data) =>
+		{
+			commit.push(data);
+		});
+		
+		git.on("close", () =>
+		{
+			let diff = commit.toString().split('\n').slice(1);
+
+			var result = [];
+
+			let start;
+			diff.forEach((line, index) =>
+			{
+				if(/^diff\ --git a\/[^\ ]+\ b\/[^\ ]+$/.test(line) || index === diff.length - 1) {
+					if(start) {
+						let file_diff = diff.slice(start, index - 1);
+						let chunk_header_index = file_diff.findIndex((line) => /^@@\ -[0-9,]+\ \+[0-9,]+\ @@/.test(line));
+
+						let file_info = {};
+
+						let header = file_diff.slice(1, chunk_header_index - 2);
+						const from_to = file_diff.slice(chunk_header_index - 2, chunk_header_index);
+
+						file_info["from"] = from_to[0];
+						file_info["to"] = from_to[1];
+
+						const chunk_header = /^@@\ (-[0-9,]+)\ (\+[0-9,]+)\ @@(?:\ (.*))?/.exec(file_diff[chunk_header_index]);
+
+						file_info["from_file_range"] = chunk_header[1];
+						file_info["to_file_range"] = chunk_header[2];
+
+						file_info["diff"] = file_diff.slice(chunk_header_index + 1).join("\n");
+						
+						if(chunk_header[3]) {
+							file_info["diff"] =  chunk_header[3] + file_info["diff"];
+						}
+
+						header.forEach((line) =>
+						{
+							if(line.includes("old mode") || line.includes("new mode") || line.includes("deleted file mode") || line.includes("new file mode")) {
+								const data = /^(.*mode)\ (\d{6})$/.exec(line);
+								file_info[data[1].replaceAll(' ', "_")] = data[2];
+							}
+							else if(line.includes("copy from") || line.includes("copy to")) {
+								const data = /^(copy\ from|to)\ (.*)/.exec(line);
+								file_info[data[1].replaceAll(' ', "_")] = data[2];
+							}
+							else if(line.includes("rename from") || line.includes("rename to")) {
+								const data = /^(rename\ from|to)\ (.*)/.exec(line);
+								file_info[data[1].replaceAll(' ', "_")] = data[2];
+							}
+							else if(line.includes("similarity index") || line.includes("dissimilarity index")) {
+								const data = /^((?:dis)?similarity\ index)\ (\d+%)$/.exec(line);
+								file_info[data[1].replaceAll(' ', "_")] = data[2];
+							}
+							else if(line.includes("index")) {
+								const data = /^index\ ([0-9a-f,]+)\.\.([0-9a-f,]+)(?:\ (\d{6}))?$/.exec(line).slice(1);
+								file_info["index"] = { "before": data[0], "after": data[1] };
+								if(data[2]) {
+									file_info["index"]["mode"] = data[2];
+								}
+							}
+						});
+						result.push(file_info);
+					}
+					start = index;
+				}
+				if(index === diff.length - 1) {
+					resolve({ "data": result });
+				}
+			});
+		});
+	})
+}
+
 module.exports.getLog = getLog;
 module.exports.getBasicRepoInfo = getBasicRepoInfo;
 module.exports.getRepos = getRepos;
 module.exports.getRepoFile = getRepoFile;
+module.exports.getCommit = getCommit;

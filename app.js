@@ -56,7 +56,7 @@ app.use("/:repo", async (req, res, next) =>
 	next();
 })
 
-app.get("/:repo", (req, res, next) =>
+app.get("/:repo", (req, res) =>
 {
 	res.redirect(`/${req.params.repo}/log`);
 });
@@ -71,6 +71,17 @@ app.get("/:repo/:page", (req, res, next) =>
 	
 	res.sendFile("dist/app.html", { root: __dirname });
 });
+
+app.get("/:repo/log/:hash", (req, res, next) =>
+{
+	const valid_hash = /^[0-9a-f]+$/;
+	if(!valid_hash.test(req.params.hash)) {
+		next();
+		return;
+	}
+	res.sendFile("dist/app.html", { root: __dirname });
+});
+
 
 app.get("/", (req, res) =>
 {

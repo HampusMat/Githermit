@@ -24,12 +24,17 @@ router.get("/repos", async function(req, res)
 	res.json({ "data": repos });
 });
 
-router.get("/repos/:repo", async function(req, res)
+router.use("/repos/:repo", async function(req, res, next)
 {
 	if(!sanitization.sanitizeRepoName(req.params.repo)) {
 		res.status(400).json({ "error": "Unacceptable git repository name!" });
 		return;
 	}
+	next();
+});
+
+router.get("/repos/:repo", async function(req, res)
+{
 	const repo = `${req.params.repo}.git`;
 	const desc = await git.getRepoFile(req.settings["base_dir"], repo, "description");
 
@@ -38,10 +43,6 @@ router.get("/repos/:repo", async function(req, res)
 
 router.get("/repos/:repo/log", async function(req, res)
 {
-	if(!sanitization.sanitizeRepoName(req.params.repo)) {
-		res.status(400).json({ "error": "Unacceptable git repository name!" });
-		return;
-	}
 	const repo = `${req.params.repo}.git`;
 	const log = await git.getLog(req.settings["base_dir"], repo);
 
@@ -58,6 +59,18 @@ router.get("/repos/:repo/log", async function(req, res)
 		return;
 	}
 	res.json(log);
+});
+
+router.get("/repos/:repo/log/:commit", async function(req, res)
+{
+	if(!sanitization.sanitizeCommitID(req.params.commit)) {
+		res.status(400).json({ "error": "Unacceptable commit id!" });
+		return;
+	}
+
+	const commit = await git.getCommit(req.settings["base_dir"], req.params.repo, req.params.commit);
+
+	res.json(commit);
 });
 
 module.exports = router;
