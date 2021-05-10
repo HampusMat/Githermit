@@ -146,7 +146,7 @@ function getCommit(base_dir, repo, hash)
 {
 	return new Promise((resolve) =>
 	{
-		const git = execGit(`${base_dir}/${repo}`, "show", ['--format=format:\"hash\": \"%H\, \"author\": \"%an <%ae>\", \"date\": \"%at\", \"message\": \"%s\", \"diff\": \"', hash], (err) => resolve(err));
+		const git = execGit(`${base_dir}/${repo}`, "show", ['--format=format:{\"hash\": \"%H\", \"author\": \"%an <%ae>\", \"date\": \"%at\", \"message\": \"%s\"}', hash], (err) => resolve(err));
 
 		let commit = [];
 
@@ -177,8 +177,8 @@ function getCommit(base_dir, repo, hash)
 						let header = file_diff.slice(1, chunk_header_index - 2);
 						const from_to = file_diff.slice(chunk_header_index - 2, chunk_header_index);
 
-						file_info["from"] = from_to[0];
-						file_info["to"] = from_to[1];
+						file_info["from"] = from_to[0].slice(4);
+						file_info["to"] = from_to[1].slice(4);
 
 						if(chunk_header_index != file_diff.length) {
 							const chunk_header = /^@@\ (-[0-9,]+)\ (\+[0-9,]+)\ @@(?:\ (.*))?/.exec(file_diff[chunk_header_index]);
@@ -224,7 +224,9 @@ function getCommit(base_dir, repo, hash)
 					start = index;
 				}
 				if(index === diff.length - 1) {
-					resolve({ "data": result });
+					let data = JSON.parse(commit.toString().split('\n').slice(0,1)[0]);
+					data["files"] = result;
+					resolve({ "data": data });
 				}
 			});
 		});
