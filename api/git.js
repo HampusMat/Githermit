@@ -212,7 +212,7 @@ function getCommit(base_dir, repo, hash)
 								file_info[data[1].replaceAll(' ', "_")] = data[2];
 							}
 							else if(line.includes("index")) {
-								const data = /^index\ ([0-9a-f,]+)\.\.([0-9a-f,]+)(?:\ (\d{6}))?$/.exec(line).slice(1);
+								const data = /^index\ ([0-9a-f,]+)\.\.([0-9a-f,]+)(?:\ ([0-9,]+))?$/.exec(line).slice(1);
 								file_info["index"] = { "before": data[0], "after": data[1] };
 								if(data[2]) {
 									file_info["index"]["mode"] = data[2];
