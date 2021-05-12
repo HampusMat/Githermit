@@ -1,5 +1,5 @@
 const { spawn } = require("child_process");
-const { differenceInMilliseconds } = require('date-fns');
+const { formatDistance } = require('date-fns');
 const fs = require('fs');
 
 function execGit(path, action, args = [""], error)
@@ -56,22 +56,6 @@ function getLog(base_dir, path)
 	})
 }
 
-function getOptimalDateDifference(difference)
-{
-	const time_values = { "second": 1000, "minute": 60000, "hour": 3600000, "day": 86400000, "week": 604800000, "month": 2629800000, "year": 31557600000 };
-
-	let last;
-	for(const [key, value] of Object.entries(time_values)) {
-		if(difference > value) {
-			last = key;
-			continue;
-		}
-		break;
-	}
-
-	return `${Math.round(difference / time_values[last])} ${last}s`;
-}
-
 function getTimeSinceLatestCommit(path)
 {
 	return new Promise((resolve) =>
@@ -84,10 +68,7 @@ function getTimeSinceLatestCommit(path)
 
 		git.on("close", (code) =>
 		{
-			const commit_timestamp = new Date(Number(Buffer.concat(commit).toString()) * 1000);
-			const now_date = new Date();
-
-			resolve(getOptimalDateDifference(differenceInMilliseconds(now_date, commit_timestamp)));
+			resolve(formatDistance(new Date(), new Date(Number(Buffer.concat(commit).toString()) * 1000)));
 		});
 	});
 }
