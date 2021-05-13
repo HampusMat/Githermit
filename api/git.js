@@ -123,6 +123,65 @@ function getRepos(base_dir)
 	});
 }
 
+function parseCommitFilePart(part)
+{
+	let new_lines = [];
+	let deleted_lines = [];
+	let old_from;
+	let old_to;
+	let from;
+	let to;
+
+	part.forEach((line, index) =>
+	{
+		if(line.charAt(0) === '+') {
+			line = line.slice(1);
+			new_lines.push(index);
+		}
+		else if(line.charAt(0) === '-') {
+			line = line.slice(1);
+			deleted_lines.push(index);
+		}
+		else {
+			["+", "-"].forEach((char) =>
+			{
+				const find_char = new RegExp(`(?<=^<span.*>)\\${char}(?=.*<\/span>)`);
+				if(find_char.test(line)) {
+					console.log(`${char} ${line}`);
+					const char_index = find_char.exec(line)["index"];
+					line = line.slice(0, char_index) + line.slice(char_index + 1)
+					if(char === "+") {
+						new_lines.push(index);
+					}
+					else if(char === "-") {
+						deleted_lines.push(index);
+					}
+				}
+			})
+		}
+		part[index] = line;
+	});
+
+	if(/^@@\ -[0-9,]+\ \+[0-9,]+\ @@/.test(part[0])) {
+		const from_to = /^@@\ (-[0-9,]+)\ (\+[0-9,]+)\ @@(?:\ (.*))?/.exec(part[0]);
+
+		old_from = from_to[1].split(',')[0].slice(1);
+		old_to = from_to[1].split(',')[1];
+
+		from = from_to[2].split(',')[0].slice(1);
+		to = from_to[2].split(',')[1];
+	}
+	else {
+		old_from = 1;
+		old_to = part.length - new_lines.length;
+
+		from = 1;
+		to = part.length - deleted_lines.length;
+	}
+
+	return { "new_lines": new_lines, "deleted_lines": deleted_lines, "old_from": old_from, "old_to": old_to, "from": from, "to": to, "part": part.join("\n") };
+}
+
 function getCommit(base_dir, repo, hash)
 {
 	return new Promise((resolve) =>
@@ -146,7 +205,7 @@ function getCommit(base_dir, repo, hash)
 			diff.forEach((line, index) =>
 			{
 				if(/^diff\ --git a\/[^\ ]+\ b\/[^\ ]+$/.test(line) || index === diff.length - 1) {
-					if(start != undefined || start != NaN) {
+					if(start != undefined) {
 						let file_diff = diff.slice(start, index - 1);
 						let chunk_header_index = file_diff.findIndex((line) => /^@@\ -[0-9,]+\ \+[0-9,]+\ @@/.test(line));
 						if(chunk_header_index === -1) {
@@ -154,26 +213,52 @@ function getCommit(base_dir, repo, hash)
 						}
 
 						let file_info = {};
-
-						let header = file_diff.slice(1, chunk_header_index - 2);
-						const from_to = file_diff.slice(chunk_header_index - 2, chunk_header_index);
-
-						file_info["from"] = from_to[0].slice(4);
-						file_info["to"] = from_to[1].slice(4);
+						let header;
 
 						if(chunk_header_index != file_diff.length) {
+							const from_to = file_diff.slice(chunk_header_index - 2, chunk_header_index);
+							file_info["from"] = from_to[0].slice(4);
+							file_info["to"] = from_to[1].slice(4);
+
 							const chunk_header = /^@@\ (-[0-9,]+)\ (\+[0-9,]+)\ @@(?:\ (.*))?/.exec(file_diff[chunk_header_index]);
 
 							file_info["from_file_range"] = chunk_header[1];
 							file_info["to_file_range"] = chunk_header[2];
 
-							file_info["diff"] = file_diff.slice(chunk_header_index + 1).join("\n");
+							let raw_diff = file_diff.slice(chunk_header_index + 1);
+							let parsed_diff = [];
+
+							let last_diff_start = 0;
+							raw_diff.forEach((diff_line, diff_index) =>
+							{
+								if(/^@@\ -[0-9,]+\ \+[0-9,]+\ @@/.test(diff_line)) {
+									let part = parseCommitFilePart(raw_diff.slice(last_diff_start, diff_index));
+									parsed_diff.push(part);
+									last_diff_start = diff_index;
+								}
+								else if(diff_index === raw_diff.length - 1) {
+									let part = parseCommitFilePart(raw_diff.slice(last_diff_start, diff_index));
+									parsed_diff.push(part);
+								}
+							});
+
+							console.log(parsed_diff);
+
+							file_info["diff"] = parsed_diff;
 						
 							if(chunk_header[3]) {
-								file_info["diff"] =  chunk_header[3] + file_info["diff"];
+								file_info["diff"][0]["part"] = chunk_header[3] + parsed_diff[0]["part"];
 							}
-						}
 
+							header = file_diff.slice(1, chunk_header_index - 2);
+						}
+						else {
+							const from_to = /^diff\ --git (a\/[^\ ]+)\ (b\/[^\ ]+)$/.exec(file_diff[0]);
+							file_info["from"] = from_to[1];
+							file_info["to"] = from_to[2];
+							header = file_diff.slice(1, chunk_header_index);
+						}
+						
 						header.forEach((line) =>
 						{
 							if(line.includes("old mode") || line.includes("new mode") || line.includes("deleted file mode") || line.includes("new file mode")) {
