@@ -159,6 +159,10 @@ function getCommit(base_dir, repo_name, commit_oid)
 				{
 					console.log(patch.newFile().path());
 					
+					const patch_start = patch_header_data[0][patch_index] + patch_header_data[1][patch_index];
+					const patch_end = (patch_header_data[0][patch_index + 1] !== undefined) ? patch_header_data[0][patch_index + 1] : all_patches.length - 1;
+					const patch_content = all_patches.slice(patch_start, patch_end);
+
 					// Go through all of the patch's hunks
 					// Patches are split into parts of where in the file the change is made. Those parts are called hunks.
 					return hunks.reduce((acc, hunk, hunk_index) =>
@@ -166,20 +170,18 @@ function getCommit(base_dir, repo_name, commit_oid)
 						return acc.then((hunks_data) =>
 						{
 							const hunk_header = hunk.header();
-							//const hunk_header_index = all_patches.indexOf(hunk_header.replace(/\n/g, ""));
-							const hunk_header_index = patch_header_data[0][patch_index] + hunks_data[2] + patch_header_data[1][patch_index];
-							
+							const hunk_header_index = patch_content.indexOf(hunk_header.replace(/\n/g, ""));
+
 							if(hunks_data[0] !== undefined) {
 								const prev_hunk = hunks[hunk_index - 1];
-								//console.log(all_patches.slice(last_index, hunk_header_index));
 								hunks_data[1].push(Object.assign({
 									new_start: prev_hunk.newStart(),
 									new_lines: prev_hunk.newLines(),
 									old_start: prev_hunk.oldStart(),
 									old_lines: prev_hunk.oldLines(),
-								}, parseHunkAddDel(all_patches.slice(hunks_data[0], hunk_header_index))));
+								}, parseHunkAddDel(patch_content.slice(hunks_data[0], hunk_header_index))));
 
-								hunks_data[2] = hunks_data + all_patches.slice(hunks_data[0], hunk_header_index).length;
+								hunks_data[2] = hunks_data + patch_content.slice(hunks_data[0], hunk_header_index).length;
 							}
 	
 							hunks_data[0] = hunk_header_index;
@@ -187,23 +189,14 @@ function getCommit(base_dir, repo_name, commit_oid)
 						});
 					}, Promise.resolve([undefined, [], 0])).then((hunks_data) =>
 					{
-						console.log("	Patch start: " + hunks_data[0] + "	" + all_patches[hunks_data[0]]);
-
-						const patch_end = (patch_header_data[0][patch_index + 1] !== undefined) ? patch_header_data[0][patch_index + 1] : all_patches.length;
-						console.log("	Patch end: " + patch_end + "		" + all_patches[patch_end]);
-
 						const prev_hunk = hunks[hunks.length - 1];
 						hunks_data[1].push(Object.assign({
 							new_start: prev_hunk.newStart(),
 							new_lines: prev_hunk.newLines(),
 							old_start: prev_hunk.oldStart(),
 							old_lines: prev_hunk.oldLines(),
-						}, parseHunkAddDel(all_patches.slice(hunks_data[0], patch_end))));
+						}, parseHunkAddDel(patch_content.slice(hunks_data[0], patch_end))));
 
-						if(patch_index === 8 || patch_index === 7) {
-							console.log(all_patches.slice(hunks_data[0], patch_end));
-						}
-						
 						arr.push({ from: patch.oldFile().path(), to: patch.newFile().path(), hunks: hunks_data[1] });
 
 						return arr;
