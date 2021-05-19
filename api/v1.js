@@ -12,15 +12,13 @@ router.get("/info", function(req, res)
 
 router.get("/repos", async function(req, res)
 {
-	let repo_dirs = await git.getRepos(req.settings["base_dir"]);
+	let repos = await git.getRepos(req.settings["base_dir"]);
 
-	if(repo_dirs["error"]) {
+	if(repos["error"]) {
 		res.status(500).send("Internal server error!");
 		return;
 	}
 
-	repo_dirs = repo_dirs["data"].filter(repo => repo.endsWith(".git"));
-	const repos = await git.getBasicRepoInfo(req.settings["base_dir"], repo_dirs);
 	res.json({ "data": repos });
 });
 
@@ -58,7 +56,7 @@ router.get("/repos/:repo/log", async function(req, res)
 		}
 		return;
 	}
-	res.json(log);
+	res.json({ data: log });
 });
 
 router.get("/repos/:repo/log/:commit", async function(req, res)
@@ -70,7 +68,7 @@ router.get("/repos/:repo/log/:commit", async function(req, res)
 
 	const commit = await git.getCommit(req.settings["base_dir"], req.params.repo, req.params.commit);
 
-	res.json(commit);
+	res.json({ data: commit });
 });
 
 module.exports = router;
