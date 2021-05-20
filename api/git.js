@@ -67,30 +67,32 @@ function getRepos(base_dir)
 {
 	return new Promise((resolve) =>
 	{
-		fs.readdir(base_dir, async (err, dir_content) =>
+		fs.readdir(base_dir, (err, dir_content) =>
 		{
 			if(err) {
 				resolve({ "error": err });
 				return;
 			}
 			
-			dir_content = dir_content.filter(repo => repo.endsWith(".git"));
-
-			let repos = {};
-
-			dir_content.forEach(async (repo, index) =>
+			dir_content.filter(repo => repo.endsWith(".git")).reduce((acc, repo) =>
 			{
-				const desc = await getRepoFile(base_dir, repo, "description");
-				const owner = await getRepoFile(base_dir, repo, "owner");
-				const last_commit_date = await getTimeSinceLatestCommit(base_dir, repo);
-
-				let repo_name = "";
-				repo_name = repo.slice(0, -4);
-				repos[repo_name] = { "description": desc, "owner": owner, "last_updated": last_commit_date };
-
-				if(index === 0) {
-					resolve(repos);
-				}
+				return acc.then((repos) =>
+				{
+					return getRepoFile(base_dir, repo, "description").then((description) =>
+					{
+						return getRepoFile(base_dir, repo, "owner").then((owner) =>
+						{
+							return getTimeSinceLatestCommit(base_dir, repo).then((last_commit_date) =>
+							{
+								repos[repo.slice(0, -4)] = { "description": description, "owner": owner, "last_updated": last_commit_date };
+								return repos;
+							});
+						});
+					});
+				});
+			}, Promise.resolve({})).then((repos) =>
+			{
+				resolve(repos);
 			});
 		});
 	});
