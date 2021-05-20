@@ -157,11 +157,26 @@ function getCommit(base_dir, repo_name, commit_oid)
 			{
 				return patch.hunks().then((hunks) =>
 				{
-					console.log(patch.newFile().path());
+					console.log("\n" + patch.newFile().path());
 					
 					const patch_start = patch_header_data[0][patch_index] + patch_header_data[1][patch_index];
 					const patch_end = (patch_header_data[0][patch_index + 1] !== undefined) ? patch_header_data[0][patch_index + 1] : all_patches.length - 1;
 					const patch_content = all_patches.slice(patch_start, patch_end);
+
+					console.log(patch_content.length);
+					if(patch_content.length > 5000) {
+						console.log("Collapsed!");
+						
+						arr.push({
+							from: patch.oldFile().path(),
+							to: patch.newFile().path(),
+							additions: patch.lineStats()["total_additions"],
+							deletions: patch.lineStats()["total_deletions"],
+							too_large: true,
+							hunks: null
+						});
+						return arr;
+					}
 
 					// Go through all of the patch's hunks
 					// Patches are split into parts of where in the file the change is made. Those parts are called hunks.
@@ -197,7 +212,14 @@ function getCommit(base_dir, repo_name, commit_oid)
 							old_lines: prev_hunk.oldLines(),
 						}, parseHunkAddDel(patch_content.slice(hunks_data[0], patch_end))));
 
-						arr.push({ from: patch.oldFile().path(), to: patch.newFile().path(), hunks: hunks_data[1] });
+						arr.push({
+							from: patch.oldFile().path(),
+							to: patch.newFile().path(),
+							additions: patch.lineStats()["total_additions"],
+							deletions: patch.lineStats()["total_deletions"],
+							too_large: false,
+							hunks: hunks_data[1]
+						});
 
 						return arr;
 					});
