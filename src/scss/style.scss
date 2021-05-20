@@ -21,7 +21,7 @@ $font-size-base: 0.75rem;
 $h1-font-size:                $font-size-base * 2.5;
 $h2-font-size:                $font-size-base * 2;
 $h3-font-size:                $font-size-base * 1.75;
-$h4-font-size:                $font-size-base * 1.4;
+$h4-font-size:                $font-size-base * 1.5;
 $h5-font-size:                $font-size-base * 1.125;
 $h6-font-size:                $font-size-base;
 
@@ -36,6 +36,7 @@ $font-sizes: (
 
 $navbar-nav-link-padding-x: 0.5rem;
 
+@import "../../node_modules/bootstrap/scss/breadcrumb";
 @import "../../node_modules/bootstrap/scss/utilities";
 @import "../../node_modules/bootstrap/scss/utilities/api";
 @import "../../node_modules/bootstrap/scss/nav";
@@ -60,10 +61,13 @@ $table-variants: (
 @import "../../node_modules/bootstrap/scss/containers";
 @import "../../node_modules/bootstrap/scss/grid";
 
+@import "../../node_modules/highlight.js/scss/srcery.scss";
+
 body {
 	background-color: colors.$background;
 	color: colors.$text;
 	font-family: fonts.$primary;
+	margin: 0px;
 }
 
 ul {
@@ -134,6 +138,95 @@ a {
 	}
 }
 
+.breadcrumb {
+	li {
+		margin-bottom: 0.5rem;
+	}
+}
+
+#commit-info {
+	margin-bottom: 2rem;
+	tbody tr {
+		td {
+			padding: 0px;
+			padding-right: 10px;
+		}
+	}
+}
+
+.commit-file {
+	margin-bottom: 50px;
+	table {
+		padding-top: 15px;
+		tbody tr td {
+			padding: 0px;
+			padding-left: 8px;
+			vertical-align: top;
+			&:nth-child(2) {
+				padding-right: 7px;
+			}
+			&:nth-child(3) {
+				padding-right: 15px;
+			}
+		}
+	}
+}
+
+.commit-file-add-del {
+	margin-left: auto;
+	margin-right: 23px;
+	span {
+		margin-right: 10px !important;
+		font-weight: 700;
+		&:nth-child(1) {
+			color: colors.$new;
+		}
+	}
+}
+
+.commit-file-pos-change {
+	color: colors.$text-gray;
+}
+
+.commit-file-no-newline {
+	color: colors.$text-gray;
+}
+
+.line-new {
+	color: colors.$new;
+}
+.line-deleted {
+	color: colors.$danger;
+}
+
+.line-unchanged {
+	color: colors.$text-gray;
+}
+
+.line-highlight-new {
+	border-right: 1px solid colors.$new;
+}
+.line-highlight-deleted {
+	border-right: 1px solid colors.$danger;
+}
+
+code {
+	white-space: pre-wrap;
+	word-wrap: anywhere;
+}
+
+.commit-file-header {
+	display: flex;
+	background-color: rgba($color: #ffffff, $alpha: 0.08);
+	padding: 10px;
+	span {
+		margin-right: 30px;
+		&:nth-child(2) {
+			color: colors.$danger;
+		}
+	}
+}
+
 #back:hover {
 	fill: colors.$primary-light;
 }
@@ -146,9 +239,29 @@ th {
 	text-align: start;
 }
 
+.commit-info-title {
+	color: colors.$secondary;
+	padding-right: 30px;
+	width: 20px;
+}
+
+.patch-too-large {
+	font-weight: 600;
+}
+
+
 @include media-breakpoint-down(sm) {
+	.commit-file table tbody tr td {
+		padding-left: 4px;
+		&:nth-child(2) {
+			padding-right: 4px;
+		}
+		&:nth-child(3) {
+			padding-right: 5px;
+		}
+	}
 	.table > :not(caption) > * > * {
-		padding: 0.5rem;
+		padding: 0.1rem;
 	}
 }
 
@@ -163,6 +276,9 @@ th {
 		font-size: calc(1.3rem + 0.017vw) !important;
 	}
 	.fs-4 {
-		font-size: calc(0.75rem + 0.4vw) !important;
+		font-size: calc(0.82rem + 0.4vw) !important;
+	}
+	.fs-5 {
+		font-size: calc(0.65rem + 0.25vw) !important;
 	}
 }

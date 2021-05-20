@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import hljs from 'highlight.js';
 
 function request(method, source, data = null)
 {
@@ -160,10 +161,10 @@ async function buildProjects(container)
 		link.appendChild(document.createTextNode(key));
 		repo_title.appendChild(link);
 
-		const repo_last_updated = createElement("span", null, ["repo-last-updated", "fs-4"]);
+		const repo_last_updated = createElement("span", null, ["repo-last-updated", "fs-5"]);
 		repo_last_updated.appendChild(document.createTextNode(`Last updated about ${value["last_updated"]} ago`));
 
-		const repo_desc = createElement("span", null, ["fs-4"]);
+		const repo_desc = createElement("span", null, ["fs-5"]);
 		repo_desc.appendChild(document.createTextNode(value["description"]));
 
 		repo_div.appendChild(repo_title)
@@ -202,7 +203,7 @@ function buildRepoNavbar(container, repo, page)
 	nav_items.forEach(item =>
 	{
 		const item_li = createElement("li", null, ["nav-item"]);
-		const item_link = createElement("a", null, ["nav-link", "fs-3"], { "href": `/${repo}/${item}` });
+		const item_link = createElement("a", null, ["nav-link", "fs-4"], { "href": `/${repo}/${item}` });
 		
 		if(item === page) {
 			item_link.classList.add("active");
@@ -229,7 +230,7 @@ async function buildLog(container, repo)
 	const row_div = createElement("div", null, ["row", "mx-0"], null);
 	const col_div = createElement("div", null, ["col", "ms-4", "ps-4", "ps-sm-5", "mt-3"], null);
 	
-	const table = createElement("table", "log", ["table", "table-dark", "fs-4"]);
+	const table = createElement("table", "log", ["table", "table-dark", "fs-5"]);
 
 	const log = JSON.parse(await request("GET", `http://localhost:1337/api/v1/repos/${repo}/log`))["data"];
 
@@ -251,14 +252,16 @@ async function buildLog(container, repo)
 	log.forEach(commit =>
 	{
 		const tr = createElement("tr");
-		const subject = createElement("td");
-		subject.appendChild(document.createTextNode(commit["subject"]));
+		const message = createElement("td");
+		const message_link = createElement("a", null, null, { "href": `log/${commit["commit"]}` });
+		message_link.appendChild(document.createTextNode(commit["message"]));
+		message.appendChild(message_link);
 
 		const author = createElement("td");
-		author.appendChild(document.createTextNode(commit["author"]));
+		author.appendChild(document.createTextNode(commit["author_name"]));
 
 		const date = createElement("td");
-		date.appendChild(document.createTextNode(format(new Date(commit["date"] * 1000), "yyyy-MM-dd hh:mm")));
+		date.appendChild(document.createTextNode(format(new Date(commit["date"]), "yyyy-MM-dd hh:mm")));
 		
 		const files_changed = createElement("td");
 		files_changed.appendChild(document.createTextNode(commit["files_changed"]));
@@ -275,7 +278,7 @@ async function buildLog(container, repo)
 		del_add.appendChild(document.createTextNode(" / "))
 		del_add.appendChild(insertions);
 
-		tr.appendChild(subject);
+		tr.appendChild(message);
 		tr.appendChild(author);
 		tr.appendChild(date);
 		tr.appendChild(files_changed);
@@ -286,6 +289,286 @@ async function buildLog(container, repo)
 	
 	table.appendChild(tbody);
 	col_div.appendChild(table);
+	row_div.appendChild(col_div);
+	container.appendChild(row_div);
+}
+
+const languages = [
+	{ "name": "arduino", "extensions": [".ino"]},
+	{ "name": "actionscript", "extensions": [".as"]},
+	{ "name": "bash", "extensions": [".sh", ".zsh"]},
+	{ "name": "csharp", "extensions": [".cs"]},
+	{ "name": "c", "extensions": [".c", ".h"]},
+	{ "name": "cpp", "extensions": [".cpp", ".hpp"]},
+	{ "name": "cmake", "extensions": ["cmake.in"]},
+	{ "name": "css", "extensions": [".css"]},
+	{ "name": "d", "extensions": [".d"]},
+	{ "name": "dos", "extensions": [".bat", ".cmd"]},
+	{ "name": "dockerfile", "extensions": ["dockerfile", "Dockerfile"]},
+	{ "name": "go", "extensions": [".go"]},
+	{ "name": "gradle", "extensions": [".gradle"]},
+	{ "name": "xml", "extensions": [".xml", ".html", ".xhtml", ".rss", ".atom", ".xjb", ".xsd", ".xsl", ".plist", ".svg"]},
+	{ "name": "haskell", "extensions": [".hs"]},
+	{ "name": "ini", "extensions": [".ini", ".toml"]},
+	{ "name": "json", "extensions": [".json"]},
+	{ "name": "java", "extensions": [".java", ".jsp"]},
+	{ "name": "javascript", "extensions": [".js", ".jsx"]},
+	{ "name": "kotlin", "extensions": [".kt"]},
+	{ "name": "lua", "extensions": [".lua"]},
+	{ "name": "makefile", "extensions": ["makefile", "Makefile"]},
+	{ "name": "markdown", "extensions": [".md"]},
+	{ "name": "objectivec", "extensions": [".m", ".mm", ".M"]},
+	{ "name": "php", "extensions": [".php"]},
+	{ "name": "perl", "extensions": [".pl", ".pm"]},
+	{ "name": "plaintext", "extensions": [".txt"]},
+	{ "name": "pgsql", "extensions": [".pgsql"]},
+	{ "name": "powershell", "extensions": [".ps", ".ps1"]},
+	{ "name": "python", "extensions": [".py"]},
+	{ "name": "ruby", "extensions": [".rb"]},
+	{ "name": "rust", "extensions": [".rs"]},
+	{ "name": "scss", "extensions": [".scss"]},
+	{ "name": "sql", "extensions": [".sql"]},
+	{ "name": "swift", "extensions": [".swift"]},
+	{ "name": "typescript", "extensions": [".ts"]},
+	{ "name": "vbnet", "extensions": [".vb"]},
+	{ "name": "vba", "extensions": [".vba"]},
+	{ "name": "vbscript", "extensions": [".vbs"]},
+	{ "name": "vim", "extensions": [".vim"]},
+	{ "name": "yml", "extensions": [".yml"]}
+];
+
+async function buildCommit(container, repo, hash)
+{
+	const row_div = createElement("div", null, ["row", "mx-0"], null);
+	const col_div = createElement("div", null, ["col", "ms-2", "ps-4", "ps-sm-5", "fs-5"], null);
+
+	const breadcrumb = createElement("nav", null, null, { "aria-label": "breadcrumb" });
+	const breadcrumb_ol = createElement("ol", null, ["breadcrumb"]);
+	const breadcrumb_item_log = createElement("li", null, ["breadcrumb-item"], { "aria-current": "page" });
+	const breadcrumb_item_log_link = createElement("a", null, null, { "href": ".." });
+	breadcrumb_item_log_link.appendChild(document.createTextNode("Log"));
+	breadcrumb_item_log.appendChild(breadcrumb_item_log_link);
+	const breadcrumb_item_commit = createElement("li", null, ["breadcrumb-item", "active"], { "aria-current": "page" });
+	breadcrumb_item_commit.appendChild(document.createTextNode(hash));
+
+	breadcrumb_ol.appendChild(breadcrumb_item_log);
+	breadcrumb_ol.appendChild(breadcrumb_item_commit);
+	breadcrumb.appendChild(breadcrumb_ol);
+	col_div.appendChild(breadcrumb);
+
+	const commit = JSON.parse(await request("GET", `http://localhost:1337/api/v1/repos/${repo}/log/${hash}`));
+
+	const commit_info = createElement("table", "commit-info", ["table", "table-dark"]);
+	const tbody = createElement("tbody");
+
+	["author", "date", "message"].forEach((subject) =>
+	{
+		const info = createElement("tr");
+		const title = createElement("td", null, ["commit-info-title"]);
+		title.appendChild(document.createTextNode(subject.charAt(0).toUpperCase() + subject.slice(1)));
+		const content = createElement("td", null);
+		if(subject === "date") {
+			content.appendChild(document.createTextNode(format(new Date(commit["data"]["date"]), "yyyy-MM-dd hh:mm")));
+		}
+		else {
+			content.appendChild(document.createTextNode(commit["data"][subject]));
+		}
+		info.appendChild(title);
+		info.appendChild(content);
+		tbody.appendChild(info);
+	});
+	
+	commit_info.appendChild(tbody);
+	col_div.appendChild(commit_info);
+
+	commit["data"]["patches"].forEach((patch) =>
+	{
+		const file_div = createElement("div", null, ["commit-file"]);
+
+		// Header
+		const file_header = createElement("div", null, ["commit-file-header"]);
+		const file_name = createElement("span", null, ["fw-bold"]);
+		const file_deleted = createElement("span");
+
+		if(patch["to"] === "/dev/null") {
+			file_name.appendChild(document.createTextNode(patch["from"]));
+			file_deleted.appendChild(document.createTextNode("Deleted"));
+		}
+		else {
+			file_name.appendChild(document.createTextNode(patch["to"]));
+			file_deleted.appendChild(document.createTextNode(""));
+		}
+		file_header.appendChild(file_name);
+		file_header.appendChild(file_deleted);
+
+		const file_add_del = createElement("div", null, ["commit-file-add-del"]);
+		const file_add = createElement("span");
+		const file_del = createElement("span");
+
+		file_add.appendChild(document.createTextNode(`+${patch["additions"]}`));
+		file_add_del.appendChild(file_add);
+
+		file_del.appendChild(document.createTextNode(`-${patch["deletions"]}`));
+		file_add_del.appendChild(file_del);
+
+		file_header.appendChild(file_add_del);
+		file_div.appendChild(file_header);
+
+		console.log(patch);
+
+		// The diff
+		if(patch["too_large"] === false) {
+			let full_patch = "";
+
+			patch["hunks"].forEach((hunk) =>
+			{
+				full_patch = `${full_patch}${hunk["hunk"]}\n`;
+			});
+
+			const patch_table = createElement("table", null, null, { "cellspacing": "0px" });
+			const patch_tbody = createElement("tbody");
+		
+			const language = languages.find((lang) => lang["extensions"].some((extension) => patch["to"].endsWith(extension)));
+
+			const highlighted = language ? hljs.highlight(language["name"], full_patch) : hljs.highlightAuto(full_patch);
+			const highlighted_patch = highlighted["value"].split('\n');
+
+			let index = 0;
+			patch["hunks"].forEach((hunk) =>
+			{
+				const hunk_length = hunk["hunk"].split('\n').length;
+				const end = index + hunk_length;
+
+				const unhighlighted_hunk = hunk["hunk"].split('\n');
+				hunk["hunk"] = highlighted_patch.slice(index, end);
+
+				index = end;
+
+				let new_offset = 0;
+				let deleted_offset = 0;
+				const multiline_tags = [];
+				hunk["hunk"].forEach((line, line_index) =>
+				{
+					//console.log(line_index + " " + line);
+					const line_tr = createElement("tr");
+
+					const old_line_num = createElement("td");
+					const line_num = createElement("td");
+					const line_change = createElement("td");
+
+					const line_content = createElement("td");
+					const line_code = createElement("code");
+
+					if(/^@@\ -[0-9,]+\ \+[0-9,]+\ @@/.test(unhighlighted_hunk[line_index])) {
+						line_tr.classList.add("commit-file-pos-change");
+
+						for(let i = 0; i < 3; i++) {
+							const triple_dot = createElement("td");
+							triple_dot.appendChild(document.createTextNode("..."));
+							line_tr.appendChild(triple_dot);
+						}
+
+						line_code.innerHTML = unhighlighted_hunk[line_index];
+						line_content.appendChild(line_code)
+						line_tr.appendChild(line_content)
+
+						new_offset++;
+						deleted_offset++;
+					}
+					else if(/^\\\ No\ newline\ at\ end\ of\ file$/.test(unhighlighted_hunk[line_index])) {
+						line_tr.classList.add("commit-file-no-newline");
+
+						for(let i = 0; i < 3; i++) {
+							const empty = createElement("td");
+							empty.appendChild(document.createTextNode(""));
+							line_tr.appendChild(empty);
+						}
+
+						line_code.innerHTML = unhighlighted_hunk[line_index];
+						line_content.appendChild(line_code)
+						line_tr.appendChild(line_content)
+
+						new_offset++;
+						deleted_offset++;
+					}
+					else {
+						if(hunk["new"].includes(line_index)) {
+							deleted_offset++;
+							line_num.appendChild(document.createTextNode(Number(hunk["new_start"]) + line_index - new_offset));
+							line_num.classList.add("line-highlight-new");
+
+							line_change.appendChild(document.createTextNode("+"));
+							line_change.classList.add("line-new");
+						}
+						else if(hunk["deleted"].includes(line_index)) {
+							new_offset++;
+							old_line_num.appendChild(document.createTextNode(Number(hunk["old_start"]) + line_index - deleted_offset));
+							line_num.classList.add("line-highlight-deleted");
+							line_change.appendChild(document.createTextNode("-"));
+							line_change.classList.add("line-deleted");
+
+						}
+						else {
+							old_line_num.appendChild(document.createTextNode(Number(hunk["old_start"]) + line_index - deleted_offset));
+							old_line_num.classList.add("line-unchanged");
+							line_num.appendChild(document.createTextNode(Number(hunk["new_start"]) + line_index - new_offset));
+							line_num.classList.add("line-unchanged");
+
+							line_change.appendChild(document.createTextNode(" "));
+						}
+						
+						line_tr.appendChild(old_line_num);
+						line_tr.appendChild(line_num);
+						line_tr.appendChild(line_change);
+
+						let comment_open = line.match(/<span\ class=\"hljs-comment\">/g);
+						const comment_open_cnt = (comment_open !== null) ? comment_open.length : 0;
+						comment_open = (comment_open !== null) ? comment_open[0] : "";
+
+						let comment_close = line.match(/<\/span>/g);
+						const comment_close_cnt = (comment_close !== null) ? comment_close.length : 0;
+						comment_close = (comment_close !== null) ? comment_close[0] : "";
+						
+						if(comment_open_cnt > comment_close_cnt) {
+							line_code.innerHTML = line + "</span>";
+							console.log("Öppning " + line);
+							multiline_tags.push(comment_open);
+						}
+						else if(comment_open_cnt < comment_close_cnt && multiline_tags.length !== 0) {
+							line_code.innerHTML = multiline_tags[multiline_tags.length - 1] + line;
+							console.log("Stängning " + line + "	" + multiline_tags[multiline_tags.length - 1]);
+							multiline_tags.pop();
+						}
+						else if(multiline_tags.length !== 0) {
+							line_code.innerHTML = multiline_tags[multiline_tags.length - 1] + line + "</span>";
+							console.log("Mitt i " + line);
+						}
+						else {
+							line_code.innerHTML = line;
+						}
+						
+						line_content.appendChild(line_code);				
+						line_tr.appendChild(line_content)
+					}
+
+					patch_tbody.appendChild(line_tr);
+				});
+			})
+
+			patch_table.appendChild(patch_tbody);
+			file_div.appendChild(patch_table);
+		}
+		else {
+			const patch_too_large_div = createElement("div", null, ["ps-3", "pt-3", "patch-too-large"]);
+			const patch_too_large = createElement("span");
+			patch_too_large.appendChild(document.createTextNode("Patch is too large to display."));
+			patch_too_large_div.appendChild(patch_too_large);
+			file_div.appendChild(patch_too_large_div);
+		}
+
+		col_div.appendChild(file_div);
+	});
+
 	row_div.appendChild(col_div);
 	container.appendChild(row_div);
 }
@@ -325,16 +608,28 @@ document.addEventListener("DOMContentLoaded", async function ()
 		await buildHeader(container, "info", "title", "about");
 		buildProjectsHeader(container);	
 		buildProjects(container);
+		return
 	}
 
-	const path_valid_and_split = /\/([a-zA-Z0-9\.\-_]+)\/([a-z]+)$/;
+	const path_valid_and_split = /^\/([a-zA-Z0-9\.\-_]+)\/([a-z]+)(?:\/([0-9a-f]+))?$/;
+	
 	if(path_valid_and_split.test(path)) {
 		path = path_valid_and_split.exec(path);
 		const repo = path[1];
 		const page = path[2];
-		
-		await buildHeader(container, `repos/${repo}`, "name", "description", true);
-		buildRepoNavbar(container, repo, page);
-		buildLog(container, repo);
+		const sub_page = path[3];
+
+		console.log("Tjena!");
+
+		if(page === "log") {
+			await buildHeader(container, `repos/${repo}`, "name", "description", true);
+			buildRepoNavbar(container, repo, page);
+
+			if(sub_page) {
+				buildCommit(container, repo, sub_page);
+				return;
+			}
+			buildLog(container, repo);
+		}
 	}
 });
