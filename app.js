@@ -1,23 +1,25 @@
 const express = require("express");
 const api = require("./api/v1");
-const git = require("./api/git");
 const yaml = require('js-yaml');
 const fs = require('fs');
 const { exit } = require("process");
-const sanitization = require("./api/sanitization");
 
-let settings;
+const settings = yaml.load(fs.readFileSync("./settings.yml", 'utf8'));
+const settings_keys = Object.keys(settings);
 
-try {
-	settings = yaml.load(fs.readFileSync("./settings.yml", 'utf8'));
-} catch(e) {
-	throw(e);
+const mandatory_settings = [ "host", "port", "title", "about", "base_dir" ];
+
+const mandatory_not_included = settings_keys.filter(x => !mandatory_settings.includes(x));
+const settings_not_included = mandatory_settings.filter(x => !settings_keys.includes(x));
+
+if(settings_not_included.length !== 0) {
+	console.log(`Error: settings.yml is missing ${(mandatory_not_included.length > 1) ? "keys" : "key"}:`);
+	console.log(settings_not_included.join(", "));
+	exit(1);
 }
-
-const mandatory_settings = ["host", "port", "title", "about", "base_dir"];
-const missing_settings_key = mandatory_settings.find(key => settings.hasOwnProperty(key) === false);
-if(missing_settings_key) {
-	console.error(`Error: missing key in settings.yml: ${missing_settings_key}`);
+if(mandatory_not_included.length !== 0) {
+	console.log(`Error: settings.yml includes ${(mandatory_not_included.length > 1) ? "pointless keys" : "a pointless key"}:`);
+	console.log(mandatory_not_included.join(", "));
 	exit(1);
 }
 
@@ -41,66 +43,52 @@ app.use("/api/v1", (req, res, next) =>
 	next();
 }, api);
 
-app.use("/:repo", async (req, res, next) =>
+app.get("/", (req, res) =>
 {
-	if(!sanitization.sanitizeRepoName(req.params.repo)) {
-		res.status(400).json({ "error": "Unacceptable git repository name!" });
-		return;
-	}
+	res.sendFile("dist/app.html", { root: __dirname });
+});
 
+const repo_router = express.Router();
+
+app.use("/:repo([a-zA-Z0-9-_]+)", (req, res, next) =>
+{
+	console.log("AAAA");
 	fs.readdir(settings["base_dir"], (err, dir_content) =>
 	{
 		if(err) {
-			res.status(404).send("404: Page not found");
+			res.status(404).send("404: Not found");
 			return;
 		}
 		
 		dir_content = dir_content.filter(repo => repo.endsWith(".git"));
-
 		if(!dir_content.includes(req.params.repo + ".git")) {
-			res.status(404).send("404: Page not found");
+			res.status(404).send("404: Not found");
 			return;
 		}
 		else {
 			next();
 		}
 	});
+}, repo_router);
+
+repo_router.get(/$|log$|refs$|tree$/, (req, res) =>
+{
+	res.sendFile("dist/app.html", { root: __dirname });
+});
+
+repo_router.get(/\/log\/[a-fA-F0-9]{40}$/, (req, res) =>
+{
+	res.sendFile("dist/app.html", { root: __dirname });
 })
 
-app.get("/:repo", (req, res) =>
+repo_router.use((req, res) =>
 {
-	res.redirect(`/${req.params.repo}/log`);
-});
-
-app.get("/:repo/:page", (req, res, next) =>
-{
-	const pages = ["log", "refs", "tree"];
-	if(!pages.includes(req.params.page)) {
-		next();
-		return;
-	}
-	
-	res.sendFile("dist/app.html", { root: __dirname });
-});
-
-app.get("/:repo/log/:commit", (req, res, next) =>
-{
-	if(!sanitization.sanitizeCommitID(req.params.commit)) {
-		next();
-		return;
-	}
-	res.sendFile("dist/app.html", { root: __dirname });
-});
-
-
-app.get("/", (req, res) =>
-{
-	res.sendFile("dist/app.html", { root: __dirname });
+	res.status(404).send("404: Not found eeee");
 });
 
 app.use((req, res) =>
 {
-	res.status(404).send("404: Page not found");
-});
+	res.status(404).send("404: Not found");
+})
 
 app.listen(settings["port"], settings["host"], () => console.log(`App is running on ${settings["host"]}:${settings["port"]}`));
