@@ -157,9 +157,10 @@ async function getCommit(base_dir, repo_name, commit_oid)
 				const patch_end = (patch_header_data[0][patch_index + 1] !== undefined) ? patch_header_data[0][patch_index + 1] : all_patches.length - 1;
 				const patch_content = all_patches.slice(patch_start, patch_end);
 
-				console.log(patch_content.length);
-				if(patch_content.length > 5000) {
-					console.log("Collapsed!");
+				const line_lengths = patch_content.map((line) => line.length).reduce((acc, length) => acc + length);
+				
+				if(patch_content.length > 5000 || line_lengths > 5000) {
+					console.log("Too large!");
 					
 					arr.push({
 						from: patch.oldFile().path(),
