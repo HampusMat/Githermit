@@ -47,7 +47,7 @@ export default {
 
 		watch(() =>
 		{
-			fetch(`http://localhost:1337/api/v1/repos`)
+			fetch(`${window.location.protocol}//${window.location.host}/api/v1/repos`)
 				.then((res) => res.json())
 				.then((data) => state.projects = data["data"]);
 		});

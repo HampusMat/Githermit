@@ -75,7 +75,7 @@ export default {
 
 		watch(() =>
 		{
-			fetch(`http://localhost:1337/api/v1/repos/${props.repository}/log`)
+			fetch(`${window.location.protocol}//${window.location.host}/api/v1/repos/${props.repository}/log`)
 				.then((res) => res.json())
 				.then((data) => {
 					state.commits = data["data"];

@@ -33,7 +33,7 @@ export default {
 
 		watch(() =>
 		{
-			fetch(`http://localhost:1337/api/v1/repos/${props.repository}`)
+			fetch(`${window.location.protocol}//${window.location.host}/api/v1/repos/${props.repository}`)
 				.then((res) => res.json())
 				.then((data) =>
 				{

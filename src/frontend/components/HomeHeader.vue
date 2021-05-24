@@ -22,7 +22,7 @@ export default {
 
 		watch(() =>
 		{
-			fetch(`http://localhost:1337/api/v1/info`)
+			fetch(`${window.location.protocol}//${window.location.host}/api/v1/info`)
 				.then((res) => res.json())
 				.then((data) =>
 				{

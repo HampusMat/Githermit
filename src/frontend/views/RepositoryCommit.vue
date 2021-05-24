@@ -80,7 +80,7 @@ export default {
 
 		watch(() =>
 		{
-			fetch(`http://localhost:1337/api/v1/repos/${props.repository}/log/${props.commit}`)
+			fetch(`${window.location.protocol}//${window.location.host}/api/v1/repos/${props.repository}/log/${props.commit}`)
 				.then((res) => res.json())
 				.then((data) =>
 				{
