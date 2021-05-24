@@ -1,6 +1,10 @@
 <template>
 	<RepositoryNavbar active-page="log" />
-	<div class="row mx-0">
+	<div class="row mx-0 vld-parent">
+		<Loading
+			v-model:active="is_loading" :height="24"
+			:width="24" color="#ffffff"
+			:opacity="0" />
 		<div class="col ms-4 ps-4 ps-sm-5 mt-3">
 			<table id="log" class="table table-dark fs-5">
 				<thead>
@@ -42,13 +46,16 @@
 
 <script>
 import RepositoryNavbar from "../components/RepositoryNavbar";
+import Loading from "vue-loading-overlay";
+import 'vue-loading-overlay/dist/vue-loading.css';
 import { format } from "date-fns";
 import { watch, reactive, toRefs } from "vue";
 
 export default {
 	name: "RepositoryLog",
 	components: {
-		RepositoryNavbar
+		RepositoryNavbar,
+		Loading
 	},
 	props: {
 		repository: {
@@ -64,13 +71,16 @@ export default {
 	},
 	setup(props)
 	{
-		const state = reactive({ commits: {} });
+		const state = reactive({ commits: {}, is_loading: true });
 
 		watch(() =>
 		{
 			fetch(`http://localhost:1337/api/v1/repos/${props.repository}/log`)
 				.then((res) => res.json())
-				.then((data) => state.commits = data["data"]);
+				.then((data) => {
+					state.commits = data["data"];
+					state.is_loading = false;
+				});
 		});
 
 		return {

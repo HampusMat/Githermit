@@ -1,7 +1,7 @@
 <template>
 	<RepositoryNavbar active-page="log" />
 	<div class="row mx-0">
-		<div class="col ms-2 ps-4 ps-sm-5 fs-5">
+		<div class="col ms-2 ps-4 ps-sm-5 fs-5 vld-parent">
 			<nav aria-label="breadcrumb">
 				<ol class="breadcrumb">
 					<li class="breadcrumb-item">
@@ -14,6 +14,10 @@
 					</li>
 				</ol>
 			</nav>
+			<Loading
+				v-model:active="is_loading" :height="24"
+				:width="24" color="#ffffff"
+				:opacity="0" />
 			<table id="commit-info" class="table table-dark">
 				<tbody>
 					<tr>
@@ -48,6 +52,8 @@
 <script>
 import RepositoryNavbar from "../components/RepositoryNavbar";
 import CommitPatch from "../components/CommitPatch";
+import Loading from "vue-loading-overlay";
+import 'vue-loading-overlay/dist/vue-loading.css';
 import { watch, reactive, toRefs } from "vue";
 import { format } from "date-fns";
 
@@ -55,7 +61,8 @@ export default {
 	name: "RepositoryCommit",
 	components: {
 		RepositoryNavbar,
-		CommitPatch
+		CommitPatch,
+		Loading
 	},
 	props: {
 		repository: {
@@ -69,7 +76,7 @@ export default {
 	},
 	setup(props)
 	{
-		const state = reactive({ commit_data: {} });
+		const state = reactive({ commit_data: {}, is_loading: true });
 
 		watch(() =>
 		{
@@ -79,6 +86,7 @@ export default {
 				{
 					data["data"]["date"] = format(new Date(data["data"]["date"]), "yyyy-MM-dd hh:mm");
 					state.commit_data = data["data"]
+					state.is_loading = false;
 				});
 		});
 

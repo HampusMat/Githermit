@@ -29,7 +29,7 @@ export default {
 	},
 	setup(props)
 	{
-		const state = reactive({ title: String, about: String });
+		const state = reactive({ title: "", about: "" });
 
 		watch(() =>
 		{
