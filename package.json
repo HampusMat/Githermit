@@ -5,7 +5,7 @@
   "main": "dist/app.html",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "concurrently \"parcel watch --no-source-maps src/frontend/app.html\" \"nodemon src/app.js\"",
+    "dev": "concurrently -k --kill-others-on-fail \"parcel watch --no-source-maps src/frontend/app.html\" \"nodemon --exitcrash src/app.js\"",
     "build": "parcel build --no-source-maps src/frontend/app.html",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
