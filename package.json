@@ -1,7 +1,7 @@
 {
-  "name": "nodejs-git-frontend",
+  "name": "githermit",
   "version": "1.0.0",
-  "description": "A simple git web-frontend made with nodejs",
+  "description": "A simple git web-frontend made with Vue.js & Node.js",
   "main": "dist/app.html",
   "scripts": {
     "start": "node src/app.js",
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@gitlab.com/HampusMat/nodejs-git-frontend.git"
+    "url": "git+ssh://git@gitlab.com/HampusMat/githermit.git"
   },
   "author": "HampusMat",
   "license": "MIT",
   "bugs": {
-    "url": "https://gitlab.com/HampusMat/nodejs-git-frontend/issues"
+    "url": "https://gitlab.com/HampusMat/githermit/issues"
   },
-  "homepage": "https://gitlab.com/HampusMat/nodejs-git-frontend#readme",
+  "homepage": "https://gitlab.com/HampusMat/githermit#readme",
   "dependencies": {
     "bootstrap": "^5.0.0-beta3",
     "concurrently": "^6.1.0",
