@@ -231,7 +231,21 @@ async function getCommit(base_dir, repo_name, commit_oid)
 	};
 }
 
+async function doesCommitExist(base_dir, repo_name, commit_oid)
+{
+	const repo = await git.Repository.openBare(`${base_dir}/${repo_name}`)
+
+	try {
+		await repo.getCommit(commit_oid);
+		return true;
+	}
+	catch {
+		return false;
+	}
+}
+
 module.exports.getLog = getLog;
 module.exports.getRepos = getRepos;
 module.exports.getRepoFile = getRepoFile;
 module.exports.getCommit = getCommit;
+module.exports.doesCommitExist = doesCommitExist;

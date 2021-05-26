@@ -1,74 +1,115 @@
-const express = require("express");
 const git = require("./git");
-const sanitization = require("./sanitization");
+const util = require("./util");
 
-const router = express.Router();
-
-router.get("/info", function(req, res)
+module.exports = function (fastify, opts, done)
 {
-	res.json({ "data": req.settings });
-	return;
-});
-
-router.get("/repos", async function(req, res)
-{
-	let repos = await git.getRepos(req.settings["base_dir"]);
-
-	if(repos["error"]) {
-		res.status(500).send("Internal server error!");
-		return;
-	}
-
-	res.json({ "data": repos });
-});
-
-router.use("/repos/:repo", async function(req, res, next)
-{
-	if(!sanitization.sanitizeRepoName(req.params.repo)) {
-		res.status(400).json({ "error": "Unacceptable git repository name!" });
-		return;
-	}
-	next();
-});
-
-router.get("/repos/:repo", async function(req, res)
-{
-	const repo = `${req.params.repo}.git`;
-	const desc = await git.getRepoFile(req.settings["base_dir"], repo, "description");
-
-	res.json({ "data": { "name": req.params.repo, "description": desc } });
-});
-
-router.get("/repos/:repo/log", async function(req, res)
-{
-	const repo = `${req.params.repo}.git`;
-	const log = await git.getLog(req.settings["base_dir"], repo);
-
-	if(log["error"]) {
-		if(typeof log["error"] === "string") {
-			res.status(500).json({ "error": log["error"] });
-			return;
+	fastify.route({
+		method: "GET",
+		path: "/info",
+		handler: (req, reply) =>
+		{
+			reply.send({ data: opts.config.settings });
 		}
-		switch(log["error"]) {
-			case 404:
-				res.status(404).json({ "error": "Git repository doesn't exist!" });
+	});
+	fastify.route({
+		method: "GET",
+		path: "/repos",
+		handler: async (req, reply) =>
+		{
+			let repos = await git.getRepos(opts.config.settings.base_dir);
+
+			if(repos["error"]) {
+				reply.code(500).send({ error: "Internal server error!" });
 				return;
+			}
+
+			reply.send({ data: repos });
 		}
-		return;
-	}
-	res.json({ data: log });
-});
+	});
 
-router.get("/repos/:repo/log/:commit", async function(req, res)
-{
-	if(!sanitization.sanitizeCommitID(req.params.commit)) {
-		res.status(400).json({ "error": "Unacceptable commit id!" });
-		return;
-	}
+	fastify.route({
+		method: "GET",
+		path: "/repos/:repo",
+		handler: async (req, reply) =>
+		{
+			const repo_verification = await util.verifyRepoName(req.params.repo, opts.config.settings.base_dir);
+			if(repo_verification !== true) {
+				if(repo_verification === "ERR_REPO_REGEX") {
+					reply.code(400).send({ error: "Unacceptable git repository name!" });
+				}
+				else if(repo_verification === "ERR_REPO_NOT_FOUND") {
+					reply.code(404).send({ error: "Git repository not found!" });
+				}
+			}
 
-	const commit = await git.getCommit(req.settings["base_dir"], req.params.repo, req.params.commit);
+			const repo = `${req.params.repo}.git`;
+			const desc = await git.getRepoFile(opts.config.settings.base_dir, repo, "description");
 
-	res.json({ data: commit });
-});
+			reply.send({ data: { name: req.params.repo, description: desc } });
+		}
+	});
 
-module.exports = router;
+	fastify.register((fastify_repo, opts_repo, done_repo) =>
+	{
+		fastify_repo.addHook("onRequest", async (req, reply) =>
+		{
+			const repo_verification = await util.verifyRepoName(req.params.repo, opts.config.settings.base_dir);
+			if(repo_verification !== true) {
+				if(repo_verification === "ERR_REPO_REGEX") {
+					reply.code(400).send({ error: "Unacceptable git repository name!" });
+				}
+				else if(repo_verification === "ERR_REPO_NOT_FOUND") {
+					reply.code(404).send({ error: "Git repository not found!" });
+				}
+			}
+		});
+
+		fastify_repo.route({
+			method: "GET",
+			path: "/log",
+			handler: async (req, reply) =>
+			{
+				const log = await git.getLog(opts.config.settings.base_dir, req.params.repo + ".git");
+	
+				if(log["error"]) {
+					if(typeof log["error"] === "string") {
+						reply.code(500).send({ error: log["error"] });
+					}
+	
+					switch(log["error"]) {
+					case 404:
+						reply.code(404).send({ error: "Git repository not found!" });
+					}
+	
+					return;
+				}
+				reply.send({ data: log });
+			}
+		});
+
+		fastify_repo.route({
+			method: "GET",
+			path: "/log/:commit",
+			handler: async (req, reply) =>
+			{
+				const commit_verification = await util.verifyCommitID(opts.config.settings.base_dir, req.params.repo + ".git", req.params.commit);
+				if(!commit_verification !== true) {
+					if(commit_verification === "ERR_COMMIT_REGEX") {
+						reply.code(400).send({ error: "Unacceptable commit id!" });
+					}
+					else if(commit_verification === "ERR_COMMIT_NOT_FOUND") {
+						reply.code(404).send({ error: "Commit not found!" });
+					}
+				}
+			
+				const commit = await git.getCommit(opts.config.settings.base_dir, req.params.repo, req.params.commit);
+			
+				reply.send({ data: commit });
+			}
+		});
+
+		done_repo();
+	}, { prefix: "/repos/:repo" });
+
+	done();
+}

@@ -1,8 +1,11 @@
-const express = require("express");
+const fastify = require("fastify")();
+const fastify_static = require('fastify-static');
 const api = require("./api/v1");
 const yaml = require('js-yaml');
 const fs = require('fs');
 const { exit } = require("process");
+const path = require("path");
+const util = require("./api/util");
 
 const settings = yaml.load(fs.readFileSync(__dirname + "/../settings.yml", 'utf8'));
 const settings_keys = Object.keys(settings);
@@ -23,74 +26,102 @@ if(mandatory_not_included.length !== 0) {
 	exit(1);
 }
 
-const dist_dir = __dirname + "/../dist";
+const dist_dir = path.join(__dirname, "/../dist");
 
-const app = express();
+try {
+	fs.readdirSync(settings["base_dir"]);
+}
+catch {
+	console.error(`Error: Tried opening the base directory. No such directory: ${settings["base_dir"]}`);
+	exit(1);
+}
 
-app.get(/.*\.(css|js|ico)$/, (req, res, next) =>
+fastify.setNotFoundHandler({
+	preValidation: (req, reply, done) => done(),
+	preHandler: (req, reply, done) => done()
+}, function (req, reply)
 {
-	fs.access(`${dist_dir}${req.path}`, err =>
+	reply.send("404: Not found");
+});
+
+fastify.route({
+	method: "GET",
+	path: "/app.html",
+	handler: (req, reply) => reply.redirect("/")
+});
+
+fastify.register(fastify_static, { root: dist_dir })
+fastify.register(api, { prefix: "/api/v1", config: { settings: settings } });
+
+fastify.route({
+	method: "GET",
+	path: "/",
+	handler: (req, reply) =>
 	{
-		if(err) {
-			next();
-			return;
-		}
-		res.sendFile(`${req.path}`, { root: dist_dir });
-	});
+		console.log("AAAA faan");
+		console.log(dist_dir)
+		reply.sendFile("app.html");
+	}
 });
 
-app.use("/api/v1", (req, res, next) =>
+fastify.register((fastify_repo, opts, done) =>
 {
-	req.settings = settings;
-	next();
-}, api);
-
-app.get("/", (req, res) =>
-{
-	res.sendFile(`app.html`, { root: dist_dir });
-});
-
-const repo_router = express.Router();
-
-app.use("/:repo([a-zA-Z0-9-_]+)", (req, res, next) =>
-{
-	console.log("AAAA");
-	fs.readdir(settings["base_dir"], (err, dir_content) =>
+	fastify_repo.setNotFoundHandler({
+		preValidation: (req, reply, done) => done(),
+		preHandler: (req, reply, done) => done()
+	}, function (req, reply)
 	{
-		if(err) {
-			res.status(404).send("404: Not found");
-			return;
-		}
-		
-		dir_content = dir_content.filter(repo => repo.endsWith(".git"));
-		if(!dir_content.includes(req.params.repo + ".git")) {
-			res.status(404).send("404: Not found");
-			return;
-		}
-		else {
-			next();
+		reply.send("404: Not found");
+	});
+
+	fastify_repo.addHook("onRequest", async (req, reply) =>
+	{
+		const repo_verification = await util.verifyRepoName(req.params.repo, settings.base_dir);
+		if(repo_verification !== true) {
+			if(repo_verification === "ERR_REPO_REGEX") {
+				reply.code(400).send("Error: Unacceptable git repository name!");
+			}
+			else if(repo_verification === "ERR_REPO_NOT_FOUND") {
+				reply.code(404).send("Error: Git repository not found!");
+			}
 		}
 	});
-}, repo_router);
 
-repo_router.get(/$|log$|refs$|tree$/, (req, res) =>
+	fastify_repo.route({
+		method: "GET",
+		path: "/:page",
+		handler: (req, reply) =>
+		{
+			if([ "log", "refs", "tree" ].includes(req.params.page)) {
+				reply.sendFile("app.html");
+			}
+		}
+	});
+	
+	fastify_repo.route({
+		method: "GET",
+		path: "/log/:subpage",
+		handler: async (req, reply) =>
+		{
+			const commit_verification = await util.verifyCommitID(settings.base_dir, req.params.repo + ".git", req.params.subpage);
+			console.log(commit_verification);
+			if(commit_verification !== true) {
+				reply.callNotFound();
+			}
+
+			reply.sendFile("app.html");
+		}
+	});
+
+	done();
+}, { prefix: "/:repo" });
+
+fastify.listen(settings["port"],(err, addr) =>
 {
-	res.sendFile(`app.html`, { root: dist_dir });
+	if(err) {
+		console.error(err);
+		exit(1);
+	}
+
+	console.log(`App is running on ${addr}`);
 });
-
-repo_router.get(/\/log\/[a-fA-F0-9]{40}$/, (req, res) =>
-{
-	res.sendFile(`app.html`, { root: dist_dir });
-})
-
-repo_router.use((req, res) =>
-{
-	res.status(404).send("404: Not found eeee");
-});
-
-app.use((req, res) =>
-{
-	res.status(404).send("404: Not found");
-})
-
-app.listen(settings["port"], settings["host"], () => console.log(`App is running on ${settings["host"]}:${settings["port"]}`));
