@@ -6,6 +6,7 @@ const fs = require('fs');
 const { exit } = require("process");
 const path = require("path");
 const util = require("./api/util");
+const git = require("./api/git");
 
 const settings = yaml.load(fs.readFileSync(__dirname + "/../settings.yml", 'utf8'));
 const settings_keys = Object.keys(settings);
@@ -44,12 +45,9 @@ fastify.setNotFoundHandler({
 	reply.send("404: Not found");
 });
 
-fastify.route({
-	method: "GET",
-	path: "/app.html",
-	handler: (req, reply) => reply.redirect("/")
-});
 
+fastify.addContentTypeParser("application/x-git-upload-pack-request", (req, payload, done) => done(null, payload));
+  
 fastify.register(fastify_static, { root: dist_dir })
 fastify.register(api, { prefix: "/api/v1", config: { settings: settings } });
 
@@ -62,6 +60,12 @@ fastify.route({
 		console.log(dist_dir)
 		reply.sendFile("app.html");
 	}
+});
+
+fastify.route({
+	method: "GET",
+	path: "/app.html",
+	handler: (req, reply) => reply.redirect("/")
 });
 
 fastify.register((fastify_repo, opts, done) =>
@@ -79,10 +83,10 @@ fastify.register((fastify_repo, opts, done) =>
 		const repo_verification = await util.verifyRepoName(req.params.repo, settings.base_dir);
 		if(repo_verification !== true) {
 			if(repo_verification === "ERR_REPO_REGEX") {
-				reply.code(400).send("Error: Unacceptable git repository name!");
+				reply.code(400).send("Unacceptable git repository name!\n");
 			}
 			else if(repo_verification === "ERR_REPO_NOT_FOUND") {
-				reply.code(404).send("Error: Git repository not found!");
+				reply.code(404).send("Git repository not found!\n");
 			}
 		}
 	});
@@ -111,6 +115,35 @@ fastify.register((fastify_repo, opts, done) =>
 
 			reply.sendFile("app.html");
 		}
+	});
+
+	fastify_repo.route({
+		method: "GET",
+		path: "/info/refs",
+		handler: (req, reply) =>
+		{
+			if(!req.query.service) {
+				reply.code(403).send("Missing service query parameter\n");
+				return
+			}
+			else if(req.query.service !== "git-upload-pack") {
+				reply.code(403).send("Access denied!\n");
+				return;
+			}
+			else if(Object.keys(req.query).length !== 1) {
+				reply.header("Content-Type", "application/x-git-upload-pack-advertisement");
+				reply.code(403).send("Too many query parameters!\n");
+				return;
+			}
+
+			git.connectToGitHTTPBackend(settings["base_dir"], req, reply);
+		}
+	});
+
+	fastify_repo.route({
+		method: "POST",
+		path: "/git-upload-pack",
+		handler: (req, reply) => git.connectToGitHTTPBackend(settings["base_dir"], req, reply)
 	});
 
 	done();

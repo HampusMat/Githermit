@@ -1,6 +1,10 @@
 const { formatDistance } = require('date-fns');
 const fs = require('fs');
 const git = require("nodegit");
+const zlib = require("zlib");
+const { spawn } = require('child_process');
+const whatwg = require("whatwg-url");
+const path = require("path");
 
 function addRepoDirSuffix(repo_name)
 {
@@ -244,8 +248,76 @@ async function doesCommitExist(base_dir, repo_name, commit_oid)
 	}
 }
 
+function connectToGitHTTPBackend(base_dir, req, reply)
+{
+	const url_path = req.url.replace(req.params.repo, req.params.repo + ".git");
+	const repo = req.params.repo + ".git";
+	const repo_path = path.join(base_dir, repo);
+
+	req = req.headers['Content-Encoding'] == 'gzip' ? req.pipe(zlib.createGunzip()) : req;
+
+	const parsed_url = new whatwg.URL(`${req.protocol}://${req.hostname}${url_path}`);
+	const url_path_parts = parsed_url.pathname.split('/');
+	
+	let service;
+	let info = false;
+
+	if(/\/info\/refs$/.test(parsed_url.pathname)) {
+		service = parsed_url.searchParams.get("service");
+		info = true;
+	}
+	else {
+		service = url_path_parts[url_path_parts.length-1];
+	}
+		
+	const content_type = `application/x-${service}-${info ? "advertisement" : "result"}`;
+
+	if(/\.\/|\.\./.test(parsed_url.pathname)) {
+		reply.header("Content-Type", content_type);
+		reply.code(404).send("Git repository not found!\n");
+		return;
+	}
+
+	if(service !== 'git-upload-pack') {
+		reply.header("Content-Type", content_type);
+		reply.code(403).send("Access denied!\n");
+		return;
+	}
+		
+	reply.raw.writeHead(200, { "Content-Type": content_type });
+
+	const spawn_args = [ "--stateless-rpc", repo_path ];
+
+	if(info) {
+		spawn_args.push("--advertise-refs");
+	}
+
+	const git_pack = spawn(service, spawn_args);
+	
+	if(info) {
+		const s = '# service=' + service + '\n';
+		const n = (4 + s.length).toString(16);
+		reply.raw.write(Buffer.from((Array(4 - n.length + 1).join('0') + n + s) + '0000'));
+	}
+	else {
+		req.body.on("data", (data) => git_pack.stdin.write(data));
+		req.body.on("close", () => git_pack.stdin.end());
+	}
+
+	git_pack.on("error", (err) => console.log(err))
+	git_pack.stderr.on("data", (stderr) => console.log(stderr));
+
+	git_pack.stdout.on("data", (data) =>
+	{
+		reply.raw.write(data);
+	});
+
+	git_pack.on("close", () => reply.raw.end());
+}
+
 module.exports.getLog = getLog;
 module.exports.getRepos = getRepos;
 module.exports.getRepoFile = getRepoFile;
 module.exports.getCommit = getCommit;
 module.exports.doesCommitExist = doesCommitExist;
+module.exports.connectToGitHTTPBackend = connectToGitHTTPBackend;
