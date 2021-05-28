@@ -36,7 +36,25 @@ $font-sizes: (
 
 $navbar-nav-link-padding-x: 0.5rem;
 
+$btn-box-shadow: none;
+$btn-active-box-shadow: none;
+$btn-focus-box-shadow: none;
+
+$input-bg: lighten(#000000, 12%);
+$input-disabled-bg: lighten(#000000, 12%);
+$input-color: colors.$text;
+$input-focus-color: colors.$text;
+$input-focus-box-shadow: none;
+$input-disabled-border-color: lighten(#000000, 50%);
+$input-height-sm: auto;
+
+$dropdown-dark-bg: lighten(#000000, 10%);
+
 @import "../../../node_modules/bootstrap/scss/breadcrumb";
+@import "../../../node_modules/bootstrap/scss/tooltip";
+@import "../../../node_modules/bootstrap/scss/buttons";
+@import "../../../node_modules/bootstrap/scss/dropdown";
+@import "../../../node_modules/bootstrap/scss/forms";
 @import "../../../node_modules/bootstrap/scss/utilities";
 @import "../../../node_modules/bootstrap/scss/utilities/api";
 @import "../../../node_modules/bootstrap/scss/nav";
@@ -71,12 +89,11 @@ body {
 }
 
 ul {
-    list-style-type: none;
+	list-style-type: none;
 	padding: 0;
 }
 
 li {
-	margin-bottom: 25px;
 	div {
 		h2 {
 			margin: 0px;
@@ -99,6 +116,39 @@ p {
 	padding-left: 1px;
 }
 
+.form-control {
+	width: auto;
+}
+
+#clone {
+	margin-left: auto;
+	margin-right: 40px;
+}
+
+#clone-url-copy {
+	position: relative;
+	height: 30px;
+	display: block;
+    text-align: left;
+    margin: 5px auto;
+	input {
+		display: inline-block;
+    	padding-right: 30px;
+	}
+	svg {
+		content: "";
+		position: absolute;
+		right: 12px;
+		top: 7px;
+		bottom: 0;
+		width: 18px;
+		fill: colors.$not-selected;
+		&:hover {
+			fill: colors.$text;
+		}
+	}
+}
+
 #projects-search {
 	align-items: center;
 	form {
@@ -113,6 +163,9 @@ p {
 
 #repos {
 	margin-top: 25px;
+	li {
+		margin-bottom: 25px;
+	}
 }
 
 .repo-last-updated {
@@ -217,7 +270,7 @@ code {
 
 .commit-file-header {
 	display: flex;
-	background-color: rgba($color: #ffffff, $alpha: 0.08);
+	background-color: lighten(#000000, 14%);
 	padding: 10px;
 	span {
 		margin-right: 30px;
@@ -249,6 +302,30 @@ th {
 	font-weight: 600;
 }
 
+.dropdown-item {
+	width: auto !important;
+}
+
+.btn-primary {
+	color: colors.$text;
+	&:hover {
+		background-color: colors.$primary-light;
+	}
+}
+
+
+.btn-check:checked + .btn-primary:focus,
+.btn-check:active + .btn-primary:focus,
+.btn-primary:active:focus,
+.btn-primary.active:focus,
+.show > .btn-primary.dropdown-toggle:focus {
+	box-shadow: none;
+}
+
+.btn-check:focus + .btn-primary,
+.btn-primary:focus {
+	box-shadow: none;
+}
 
 @include media-breakpoint-down(sm) {
 	.commit-file table tbody tr td {

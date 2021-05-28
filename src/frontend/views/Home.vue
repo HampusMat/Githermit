@@ -1,6 +1,6 @@
 <template>
 	<HomeHeader />
-	<div class="row mx-0 mt-5">
+	<div class="row mx-0">
 		<div id="projects-header" class="col ms-4">
 			<p class="fs-1">
 				Projects
@@ -43,7 +43,7 @@ export default {
 	},
 	setup()
 	{
-		const state = reactive({ projects: Object, search: String });
+		const state = reactive({ projects: {}, search: "" });
 
 		watch(() =>
 		{

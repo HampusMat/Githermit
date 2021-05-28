@@ -18,7 +18,7 @@ export default {
 	name: "HomeHeader",
 	setup()
 	{
-		const state = reactive({ title: String, about: String });
+		const state = reactive({ title: "", about: "" });
 
 		watch(() =>
 		{

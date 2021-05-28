@@ -4,7 +4,7 @@
 			<BaseBackButton to="/" />
 			<div class="d-inline ms-3">
 				<span id="title" class="fs-1">{{ title }}</span>
-				<p id="about" class="mb-3 fs-4">
+				<p id="about" class="fs-4">
 					{{ about }}
 				</p>
 			</div>
@@ -14,6 +14,7 @@
 
 <script>
 import BaseBackButton from "./BaseBackButton";
+
 import { watch, reactive, toRefs } from "vue";
 
 export default {

@@ -1,5 +1,5 @@
 <template>
-	<RepositoryNavbar active-page="log" />
+	<RepositoryNavbar active-page="log" :repository="repository" />
 	<div class="row mx-0">
 		<div class="col ms-2 ps-4 ps-sm-5 fs-5 vld-parent">
 			<nav aria-label="breadcrumb">

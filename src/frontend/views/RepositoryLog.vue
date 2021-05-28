@@ -1,5 +1,5 @@
 <template>
-	<RepositoryNavbar active-page="log" />
+	<RepositoryNavbar active-page="log" :repository="repository" />
 	<div class="row mx-0 vld-parent">
 		<Loading
 			v-model:active="is_loading" :height="24"
