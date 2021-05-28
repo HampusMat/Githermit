@@ -47,5 +47,5 @@ export default {
 			... toRefs(state)
 		};
 	}
-}
+};
 </script>

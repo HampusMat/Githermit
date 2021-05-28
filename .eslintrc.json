@@ -19,6 +19,9 @@
 		"implicit-arrow-linebreak": ["warn", "beside"],
 		"indent": ["warn", "tab"],
 		"linebreak-style": ["warn", "unix"],
+		"comma-dangle": ["error", "never"],
+		"semi": ["error", "always"],
+		"no-var": "error",
 		"vue/max-attributes-per-line": ["warn", {
 			"singleline": {
 			  "max": 2,
