@@ -2,8 +2,10 @@
 Githermit is a Git web interface with the purpose of being a way to show off your personal projects on your own hosted git server.
 
 **Why was it created?**
+
 For the sake of modernism.
 Projects like [cgit](https://git.zx2c4.com/cgit/), [Gitweb](https://repo.or.cz/git.git/tree/HEAD:/gitweb) & [Stagit](https://codemadness.org/stagit.html) are written in decades-old programming languages that no one in their right mind would learn nowadays.
+
 The goal of Githermit is to be an alternative to the aforementioned projects that is both easier to develop & easier to use.
 I would argue that Javascript, Vue.js & Sass is much easier to comprehend and understand than C, Perl & even PHP. Especially for less experienced developers.
 
