@@ -33,10 +33,12 @@ Githermit will probably **never** be as fast as cgit, Gitweb & Stagit. But that'
 - Nodejs v14.16.0
 
 Install all the dependencies
-`npm install`
+
+`$ npm install`
 
 Build & bundle the frontend
-`npm run build`
+
+`$ npm run build`
 
 Create a file called `settings.yml` with following content
 ```
@@ -48,12 +50,13 @@ base_dir: (directory where all of your bare Git repositories are located)
 ```
 
 You can now run it with
-`npm start`
+`$ npm start`
 
 # Development
 You're highly encouraged to [create a merge request](https://gitlab.com/HampusMat/githermit/-/merge_requests/new) if you're willing to contribute.
 
 You can run the following command to easily get started with contributing
-`npm run dev`
+
+`$ npm run dev`
 
 This will run an instance of Githermit with live-updating backend & frontend.
