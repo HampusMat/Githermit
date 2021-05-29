@@ -16,7 +16,7 @@ function addRepoDirSuffix(repo_name)
 
 async function getLog(base_dir, repo_name)
 {
-	const repo = await git.Repository.openBare(`${base_dir}/${repo_name}`)
+	const repo = await git.Repository.openBare(`${base_dir}/${repo_name}`);
 
 	const walker = git.Revwalk.create(repo);
 	walker.pushHead();
@@ -40,7 +40,7 @@ async function getLog(base_dir, repo_name)
 
 async function getTimeSinceLatestCommit(base_dir, repo_name)
 {
-	const repo = await git.Repository.openBare(`${base_dir}/${repo_name}`)
+	const repo = await git.Repository.openBare(`${base_dir}/${repo_name}`);
 	const master_commit = await repo.getMasterCommit();
 
 	return formatDistance(new Date(), master_commit.date());
@@ -120,7 +120,7 @@ async function getCommit(base_dir, repo_name, commit_oid)
 {
 	repo_name = addRepoDirSuffix(repo_name);
 
-	const repo = await git.Repository.openBare(`${base_dir}/${repo_name}`)
+	const repo = await git.Repository.openBare(`${base_dir}/${repo_name}`);
 	const commit = await repo.getCommit(commit_oid);
 	const diff = (await commit.getDiff())[0];
 	const all_patches = (await diff.toBuf(1)).split('\n');
@@ -192,7 +192,7 @@ async function getCommit(base_dir, repo_name, commit_oid)
 								new_start: prev_hunk.newStart(),
 								new_lines: prev_hunk.newLines(),
 								old_start: prev_hunk.oldStart(),
-								old_lines: prev_hunk.oldLines(),
+								old_lines: prev_hunk.oldLines()
 							}, parseHunkAddDel(patch_content.slice(hunks_data[0], hunk_header_index))));
 
 							hunks_data[2] = hunks_data + patch_content.slice(hunks_data[0], hunk_header_index).length;
@@ -208,7 +208,7 @@ async function getCommit(base_dir, repo_name, commit_oid)
 						new_start: prev_hunk.newStart(),
 						new_lines: prev_hunk.newLines(),
 						old_start: prev_hunk.oldStart(),
-						old_lines: prev_hunk.oldLines(),
+						old_lines: prev_hunk.oldLines()
 					}, parseHunkAddDel(patch_content.slice(hunks_data[0], patch_end))));
 
 					arr.push({
@@ -237,7 +237,7 @@ async function getCommit(base_dir, repo_name, commit_oid)
 
 async function doesCommitExist(base_dir, repo_name, commit_oid)
 {
-	const repo = await git.Repository.openBare(`${base_dir}/${repo_name}`)
+	const repo = await git.Repository.openBare(`${base_dir}/${repo_name}`);
 
 	try {
 		await repo.getCommit(commit_oid);
@@ -304,7 +304,7 @@ function connectToGitHTTPBackend(base_dir, req, reply)
 		req.body.on("close", () => git_pack.stdin.end());
 	}
 
-	git_pack.on("error", (err) => console.log(err))
+	git_pack.on("error", (err) => console.log(err));
 	git_pack.stderr.on("data", (stderr) => console.log(stderr));
 
 	git_pack.stdout.on("data", (data) =>
