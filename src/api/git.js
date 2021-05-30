@@ -315,9 +315,54 @@ function connectToGitHTTPBackend(base_dir, req, reply)
 	git_pack.on("close", () => reply.raw.end());
 }
 
+function getTreeEntries(entries)
+{
+	return entries.reduce((acc, entry) =>
+	{
+		return acc.then((obj) =>
+		{
+			const basename = path.parse(entry.path()).base;
+
+			if(entry.isBlob()) {
+				console.log("blob " + entry.path());
+				obj[basename] = { oid: entry.oid(), type: "blob" };
+				return obj;
+			}
+	
+			if(entry.isTree()) {
+				console.log("tree " + entry.path());
+				return entry.getTree().then((tree) =>
+				{
+					console.log("LMAO " + tree.path());
+					return getTreeEntries(tree.entries()).then((tree_entries) =>
+					{
+						obj[basename] = { oid: entry.oid(), type: "tree", tree: tree_entries };
+						return obj;
+					});
+				});
+			}
+		});
+		
+	}, Promise.resolve({}));
+}
+
+async function getTree(base_dir, repo_name)
+{
+	repo_name = addRepoDirSuffix(repo_name);
+
+	const repo = await git.Repository.openBare(`${base_dir}/${repo_name}`);
+	const master_commit = await repo.getMasterCommit();
+
+	const tree = await master_commit.getTree();
+	const entries = tree.entries();
+	
+	return await getTreeEntries(entries);
+}
+
 module.exports.getLog = getLog;
 module.exports.getRepos = getRepos;
 module.exports.getRepoFile = getRepoFile;
 module.exports.getCommit = getCommit;
 module.exports.doesCommitExist = doesCommitExist;
 module.exports.connectToGitHTTPBackend = connectToGitHTTPBackend;
+module.exports.getTree = getTree;

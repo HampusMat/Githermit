@@ -108,8 +108,19 @@ module.exports = function (fastify, opts, done)
 			}
 		});
 
+		fastify_repo.route({
+			method: "GET",
+			path: "/tree",
+			handler: async (req, reply) =>
+			{
+				const tree = await git.getTree(opts.config.settings.base_dir, req.params.repo);
+
+				reply.send({ data: tree });
+			}
+		});
+
 		done_repo();
 	}, { prefix: "/repos/:repo" });
 
 	done();
-}
+};
