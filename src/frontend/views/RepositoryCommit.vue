@@ -85,7 +85,7 @@ export default {
 				.then((data) =>
 				{
 					data["data"]["date"] = format(new Date(data["data"]["date"]), "yyyy-MM-dd hh:mm");
-					state.commit_data = data["data"]
+					state.commit_data = data["data"];
 					state.is_loading = false;
 				});
 		});
@@ -94,5 +94,5 @@ export default {
 			... toRefs(state)
 		};
 	}
-}
+};
 </script>
