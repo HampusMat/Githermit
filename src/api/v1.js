@@ -113,8 +113,18 @@ module.exports = function (fastify, opts, done)
 			path: "/tree",
 			handler: async (req, reply) =>
 			{
-				const tree = await git.getTree(opts.config.settings.base_dir, req.params.repo);
+				const tree_path = (req.query.length !== 0 && req.query.path) ? req.query.path : null;
 
+				const tree = await git.getTree(opts.config.settings.base_dir, req.params.repo, tree_path);
+
+				if(tree.error) {
+					if(tree.error === 404) {
+						reply.code(404).send({ error: "Path not found" });
+					}
+					else {
+						reply.code(500).send({ error: "Internal server error" });
+					}
+				}
 				reply.send({ data: tree });
 			}
 		});
