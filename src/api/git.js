@@ -315,38 +315,7 @@ function connectToGitHTTPBackend(base_dir, req, reply)
 	git_pack.on("close", () => reply.raw.end());
 }
 
-function getTreeEntries(entries)
-{
-	return entries.reduce((acc, entry) =>
-	{
-		return acc.then((obj) =>
-		{
-			const basename = path.parse(entry.path()).base;
-
-			if(entry.isBlob()) {
-				console.log("blob " + entry.path());
-				obj[basename] = { oid: entry.oid(), type: "blob" };
-				return obj;
-			}
-	
-			if(entry.isTree()) {
-				console.log("tree " + entry.path());
-				return entry.getTree().then((tree) =>
-				{
-					console.log("LMAO " + tree.path());
-					return getTreeEntries(tree.entries()).then((tree_entries) =>
-					{
-						obj[basename] = { oid: entry.oid(), type: "tree", tree: tree_entries };
-						return obj;
-					});
-				});
-			}
-		});
-		
-	}, Promise.resolve({}));
-}
-
-async function getTree(base_dir, repo_name)
+async function getTree(base_dir, repo_name, tree_path)
 {
 	repo_name = addRepoDirSuffix(repo_name);
 
@@ -354,9 +323,87 @@ async function getTree(base_dir, repo_name)
 	const master_commit = await repo.getMasterCommit();
 
 	const tree = await master_commit.getTree();
-	const entries = tree.entries();
+
+	let entries;
+	if(tree_path) {
+		try {
+			const path_entry = await tree.getEntry(tree_path);
+
+			if(path_entry.isBlob()) {
+				return { type: "blob", content: (await path_entry.getBlob()).content().toString() };
+			}
+
+			entries = await (await path_entry.getTree()).entries();
+		}
+		catch(err) {
+			if(err.errno === -3) {
+				return { error: 404 };
+			}
+			return { error: 500 };
+		}
+	}
+	else {
+		entries = tree.entries();
+	}
 	
-	return await getTreeEntries(entries);
+	return { type: "tree", tree: await entries.reduce((acc, entry) =>
+	{
+		return acc.then((obj) =>
+		{
+			return getTreeEntryLastCommit(repo, entry).then((last_commit) =>
+			{
+				obj[path.parse(entry.path()).base] = {
+					oid: entry.oid(),
+					type: entry.isBlob() ? "blob" : "tree",
+					last_commit: {
+						id: last_commit.id,
+						message: last_commit.message,
+						time: last_commit.time
+					}
+				};
+				return obj;
+			});
+		});
+	}, Promise.resolve({})) };
+}
+
+async function getTreeEntryLastCommit(repo, tree_entry)
+{
+	const walker = git.Revwalk.create(repo);
+	walker.pushHead();
+
+	const raw_commits = await walker.getCommitsUntil(() => true);
+	
+	return raw_commits.reduce((acc, commit) =>
+	{
+		return acc.then((obj) =>
+		{
+			if(Object.keys(obj).length == 0) {
+				return commit.getDiff().then((diffs) =>
+				{
+					return diffs[0].patches().then((patches) =>
+					{
+						let matching_path_patch;
+						if(tree_entry.isBlob()) {
+							matching_path_patch = patches.find((patch) => patch.newFile().path() === tree_entry.path());
+						}
+						else {
+							matching_path_patch = patches.find((patch) => path.parse(patch.newFile().path()).dir.startsWith(tree_entry.path()));
+						}
+
+						if(matching_path_patch) {
+							obj.id = commit.sha();
+							obj.message = commit.message().replace(/\n/g, "");
+							obj.time = commit.date();
+						}
+						return obj;
+					});
+				});
+			}
+
+			return obj;
+		});
+	}, Promise.resolve({}));
 }
 
 module.exports.getLog = getLog;
