@@ -21,7 +21,7 @@ Githermit will probably **never** be as fast as cgit, Gitweb & Stagit. But that'
 - [x] Log & commit pages
 - [x] Cloning
 - [ ] Refs page
-- [ ] Tree page
+- [x] Tree page
 - [ ] Blob page
 - [ ] Markdown support
 - [ ] Tests

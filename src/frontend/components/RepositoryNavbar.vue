@@ -8,9 +8,11 @@
 							<li
 								v-for="(item, index) in nav_items" :key="index"
 								class="nav-item">
-								<a
+								<router-link
 									class="nav-link fs-4" :class="{ active: activePage === item }"
-									:aria-current="(activePage === item) ? 'page' : ''" :href="item">{{ item }}</a>
+									:aria-current="(activePage === item) ? 'page' : ''" :to="'/' + repository + '/' + item">
+									{{ item }}
+								</router-link>
 							</li>
 							<li class="nav-item ms-auto me-4">
 								<RepositoryCloneDropdown :repository="repository" class="d-block" />
@@ -48,5 +50,5 @@ export default {
 			url: `${window.location.protocol}//${window.location.host}/${this.repository}`
 		};
 	}
-}
+};
 </script>

@@ -327,6 +327,32 @@ th {
 	box-shadow: none;
 }
 
+#tree {
+	border-spacing: 0;
+	th {
+		padding-bottom: 5px;
+		color: colors.$secondary;
+	}
+	tbody tr:hover {
+		background-color: lighten(colors.$background, 10%);
+	}
+	td {
+		padding-top: 5px;
+		padding-bottom: 5px;
+		padding-right: 2vw;
+		&:nth-child(2) a, &:nth-child(3) {
+			font-weight: 300;
+		}
+	}
+	.tree-entry-padding, svg {
+		width: 18px;
+		padding-right: 5px;
+	}
+	a {	
+		padding-right: 18px;
+	}
+}
+
 @include media-breakpoint-down(sm) {
 	.commit-file table tbody tr td {
 		padding-left: 4px;

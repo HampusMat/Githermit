@@ -116,6 +116,15 @@ fastify.register((fastify_repo, opts, done) =>
 
 	fastify_repo.route({
 		method: "GET",
+		path: "/tree/*",
+		handler: async (req, reply) =>
+		{
+			reply.sendFile("app.html");
+		}
+	});
+
+	fastify_repo.route({
+		method: "GET",
 		path: "/info/refs",
 		handler: (req, reply) =>
 		{
