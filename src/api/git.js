@@ -21,7 +21,7 @@ async function getLog(base_dir, repo_name)
 	const walker = git.Revwalk.create(repo);
 	walker.pushHead();
 
-	const raw_commits = await walker.getCommits();
+	const raw_commits = await walker.getCommitsUntil(() => true);
 	
 	const commits = Promise.all(raw_commits.map(async commit => ({
 		commit: commit.sha(),
