@@ -2,18 +2,7 @@
 	<RepositoryNavbar active-page="log" :repository="repository" />
 	<div class="row mx-0">
 		<div class="col ms-2 ps-4 ps-sm-5 fs-5 vld-parent">
-			<nav aria-label="breadcrumb">
-				<ol class="breadcrumb">
-					<li class="breadcrumb-item">
-						<router-link :to="'/' + repository + '/log'">
-							Log
-						</router-link>
-					</li>
-					<li class="breadcrumb-item active" aria-current="page">
-						{{ commit }}
-					</li>
-				</ol>
-			</nav>
+			<BaseBreadcrumb :items="[{ name: 'Log', path: '/' + repository + '/log' }]" :active-item="commit" />
 			<Loading
 				v-model:active="is_loading" :height="24"
 				:width="24" color="#ffffff"
@@ -52,6 +41,7 @@
 <script>
 import RepositoryNavbar from "../components/RepositoryNavbar";
 import CommitPatch from "../components/CommitPatch";
+import BaseBreadcrumb from "../components/BaseBreadcrumb";
 import Loading from "vue-loading-overlay";
 import 'vue-loading-overlay/dist/vue-loading.css';
 import { watch, reactive, toRefs } from "vue";
@@ -62,7 +52,8 @@ export default {
 	components: {
 		RepositoryNavbar,
 		CommitPatch,
-		Loading
+		Loading,
+		BaseBreadcrumb
 	},
 	props: {
 		repository: {

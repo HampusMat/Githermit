@@ -5,7 +5,15 @@
 			v-model:active="is_loading" :height="24"
 			:width="24" color="#ffffff"
 			:opacity="0" />
-		<div class="col ms-4 ps-4 ps-sm-5 mt-3">
+		<div class="col ms-4 ps-4 ps-sm-5 mt-3 fs-5">
+			<BaseBreadcrumb
+				:items="[{ name: repository, path: '/' + repository + '/tree' }].concat(pathArr.slice(0, -1).map((path_part, index) =>
+				{
+					return {
+						name: path_part,
+						path: '/' + repository + '/tree/' + pathArr.slice(0, index + 1).join('/')
+					}
+				}))" :active-item="pathArr[pathArr.length - 1]" />
 			<RepositoryTreeTree
 				:repository="repository" :path="path"
 				:tree="tree" v-if="type === 'tree'" />
@@ -20,6 +28,7 @@
 import RepositoryNavbar from "../components/RepositoryNavbar";
 import RepositoryTreeTree from "../components/RepositoryTreeTree";
 import RepositoryTreeBlob from "../components/RepositoryTreeBlob";
+import BaseBreadcrumb from "../components/BaseBreadcrumb";
 import Loading from "vue-loading-overlay";
 import 'vue-loading-overlay/dist/vue-loading.css';
 import { ref } from "vue";
@@ -30,7 +39,8 @@ export default {
 		RepositoryNavbar,
 		Loading,
 		RepositoryTreeTree,
-		RepositoryTreeBlob
+		RepositoryTreeBlob,
+		BaseBreadcrumb
 	},
 	props: {
 		repository: {
