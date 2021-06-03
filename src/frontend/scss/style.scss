@@ -256,6 +256,10 @@ a {
 	color: colors.$text-gray;
 }
 
+[patch-line-col-unsel]::before {
+	content: attr(patch-line-col-unsel);
+}
+
 .line-highlight-new {
 	border-right: 1px solid colors.$new;
 }

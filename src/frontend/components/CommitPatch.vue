@@ -57,9 +57,9 @@ export default {
 								new_offset++;
 								deleted_offset++;
 								return h("tr", { class: "commit-file-pos-change" }, [
-									h("td", "..."),
-									h("td", "..."),
-									h("td", "..."),
+									h("td", { "patch-line-col-unsel": "..." }),
+									h("td", { "patch-line-col-unsel": "..." }),
+									h("td", { "patch-line-col-unsel": "..." }),
 									h("td", [
 										h("code", all_hunks[hunk_index][line_index])
 									])
@@ -84,19 +84,19 @@ export default {
 
 								if(hunk['new'].includes(line_index)) {
 									first_td = h("td", "");
-									second_td = h("td", { class: "line-highlight-new" }, Number(hunk["new_start"]) + line_index - new_offset);
-									third_td = h("td", { class: "line-new" }, "+");
+									second_td = h("td", { class: "line-highlight-new", "patch-line-col-unsel": Number(hunk["new_start"]) + line_index - new_offset });
+									third_td = h("td", { class: "line-new", "patch-line-col-unsel": "+" });
 									deleted_offset++;
 								}
 								else if(hunk['deleted'].includes(line_index)) {
-									first_td = h("td", Number(hunk["old_start"]) + line_index - deleted_offset);
+									first_td = h("td", { "patch-line-col-unsel": Number(hunk["old_start"]) + line_index - deleted_offset });
 									second_td = h("td", { class: "line-highlight-deleted" });
-									third_td = h("td", { class: "line-deleted" }, "-");
+									third_td = h("td", { class: "line-deleted", "patch-line-col-unsel": "-" });
 									new_offset++;
 								}
 								else {
-									first_td = h("td", { class: "line-unchanged" }, Number(hunk["old_start"]) + line_index - deleted_offset);
-									second_td = h("td", { class: "line-unchanged" }, Number(hunk["new_start"]) + line_index - new_offset);
+									first_td = h("td", { class: "line-unchanged", "patch-line-col-unsel": Number(hunk["old_start"]) + line_index - deleted_offset });
+									second_td = h("td", { class: "line-unchanged", "patch-line-col-unsel": Number(hunk["new_start"]) + line_index - new_offset });
 									third_td = h("td", "");
 								}
 
