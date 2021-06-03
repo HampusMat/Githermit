@@ -353,6 +353,11 @@ th {
 	}
 }
 
+[line]::before {
+	content: attr(line);
+	padding-right: 10px;
+}
+
 @include media-breakpoint-down(sm) {
 	.commit-file table tbody tr td {
 		padding-left: 4px;
