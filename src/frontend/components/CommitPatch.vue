@@ -85,13 +85,13 @@ export default {
 								if(hunk['new'].includes(line_index)) {
 									first_td = h("td", "");
 									second_td = h("td", { class: "line-highlight-new" }, Number(hunk["new_start"]) + line_index - new_offset);
-									third_td = h("td", { class: "line-new" }, "+")
+									third_td = h("td", { class: "line-new" }, "+");
 									deleted_offset++;
 								}
 								else if(hunk['deleted'].includes(line_index)) {
 									first_td = h("td", Number(hunk["old_start"]) + line_index - deleted_offset);
 									second_td = h("td", { class: "line-highlight-deleted" });
-									third_td = h("td", { class: "line-deleted" }, "-")
+									third_td = h("td", { class: "line-deleted" }, "-");
 									new_offset++;
 								}
 								else {
@@ -145,5 +145,5 @@ export default {
 
 		return () => h("div", { class: "commit-file" }, commit_patch);
 	}
-}
+};
 </script>
