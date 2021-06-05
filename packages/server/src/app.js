@@ -1,12 +1,12 @@
 const fastify = require("fastify")();
 const api = require("./api/v1");
-const yaml = require('js-yaml');
-const fs = require('fs');
+const yaml = require("js-yaml");
+const fs = require("fs");
 const { exit } = require("process");
 const git = require("./api/git");
 const path = require("path");
 
-const settings = yaml.load(fs.readFileSync(__dirname + "/../../../settings.yml", 'utf8'));
+const settings = yaml.load(fs.readFileSync(__dirname + "/../../../settings.yml", "utf8"));
 const settings_keys = Object.keys(settings);
 
 const mandatory_settings = [ "host", "port", "dev_port", "title", "about", "base_dir", "production" ];
@@ -45,7 +45,7 @@ fastify.setNotFoundHandler({
 });
 
 if(settings.production) {
-	fastify.register(require('fastify-static'), { root: path.join(__dirname, '/../../../dist') });
+	fastify.register(require("fastify-static"), { root: path.join(__dirname, "/../../../dist") });
 
 	fastify.route({
 		method: "GET",

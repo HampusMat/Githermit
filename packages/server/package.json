@@ -5,10 +5,15 @@
   "author": "HampusMat",
   "license": "MIT",
   "dependencies": {
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.0",
     "fastify": "^3.17.0",
     "fastify-static": "^4.2.2",
     "js-yaml": "^4.1.0",
     "nodegit": "^0.27.0",
     "whatwg-url": "^8.5.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.28.0"
   }
 }
