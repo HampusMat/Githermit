@@ -17,7 +17,7 @@ Githermit is **not** and will **never** be an alternative to services such as Gi
 
 Githermit will probably **never** be as fast as cgit, Gitweb & Stagit. But that's okay. That's not the point.
 
-# Progress
+# Todo
 - [x] Log & commit pages
 - [x] Cloning
 - [ ] Refs page
@@ -25,6 +25,10 @@ Githermit will probably **never** be as fast as cgit, Gitweb & Stagit. But that'
 - [x] Blob page
 - [ ] Markdown support
 - [ ] Tests
+- [ ] Fix the stupid bug caused by empty patches
+- [ ] Branch switching
+- [ ] Custom favicon support
+- [ ] Custom website title support
 
 # Usage
 
