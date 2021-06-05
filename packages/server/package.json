@@ -1,0 +1,14 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "private": true,
+  "author": "HampusMat",
+  "license": "MIT",
+  "dependencies": {
+    "fastify": "^3.17.0",
+    "fastify-static": "^4.2.2",
+    "js-yaml": "^4.1.0",
+    "nodegit": "^0.27.0",
+    "whatwg-url": "^8.5.0"
+  }
+}

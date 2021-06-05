@@ -1,44 +1,19 @@
 {
-  "name": "githermit",
-  "version": "1.0.0",
-  "description": "A simple git web-frontend made with Vue.js & Node.js",
-  "main": "dist/app.html",
-  "scripts": {
-    "start": "node src/app.js",
-    "dev": "concurrently -k --kill-others-on-fail \"parcel watch --no-source-maps src/frontend/app.html\" \"nodemon --exitcrash src/app.js\"",
-    "build": "parcel build --no-source-maps src/frontend/app.html",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@gitlab.com/HampusMat/githermit.git"
-  },
-  "author": "HampusMat",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://gitlab.com/HampusMat/githermit/issues"
-  },
-  "homepage": "https://gitlab.com/HampusMat/githermit#readme",
-  "dependencies": {
-    "bootstrap": "^5.0.0-beta3",
-    "concurrently": "^6.1.0",
-    "date-fns": "^2.21.3",
-    "fastify": "^3.16.1",
-    "fastify-static": "^4.2.2",
-    "highlight.js": "^10.4.1",
-    "js-yaml": "^4.1.0",
-    "nodegit": "^0.27.0",
-    "vue": "^3.0.11",
-    "vue-loading-overlay": "^4.0.2",
-    "vue-router": "^4.0.8",
-    "whatwg-url": "^7.1.0"
-  },
-  "devDependencies": {
-    "@parcel/transformer-sass": "^2.0.0-beta.2",
-    "@parcel/transformer-vue": "^2.0.0-beta.2",
-    "eslint": "^7.27.0",
-    "eslint-plugin-vue": "^7.9.0",
-    "nodemon": "^2.0.7",
-    "parcel": "^2.0.0-beta.2"
-  }
+	"name": "githermit",
+	"version": "1.0.0",
+	"license": "MIT",
+	"author": "HampusMat",
+	"private": true,
+	"scripts": {
+		"postinstall": "lerna bootstrap",
+		"clean": "lerna clean && rm -rf node_modules && dist",
+		"dev": "concurrently -k --kill-others-on-fail \"cd packages/client && yarn serve\" \"cd packages/server && nodemon --exitcrash src/app.js\"",
+		"build": "cd packages/client && yarn build",
+		"start": "node packages/server/src/app.js"
+	},
+	"devDependencies": {
+		"concurrently": "^6.2.0",
+		"lerna": "^4.0.0",
+		"nodemon": "^2.0.7"
+	}
 }
