@@ -6,7 +6,7 @@
 	"private": true,
 	"scripts": {
 		"postinstall": "lerna bootstrap",
-		"clean": "lerna clean && rm -rf node_modules && dist",
+		"clean": "lerna clean && rm -rf node_modules && rm -rf dist",
 		"dev": "concurrently -k --kill-others-on-fail \"cd packages/client && yarn serve\" \"cd packages/server && nodemon --exitcrash src/app.js\"",
 		"build": "cd packages/client && yarn build",
 		"start": "node packages/server/src/app.js"
