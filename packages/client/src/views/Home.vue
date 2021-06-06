@@ -1,5 +1,5 @@
 <template>
-	<div class="container-fluid px-0">
+	<div class="container-fluid px-0 d-flex">
 		<HomeHeader />
 		<HomeProjectsHeader />
 		<div class="row mx-0">
@@ -75,5 +75,10 @@ export default {
 ul {
 	list-style-type: none;
 	padding: 0;
+}
+
+.container-fluid {
+	flex-flow: column;
+	height: 100vh;
 }
 </style>
