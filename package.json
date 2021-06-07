@@ -5,15 +5,20 @@
 	"author": "HampusMat",
 	"private": true,
 	"scripts": {
-		"postinstall": "lerna bootstrap",
-		"clean": "lerna clean && rm -rf node_modules && rm -rf dist",
-		"dev": "concurrently -k --kill-others-on-fail \"cd packages/client && yarn serve\" \"cd packages/server && nodemon --exitcrash src/app.js\"",
-		"build": "cd packages/client && yarn build",
-		"start": "node packages/server/src/app.js"
+		"clean": "rm -rf node_modules dist packages/*/node_modules packages/*/dist",
+		"dev": "concurrently -k --kill-others-on-fail \"cd packages/client && yarn serve\" \"cd packages/server && yarn dev\"",
+		"build": "cd packages/client && yarn build && cd ../server && yarn tsc",
+		"start": "node packages/server/dist/app.js"
 	},
+	"workspaces": [
+		"packages/*"
+	],
 	"devDependencies": {
 		"concurrently": "^6.2.0",
-		"lerna": "^4.0.0",
-		"nodemon": "^2.0.7"
+		"eslint": "^7.28.0",
+		"eslint-config-standard": "^16.0.3",
+		"eslint-plugin-import": "^2.23.4",
+		"eslint-plugin-promise": "^5.1.0",
+		"eslint-plugin-standard": "^5.0.0"
 	}
 }
