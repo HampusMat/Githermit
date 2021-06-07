@@ -67,12 +67,12 @@ export default {
 								let second_td;
 								let third_td;
 
-								if(hunk.new.includes(line_index)) {
+								if(hunk.new_lines.includes(line_index)) {
 									first_td = h("td", "");
 									second_td = h("td", { class: "line-highlight-new", "patch-line-col-unsel": Number(hunk.new_start) + line_index - new_offset });
 									third_td = h("td", { class: "line-new", "patch-line-col-unsel": "+" });
 									deleted_offset++;
-								} else if(hunk.deleted.includes(line_index)) {
+								} else if(hunk.deleted_lines.includes(line_index)) {
 									first_td = h("td", { "patch-line-col-unsel": Number(hunk.old_start) + line_index - deleted_offset });
 									second_td = h("td", { class: "line-highlight-deleted" });
 									third_td = h("td", { class: "line-deleted", "patch-line-col-unsel": "-" });
