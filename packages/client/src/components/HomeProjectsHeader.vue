@@ -1,11 +1,11 @@
 <template>
-	<div class="row mx-0">
-		<div id="projects-header" class="col ms-4">
+	<div class="d-flex align-items-center flex-wrap">
+		<div id="projects-header" class="ms-4">
 			<span class="fs-1">
 				Projects
 			</span>
 		</div>
-		<div id="projects-search" class="col d-flex justify-content-end">
+		<div id="projects-search" class="d-flex">
 			<form>
 				<input type="search" name="q">
 				<input
@@ -30,6 +30,8 @@ export default {
 
 #projects-search {
 	align-items: center;
+	margin-left: auto;
+	margin-right: 15px;
 	form {
 		display: flex;
 		align-items: center;
