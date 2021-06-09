@@ -1,11 +1,9 @@
 <template>
-	<div class="row mx-0 vld-parent">
-		<Loading
-			:active="is_loading" :height="24"
-			:width="24" color="#ffffff"
-			:opacity="0" />
+	<div class="row mx-0 vld-parent flex-fill">
 		<div class="col ms-4 ps-4 ps-sm-5 mt-3">
-			<table id="log" class="table table-dark fs-5">
+			<table
+				id="log" class="table table-dark fs-5"
+				v-if="commits">
 				<thead>
 					<tr>
 						<th class="text-secondary">
@@ -39,19 +37,27 @@
 					</tr>
 				</tbody>
 			</table>
+			<BaseErrorMessage :fetch-failed="fetch_failed" />
+			<Loading
+				:active="is_loading" :height="24"
+				:width="24" color="#ffffff"
+				:opacity="0" :is-full-page="false" />
 		</div>
 	</div>
 </template>
 
 <script>
 import Loading from "vue-loading-overlay";
+import BaseErrorMessage from "@/components/BaseErrorMessage";
 import { ref } from "vue";
 import { format } from "date-fns";
+import fetchData from "@/util/fetch";
 
 export default {
 	name: "RepositoryLog",
 	components: {
-		Loading
+		Loading,
+		BaseErrorMessage
 	},
 	data() {
 		return {
@@ -59,16 +65,18 @@ export default {
 		};
 	},
 	setup() {
-		const commits = ref({});
+		const commits = ref(null);
 		const is_loading = ref(true);
+		const fetch_failed = ref(null);
 
 		const fetchLog = async(repository) => {
-			const log_data = await (await fetch(`${window.location.protocol}//${window.location.host}/api/v1/repos/${repository}/log`)).json();
-			commits.value = log_data.data;
-			is_loading.value = false;
+			const log_data = await fetchData(`repos/${repository}/log`, fetch_failed, is_loading, "log");
+			if(log_data) {
+				commits.value = log_data;
+			}
 		};
 
-		return { commits, is_loading, fetchLog };
+		return { commits, is_loading, fetch_failed, fetchLog };
 	},
 	created() {
 		this.fetchLog(this.$router.currentRoute._rawValue.params.repo);

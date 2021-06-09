@@ -5,7 +5,7 @@
   "author": "HampusMat",
   "license": "MIT",
   "scripts": {
-    "dev": "concurrently -k --kill-others-on-fail \"yarn tsc --watch \" \"nodemon --exitcrash dist/app.js\""
+    "dev": "yarn tsc && concurrently -k --kill-others-on-fail \"yarn tsc --watch \" \"nodemon --exitcrash dist/app.js\""
   },
   "dependencies": {
     "date-fns": "^2.22.1",

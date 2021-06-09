@@ -38,7 +38,7 @@
 					</a>
 				</td>
 				<td>
-					{{ getPrettyLastUpdated(entry.last_commit.time) }}
+					{{ getPrettyLastUpdated(entry.last_commit.date) }}
 				</td>
 			</tr>
 		</tbody>

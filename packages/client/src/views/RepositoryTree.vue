@@ -11,11 +11,11 @@
 				}))" :active-item="(pathArr.length === 0) ? $router.currentRoute._rawValue.params.repo : pathArr[pathArr.length - 1]" />
 			<RepositoryTreeTree
 				:repository="$router.currentRoute._rawValue.params.repo" :path="path"
-				:tree="tree" v-if="type === 'tree'"
-				:is-loading="is_loading" />
+				:tree="tree" v-if="tree" />
 			<RepositoryTreeBlob
 				:repository="$router.currentRoute._rawValue.params.repo" :path="path"
-				:content="blob_content" v-else />
+				:content="blob_content" v-if="blob_content" />
+			<BaseErrorMessage :fetch-failed="fetch_failed" />
 			<Loading
 				:active="is_loading" :height="24"
 				:width="24" color="#ffffff"
@@ -28,8 +28,10 @@
 import BaseBreadcrumb from "@/components/BaseBreadcrumb";
 import RepositoryTreeBlob from "@/components/RepositoryTreeBlob";
 import RepositoryTreeTree from "@/components/RepositoryTreeTree";
+import BaseErrorMessage from "@/components/BaseErrorMessage";
 import Loading from "vue-loading-overlay";
 import { ref } from "vue";
+import fetchData from "@/util/fetch";
 
 export default {
 	name: "RepositoryTree",
@@ -37,7 +39,8 @@ export default {
 		BaseBreadcrumb,
 		RepositoryTreeBlob,
 		RepositoryTreeTree,
-		Loading
+		Loading,
+		BaseErrorMessage
 	},
 	props: {
 		pathArr: {
@@ -48,45 +51,45 @@ export default {
 	watch: {
 		pathArr() {
 			this.is_loading = true;
-			this.tree = {};
 			this.fetchTree(this.$router.currentRoute._rawValue.params.repo);
 		}
 	},
 	setup(props) {
-		const type = ref("");
-		const tree = ref({});
-		const blob_content = ref("");
+		const tree = ref(null);
+		const blob_content = ref(null);
 		const is_loading = ref(true);
+		const fetch_failed = ref(null);
 		const path = ref("");
 
 		const fetchTree = async(repository) => {
+			blob_content.value = null;
+			tree.value = null;
+
 			path.value = props.pathArr ? props.pathArr.join("/") : undefined;
-			const data = await (await fetch(`${window.location.protocol}//${window.location.host}/api/v1/repos/${repository}/tree${path.value ? "?path=" + path.value : ""}`)).json();
-			console.log(path.value);
-			type.value = data.data.type;
 
-			if(data.data.type === "tree") {
-				const tree_data = data.data.tree;
+			const tree_data = await fetchData(`repos/${repository}/tree${path.value ? "?path=" + path.value : ""}`, fetch_failed, is_loading, "tree");
 
-				let tree_trees = Object.entries(tree_data).filter((entry) => entry[1].type === "tree");
-				tree_trees = tree_trees.sort((a, b) => a[0].localeCompare(b[0]));
+			if(tree_data) {
+				if(tree_data.type === "tree") {
+					let tree_trees = Object.entries(tree_data.tree).filter((entry) => entry[1].type === "tree");
+					tree_trees = tree_trees.sort((a, b) => a[0].localeCompare(b[0]));
 
-				let tree_blobs = Object.entries(tree_data).filter((entry) => entry[1].type === "blob");
-				tree_blobs = tree_blobs.sort((a, b) => a[0].localeCompare(b[0]));
+					let tree_blobs = Object.entries(tree_data.tree).filter((entry) => entry[1].type === "blob");
+					tree_blobs = tree_blobs.sort((a, b) => a[0].localeCompare(b[0]));
 
-				tree.value = Object.fromEntries(tree_trees.concat(tree_blobs));
-			} else {
-				blob_content.value = data.data.content;
+					tree.value = Object.fromEntries(tree_trees.concat(tree_blobs));
+					console.log(tree.value);
+				} else {
+					blob_content.value = tree_data.content;
+				}
 			}
-
-			is_loading.value = false;
 		};
 
 		return {
-			type,
 			tree,
 			blob_content,
 			is_loading,
+			fetch_failed,
 			path,
 			fetchTree
 		};
