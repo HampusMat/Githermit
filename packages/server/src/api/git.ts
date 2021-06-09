@@ -392,4 +392,16 @@ export class Git {
 			return false;
 		}
 	}
+
+	async doesReadmeExist(repo_name) {
+		const full_repo_name = addRepoDirSuffix(repo_name);
+		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+
+		const master_commit = await repo.getMasterCommit();
+		const tree = await master_commit.getTree();
+
+		const readme = await tree.getEntry("README.md").catch(() => null);
+
+		return Boolean(readme);
+	}
 };

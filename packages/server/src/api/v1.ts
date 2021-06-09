@@ -40,7 +40,7 @@ export default function(fastify: FastifyInstance, opts, done) {
 
 			const desc = await git.getRepoFile(params.repo, "description");
 
-			reply.send({ data: { name: params.repo, description: desc } });
+			reply.send({ data: { name: params.repo, description: desc, has_readme: await git.doesReadmeExist(params.repo) } });
 		}
 	});
 
