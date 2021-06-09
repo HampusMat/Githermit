@@ -6,7 +6,7 @@
 					<div class="collapse navbar-collapse">
 						<ul class="navbar-nav align-items-center flex-fill">
 							<li
-								v-for="(item, index) in ['log', 'refs', 'tree']" :key="index"
+								v-for="(item, index) in nav_items" :key="index"
 								class="nav-item">
 								<router-link
 									class="nav-link fs-4" :class="{ active: activePage === item }"
@@ -38,10 +38,25 @@ export default {
 		activePage: {
 			type: String,
 			required: true
+		},
+		hasReadme: {
+			type: Boolean,
+			required: true
 		}
 	},
 	components: {
 		RepositoryCloneDropdown
+	},
+	data() {
+		return {
+			nav_items: [ "log", "refs", "tree" ]
+		};
+	},
+	watch: {
+		hasReadme() {
+			console.log("HEEEJ");
+			this.nav_items = [ "about" ].concat(this.nav_items);
+		}
 	}
 };
 </script>

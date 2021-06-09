@@ -14,6 +14,11 @@ const routes = [
 		props: route => ({ repository: route.params.repo }),
 		children: [
 			{
+				path: "about",
+				name: "Repository About",
+				component: () => import("../views/RepositoryAbout")
+			},
+			{
 				path: "log",
 				name: "Repository Log",
 				component: () => import("../views/RepositoryLog")

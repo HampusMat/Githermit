@@ -12,33 +12,21 @@
 
 <script>
 import BaseBackButton from "@/components/BaseBackButton";
-import { ref } from "vue";
 
 export default {
 	name: "RepositoryHeader",
 	props: {
-		repository: {
+		name: {
+			type: String,
+			required: true
+		},
+		description: {
 			type: String,
 			required: true
 		}
 	},
 	components: {
 		BaseBackButton
-	},
-	setup(props) {
-		const name = ref("");
-		const description = ref("");
-
-		const fetchProjects = async() => {
-			const repository_data = await (await fetch(`${window.location.protocol}//${window.location.host}/api/v1/repos/${props.repository}`)).json();
-			name.value = repository_data.data.name;
-			description.value = repository_data.data.description;
-		};
-
-		return { name, description, fetchProjects };
-	},
-	created() {
-		this.fetchProjects();
 	}
 };
 </script>
