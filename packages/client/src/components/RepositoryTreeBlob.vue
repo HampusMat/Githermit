@@ -10,8 +10,7 @@
 		</tbody>
 	</table>
 	<span
-		v-else v-html="content_lines"
-		class="text-wrap" />
+		v-else v-html="content_lines" />
 </template>
 
 <script>
@@ -81,6 +80,8 @@ export default {
 </script>
 
 <style lang="scss">
+@use "../scss/colors";
+
 @import "~highlight.js/scss/srcery.scss";
 @import "../scss/fonts";
 
@@ -101,6 +102,16 @@ code {
 	font-family: $font-primary;
 }
 
+span {
+	word-wrap: anywhere;
+	a {
+		color: colors.$primary-light;
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
 .markdown-codeblock {
 	padding-right: 10px;
 	padding-left: 5px;
@@ -109,7 +120,7 @@ code {
 }
 
 p {
-	width: 95ch;
+	max-width: 95ch;
 }
 
 </style>
