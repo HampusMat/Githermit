@@ -21,5 +21,13 @@ module.exports = {
 				changeOrigin: true
 			}
 		}
+	},
+	chainWebpack: config => {
+		config
+			.plugin("html")
+			.tap(args => {
+				args[0].title = settings.title;
+				return args;
+			});
 	}
 };

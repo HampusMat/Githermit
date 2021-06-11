@@ -25,8 +25,8 @@ Githermit requires no such thing. All the steps to get it set up are in [Usage](
 - [ ] Tests
 - [ ] Fix the stupid bug caused by empty patches
 - [ ] Branch switching
-- [ ] Custom favicon support
-- [ ] Custom website title support
+- [x] Custom favicon support
+- [x] Custom website title support
 
 # Usage
 

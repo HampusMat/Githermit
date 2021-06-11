@@ -15,12 +15,12 @@ const routes = [
 		children: [
 			{
 				path: "about",
-				name: "Repository About",
+				name: "About",
 				component: () => import("../views/RepositoryAbout")
 			},
 			{
 				path: "log",
-				name: "Repository Log",
+				name: "Log",
 				component: () => import("../views/RepositoryLog")
 			},
 			{
@@ -31,7 +31,7 @@ const routes = [
 			},
 			{
 				path: "tree/:path*",
-				name: "Tree Entry",
+				name: "Tree",
 				component: () => import("../views/RepositoryTree"),
 				props: route => ({ pathArr: route.params.path ? route.params.path : [] })
 			},

@@ -2,6 +2,33 @@
 	<router-view />
 </template>
 
+<script>
+export default {
+	name: "App",
+	data: function() {
+		return {
+			base_title: ""
+		};
+	},
+	methods: {
+		setTitle() {
+			const repo = this.$route.params.repo;
+			const route = this.$route.name;
+			document.title = repo ? `${repo} - ${route}` : this.base_title;
+		}
+	},
+	created() {
+		this.base_title = document.title;
+		this.setTitle();
+	},
+	watch: {
+		$route() {
+			this.setTitle();
+		}
+	}
+};
+</script>
+
 <style lang="scss">
 @use "scss/colors";
 @use "scss/variables";
