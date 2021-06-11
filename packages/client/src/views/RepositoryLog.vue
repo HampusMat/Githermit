@@ -26,14 +26,16 @@
 				<tbody>
 					<tr v-for="(commit, index) in commits" :key="index">
 						<td>
-							<router-link :to="'log/' + commit['commit']">
-								{{ commit["message"] }}
+							<router-link :to="'log/' + commit.id">
+								{{ commit.message }}
 							</router-link>
 						</td>
-						<td>{{ commit["author_name"] }}</td>
-						<td>{{ format(new Date(commit["date"]), "yyyy-MM-dd hh:mm") }}</td>
-						<td>{{ commit["files_changed"] }}</td>
-						<td><span class="text-danger">-{{ commit["deletions"] }}</span> / <span class="text-success">+{{ commit["insertions"] }}</span></td>
+						<td>{{ commit.author.name }}</td>
+						<td>{{ format(new Date(commit.date), "yyyy-MM-dd hh:mm") }}</td>
+						<td>{{ commit.files_changed }}</td>
+						<td class="add-del">
+							<span>-{{ commit.deletions }}</span> / <span>+{{ commit.insertions }}</span>
+						</td>
 					</tr>
 				</tbody>
 			</table>
@@ -122,6 +124,17 @@ table {
 
 #log {
 	padding-left: 0;
+}
+
+.add-del {
+	span {
+		&:nth-child(1) {
+			color: colors.$success;
+		}
+		&:nth-child(2) {
+			color: colors.$danger;
+		}
+	}
 }
 
 @media (max-width: 576px) {

@@ -71,14 +71,13 @@ export default {
 
 			if(tree_data) {
 				if(tree_data.type === "tree") {
-					let tree_trees = Object.entries(tree_data.tree).filter((entry) => entry[1].type === "tree");
-					tree_trees = tree_trees.sort((a, b) => a[0].localeCompare(b[0]));
+					let tree_trees = tree_data.tree.filter((entry) => entry.type === "tree");
+					tree_trees = tree_trees.sort((a, b) => a.name.localeCompare(b.name));
 
-					let tree_blobs = Object.entries(tree_data.tree).filter((entry) => entry[1].type === "blob");
-					tree_blobs = tree_blobs.sort((a, b) => a[0].localeCompare(b[0]));
+					let tree_blobs = tree_data.tree.filter((entry) => entry.type === "blob");
+					tree_blobs = tree_blobs.sort((a, b) => a.name.localeCompare(b.name));
 
-					tree.value = Object.fromEntries(tree_trees.concat(tree_blobs));
-					console.log(tree.value);
+					tree.value = tree_trees.concat(tree_blobs);
 				} else {
 					blob_content.value = tree_data.content;
 				}

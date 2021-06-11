@@ -5,15 +5,15 @@
 		<div class="row">
 			<div id="projects" class="col vld-parent">
 				<ul v-if="projects">
-					<li v-for="(project, project_name, index) in projects" :key="index">
-						<div v-if="(search !== null && project_name.includes(search)) || search == null">
+					<li v-for="(project, index) in projects" :key="index">
+						<div v-if="(search !== null && project.name.includes(search)) || search == null">
 							<span class="fs-3">
-								<router-link :to="project_name">
-									{{ project_name }}
+								<router-link :to="project.name">
+									{{ project.name }}
 								</router-link>
 							</span>
-							<span class="repo-last-updated fs-5">Last updated about {{ project["last_updated"] }} ago</span>
-							<span class="fs-5">{{ project["description"] }}</span>
+							<span class="repo-last-updated fs-5">Last updated about {{ project.last_updated }}</span>
+							<span class="fs-5">{{ project.description }}</span>
 						</div>
 					</li>
 				</ul>
@@ -34,6 +34,7 @@ import Loading from "vue-loading-overlay";
 import BaseErrorMessage from "@/components/BaseErrorMessage";
 import fetchData from "@/util/fetch";
 import { ref } from "vue";
+import { formatDistance } from "date-fns";
 
 export default {
 	name: "Home",
@@ -45,12 +46,19 @@ export default {
 	},
 	setup() {
 		const projects = ref({});
-		const search = ref("");
+		const search = ref(null);
 		const is_loading = ref(true);
 		const fetch_failed = ref(null);
 
 		const fetchProjects = async() => {
 			const projects_data = await fetchData("repos", fetch_failed, is_loading, "projects");
+
+			projects_data.reduce((result, project) => {
+				project.last_updated = formatDistance(Date.parse(project.last_updated), new Date(), { addSuffix: true });
+				result.push(projects);
+				return result;
+			}, []);
+
 			projects.value = projects_data;
 		};
 

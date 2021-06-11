@@ -49,12 +49,12 @@ export default {
 	}
 	.breadcrumb-item {
 		padding-left: 0.5rem;
-	}
-	.breadcrumb-item + .active::before {
-		float: left;
-		padding-right: 0.5rem;
-		color: #6c757d;
-		content: "/";
+		+ .breadcrumb-item::before {
+			float: left;
+			padding-right: 0.5rem;
+			color: #6c757d;
+			content: "/";
+		}
 	}
 }
 </style>

@@ -18,8 +18,8 @@
 				<td />
 			</tr>
 			<tr
-				v-for="(entry, entry_name, index) in tree" :key="index"
-				@click="$router.push(`/${repository}/tree${path ? '/' + path : ''}/${entry_name}`)">
+				v-for="(entry, index) in tree" :key="index"
+				@click="$router.push(`/${repository}/tree${path ? '/' + path : ''}/${entry.name}`)">
 				<td class="flex-center">
 					<svg
 						xmlns="http://www.w3.org/2000/svg" height="18px"
@@ -30,7 +30,7 @@
 						<path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
 					</svg>
 					<span v-else class="tree-entry-padding" />
-					<a @click="stopClick" :href="`/${repository}/tree${path ? '/' + path : ''}/${entry_name}`">{{ entry_name }}</a>
+					<a @click="stopClick" :href="`/${repository}/tree${path ? '/' + path : ''}/${entry.name}`">{{ entry.name }}</a>
 				</td>
 				<td>
 					<a @click="routeToCommit(entry.last_commit.id, $event)" :href="`/${repository}/log/${entry.last_commit.id}`">
@@ -74,7 +74,7 @@ export default {
 			this.$router.push(`/${this.repository}/log/${commit_id}`);
 		},
 		getPrettyLastUpdated(date) {
-			return formatDistance(new Date(), new Date(date));
+			return formatDistance(new Date(date), new Date(), { addSuffix: true });
 		}
 	}
 };
