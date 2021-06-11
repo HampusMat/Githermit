@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync } from "fs";
-import { Git } from "./api/git";
+import { GitAPI } from "./api/git";
 import api from "./api/v1";
 import { exit } from "process";
 import { fastify as fastifyFactory } from "fastify";
@@ -50,7 +50,7 @@ if(settings.production) {
 }
 
 const fastify = fastifyFactory();
-const git = new Git(settings.base_dir);
+const git = new GitAPI(settings.base_dir);
 
 fastify.setNotFoundHandler({}, function(req, reply) {
 	reply.code(404).send("Page not found!");

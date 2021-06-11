@@ -1,36 +1,116 @@
-import { ConvenientHunk, Repository, Revwalk, TreeEntry } from "nodegit";
+import { ConvenientHunk, ConvenientPatch, Repository, Revwalk, TreeEntry } from "nodegit";
+import { FastifyReply, FastifyRequest } from "fastify";
 import { join, parse } from "path";
 import { readFile, readdir } from "fs";
-import { FastifyRequest } from "fastify";
 import { IncomingMessage } from "http";
 import { URL } from "whatwg-url";
-import { formatDistance } from "date-fns";
 import { spawn } from "child_process";
 import { verifyGitRequest } from "./util";
+
+export declare namespace Git {
+	interface Hunk {
+		new_start: number,
+		new_lines_cnt: number,
+		old_start: number,
+		old_lines_cnt: number,
+		new_lines: number[],
+		deleted_lines: number[],
+		hunk: string
+	}
+	// eslint-disable-next-line no-unused-vars
+	interface Patch {
+		from: string,
+		to: string,
+		additions: number,
+		deletions: number,
+		too_large: boolean,
+		hunks: Hunk[] | null
+	}
+	// eslint-disable-next-line no-unused-vars
+	interface RequestInfo {
+		repo: string,
+		url_path: string,
+		parsed_url: URL,
+		url_path_parts: string[],
+		is_discovery: boolean,
+		service: string | null,
+		content_type: string
+	}
+	interface TreeEntryLastCommit {
+		id: string | null,
+		message: string | null,
+		date: Date | null
+	}
+	// eslint-disable-next-line no-unused-vars
+	interface ShortTreeEntry {
+		name: string,
+		oid: string,
+		type: "blob" | "tree",
+		last_commit: TreeEntryLastCommit
+	}
+	// eslint-disable-next-line no-unused-vars
+	interface ShortRepository {
+		name: string,
+		description: string,
+		owner: string,
+		last_updated: Date
+	}
+
+	type CommitAuthor = {
+		name: string,
+		email: string
+	}
+
+	// eslint-disable-next-line no-unused-vars
+	type LogCommit = {
+		id: string,
+		author: CommitAuthor,
+		date: Date,
+		message: string,
+		insertions: number,
+		deletions: number,
+		files_changed: number
+	}
+
+	// eslint-disable-next-line no-unused-vars
+	type Commit = {
+		id: string,
+		author: string,
+		message: string,
+		date: Date,
+		patches: Patch[]
+	}
+
+	// eslint-disable-next-line no-unused-vars
+	interface Hunks {
+		prev: null | number,
+		hunks: Git.Hunk[]
+	}
+};
 
 function addRepoDirSuffix(repo_name: string) {
 	return repo_name.endsWith(".git") ? repo_name : `${repo_name}.git`;
 }
 
-function parseHunkAddDel(hunk: string[]) {
+function getHunkContent(hunk: string[]) {
 	interface Lines {
 		new_lines: number[],
 		deleted_lines: number[]
 	}
 
-	const lines = hunk.reduce((lines_obj: Lines, line, index) => {
+	const lines = hunk.reduce((result: Lines, line, index) => {
 		if(line.charAt(0) === "+") {
 			hunk[index] = line.slice(1);
-			lines_obj.new_lines.push(index);
+			result.new_lines.push(index);
 		}
 		else if(line.charAt(0) === "-") {
 			hunk[index] = line.slice(1);
-			lines_obj.deleted_lines.push(index);
+			result.deleted_lines.push(index);
 		}
-		return lines_obj;
+		return result;
 	}, { new_lines: [], deleted_lines: [] });
 
-	return Object.assign(lines, { hunk: hunk.join("\n") });
+	return { ...lines, hunk: hunk.join("\n") };
 }
 
 function getPatchHeaderData(patch_headers: string[], all_patches: string[]) {
@@ -60,8 +140,9 @@ function getPatchHeaderData(patch_headers: string[], all_patches: string[]) {
 	}, <PatchHeaderData>{ indexes: [], lengths: [], last: null });
 }
 
-function getHunksData(hunks: ConvenientHunk[], patch_content: string[]) {
-	return hunks.reduce((hunks_data, hunk, hunk_index) => {
+function getHunks(hunks: ConvenientHunk[], patch_content: string[]) {
+
+	return hunks.reduce((hunks_data: Git.Hunks, hunk, hunk_index) => {
 		const hunk_header = hunk.header();
 		const hunk_header_index = patch_content.indexOf(hunk_header.replace(/\n/gu, ""));
 
@@ -69,10 +150,10 @@ function getHunksData(hunks: ConvenientHunk[], patch_content: string[]) {
 			const prev_hunk = hunks[hunk_index - 1];
 			hunks_data.hunks.push({
 				new_start: prev_hunk.newStart(),
-				new_lines: prev_hunk.newLines(),
+				new_lines_cnt: prev_hunk.newLines(),
 				old_start: prev_hunk.oldStart(),
-				old_lines: prev_hunk.oldLines(),
-				...parseHunkAddDel(patch_content.slice(hunks_data.prev, hunk_header_index))
+				old_lines_cnt: prev_hunk.oldLines(),
+				...getHunkContent(patch_content.slice(hunks_data.prev, hunk_header_index))
 			});
 		}
 
@@ -81,26 +162,18 @@ function getHunksData(hunks: ConvenientHunk[], patch_content: string[]) {
 	}, { prev: null, hunks: [] });
 }
 
-function Patch(patch, too_large, hunks) {
-	this.from = patch.oldFile().path();
-	this.to = patch.newFile().path();
-	this.additions = patch.lineStats()["total_additions"];
-	this.deletions = patch.lineStats()["total_deletions"];
-	this.too_large = too_large;
-	this.hunks = hunks;
+function getPatch(patch: ConvenientPatch, too_large: boolean, hunks?: Git.Hunk[]): Git.Patch {
+	return {
+		from: patch.oldFile().path(),
+		to: patch.newFile().path(),
+		additions: patch.lineStats()["total_additions"],
+		deletions: patch.lineStats()["total_deletions"],
+		too_large: too_large,
+		hunks: hunks || null
+	};
 }
 
-export type GitRequestInfo = {
-	repo: string,
-	url_path: string,
-	parsed_url: URL,
-	url_path_parts: string[],
-	is_discovery: boolean,
-	service: string | null,
-	content_type: string
-};
-
-function extractRequestInfo(req: FastifyRequest): GitRequestInfo {
+function getRequestInfo(req: FastifyRequest): Git.RequestInfo {
 	const params: any = req.params;
 
 	const repo = params.repo + ".git";
@@ -130,39 +203,47 @@ async function getTreeEntryLastCommit(repo: Repository, tree_entry: TreeEntry) {
 	const walker = Revwalk.create(repo);
 	walker.pushHead();
 
-	interface LastTreeEntryCommit {
-		id: string | null,
-		message: string | null,
-		date: Date | null
-	};
-
 	const raw_commits = await walker.getCommitsUntil(() => true);
 
-	return raw_commits.reduce((acc, commit) => acc.then(obj => {
-		if(obj.id === null) {
-			return commit.getDiff().then(diffs => diffs[0].patches().then(patches => {
-				let matching_path_patch = null;
-				if(tree_entry.isBlob()) {
-					matching_path_patch = patches.find(patch => patch.newFile().path() === tree_entry.path());
-				}
-				else {
-					matching_path_patch = patches.find(patch => parse(patch.newFile().path()).dir.startsWith(tree_entry.path()));
-				}
+	return raw_commits.reduce((acc, commit) => {
+		return acc.then(result => {
+			if(result.id === null) {
+				return commit.getDiff().then(diffs => diffs[0].patches().then(patches => {
+					let matching_path_patch = null;
+					if(tree_entry.isBlob()) {
+						matching_path_patch = patches.find(patch => patch.newFile().path() === tree_entry.path());
+					}
+					else {
+						matching_path_patch = patches.find(patch => parse(patch.newFile().path()).dir.startsWith(tree_entry.path()));
+					}
 
-				if(matching_path_patch) {
-					obj.id = commit.sha();
-					obj.message = commit.message().replace(/\n/gu, "");
-					obj.date = commit.date();
-				}
-				return obj;
-			}));
-		}
+					if(matching_path_patch) {
+						result.id = commit.sha();
+						result.message = commit.message().replace(/\n/gu, "");
+						result.date = commit.date();
+					}
+					return result;
+				}));
+			}
 
-		return obj;
-	}), Promise.resolve(<LastTreeEntryCommit>{ id: null, message: null, date: null }));
+			return result;
+		});
+	}, Promise.resolve(<Git.TreeEntryLastCommit>{ id: null, message: null, date: null }));
 }
 
-export class Git {
+function readDirectory(directory: string) {
+	return new Promise<string[]>(resolve => {
+		readdir(directory, (err, dir_content) => {
+			if(err) {
+				resolve([]);
+			}
+
+			resolve(dir_content);
+		});
+	});
+}
+
+export class GitAPI {
 	base_dir: string;
 
 	constructor(base_dir: string) {
@@ -178,32 +259,31 @@ export class Git {
 
 		const raw_commits = await walker.getCommitsUntil(() => true);
 
-		const commits = await Promise.all(raw_commits.map(async commit => ({
-			commit: commit.sha(),
-			author_full: commit.author().toString(),
-			author_name: commit.author().name(),
-			author_email: commit.author().email(),
+		return Promise.all(raw_commits.map(async commit => <Git.LogCommit>{
+			id: commit.sha(),
+			author: {
+				name: commit.author().name(),
+				email: commit.author().email()
+			},
 			date: commit.date(),
 			message: commit.message().replace(/\n/gu, ""),
-			insertions: (await (await commit.getDiff())[0].getStats()).insertions(),
-			deletions: (await (await commit.getDiff())[0].getStats()).deletions(),
-			files_changed: (await (await commit.getDiff())[0].getStats()).filesChanged()
-		})));
-
-		return commits;
+			insertions: <number>(await (await commit.getDiff())[0].getStats()).insertions(),
+			deletions: <number>(await (await commit.getDiff())[0].getStats()).deletions(),
+			files_changed: <number>(await (await commit.getDiff())[0].getStats()).filesChanged()
+		}));
 	}
 
-	async getTimeSinceLatestCommit(repo_name: string) {
+	async getRepositoryLastCommit(repo_name: string) {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 
 		const master_commit = await repo.getMasterCommit();
 
-		return formatDistance(new Date(), master_commit.date());
+		return master_commit.date();
 	}
 
-	getRepoFile(repo_name: string, file: string) {
-		return new Promise(resolve => {
+	getRepositoryFile(repo_name: string, file: string) {
+		return new Promise<string>(resolve => {
 			const full_repo_name = addRepoDirSuffix(repo_name);
 			readFile(`${this.base_dir}/${full_repo_name}/${file}`, (err, content) => {
 				if(!err) {
@@ -215,34 +295,33 @@ export class Git {
 		});
 	}
 
-	getRepos() {
-		return new Promise(resolve => {
-			readdir(this.base_dir, (err: Error, dir_content: string[]) => {
-				if(err) {
-					resolve({ "error": err });
-					return;
-				}
+	async getRepositories() {
+		const dir_content = await readDirectory(this.base_dir);
 
-				dir_content.filter(repo => repo.endsWith(".git")).reduce((acc, repo) => {
-					return acc.then((repos: any) => {
-						return this.getRepoFile(repo, "description").then(description => {
-							return this.getRepoFile(repo, "owner").then(owner => {
-								return this.getTimeSinceLatestCommit(repo).then(last_commit_date => {
-									repos[repo.slice(0, -4)] = { "description": description, "owner": owner, "last_updated": last_commit_date };
-									return repos;
-								});
+		if(dir_content.length === 0) {
+			return null;
+		}
+
+		return dir_content.filter(repo => repo.endsWith(".git")).reduce((acc, repo) => {
+			return acc.then(repos => {
+				return this.getRepositoryFile(repo, "description").then(description => {
+					return this.getRepositoryFile(repo, "owner").then(owner => {
+						return this.getRepositoryLastCommit(repo).then(last_commit_date => {
+							repos.push({
+								name: repo.slice(0, -4),
+								description: description,
+								owner: owner,
+								last_updated: last_commit_date
 							});
+							return repos;
 						});
 					});
-				}, Promise.resolve({}))
-					.then(repos => {
-						resolve(repos);
-					});
+				});
 			});
-		});
+		}, Promise.resolve(<Git.ShortRepository[]>[]));
 	}
 
-	async getCommit(repo_name: string, commit_oid: string) {
+	async getCommit(repo_name: string, commit_oid: string): Promise<Git.Commit> {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 		const commit = await repo.getCommit(commit_oid);
@@ -261,29 +340,29 @@ export class Git {
 				if(patch_content.length > 5000 || line_lengths > 5000) {
 					console.log("Too large!");
 
-					arr.push(new Patch(patch, true, null));
+					arr.push(getPatch(patch, true));
 					return arr;
 				}
 
-				const hunks_data = getHunksData(hunks, patch_content);
+				const hunks_data = getHunks(hunks, patch_content);
 
 				const prev_hunk = hunks[hunks.length - 1];
 				hunks_data.hunks.push({
 					new_start: prev_hunk.newStart(),
-					new_lines: prev_hunk.newLines(),
+					new_lines_cnt: prev_hunk.newLines(),
 					old_start: prev_hunk.oldStart(),
-					old_lines: prev_hunk.oldLines(),
-					...parseHunkAddDel(patch_content.slice(hunks_data.prev, patch_end))
+					old_lines_cnt: prev_hunk.oldLines(),
+					...getHunkContent(patch_content.slice(<number>hunks_data.prev, patch_end))
 				});
 
-				arr.push(new Patch(patch, false, hunks_data.hunks));
+				arr.push(getPatch(patch, false, hunks_data.hunks));
 
 				return arr;
 			}));
-		}, Promise.resolve([]));
+		}, Promise.resolve(<Git.Patch[]>[]));
 
 		return {
-			hash: commit.sha(),
+			id: commit.sha(),
 			author: commit.author().toString(),
 			message: commit.message(),
 			date: commit.date(),
@@ -291,8 +370,8 @@ export class Git {
 		};
 	}
 
-	connectToGitHTTPBackend(req, reply) {
-		const request_info = extractRequestInfo(req);
+	connectToGitHTTPBackend(req: FastifyRequest, reply: FastifyReply) {
+		const request_info = getRequestInfo(req);
 
 		const valid_request = verifyGitRequest(request_info);
 		if(valid_request.success === false) {
@@ -308,7 +387,7 @@ export class Git {
 			spawn_args.push("--advertise-refs");
 		}
 
-		const git_pack = spawn(request_info.service, spawn_args);
+		const git_pack = spawn(<string>request_info.service, spawn_args);
 
 		if(request_info.is_discovery) {
 			const s = "# service=" + request_info.service + "\n";
@@ -330,7 +409,7 @@ export class Git {
 		git_pack.on("close", () => reply.raw.end());
 	}
 
-	async getTree(repo_name, tree_path) {
+	async getTree(repo_name: string, tree_path: string) {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 		const master_commit = await repo.getMasterCommit();
@@ -362,9 +441,10 @@ export class Git {
 		return {
 			type: "tree",
 			tree: await entries.reduce((acc, entry) => {
-				return acc.then(obj => {
+				return acc.then(result => {
 					return getTreeEntryLastCommit(repo, entry).then(last_commit => {
-						obj[parse(entry.path()).base] = {
+						result.push({
+							name: parse(entry.path()).base,
 							oid: entry.oid(),
 							type: entry.isBlob() ? "blob" : "tree",
 							last_commit: {
@@ -372,15 +452,15 @@ export class Git {
 								message: last_commit.message,
 								date: last_commit.date
 							}
-						};
-						return obj;
+						});
+						return result;
 					});
 				});
-			}, Promise.resolve({}))
+			}, Promise.resolve(<Git.ShortTreeEntry[]>[]))
 		};
 	}
 
-	async doesCommitExist(repo_name, commit_oid) {
+	async doesCommitExist(repo_name: string, commit_oid: string) {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 
@@ -393,7 +473,7 @@ export class Git {
 		}
 	}
 
-	async doesReadmeExist(repo_name) {
+	async doesReadmeExist(repo_name: string) {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 

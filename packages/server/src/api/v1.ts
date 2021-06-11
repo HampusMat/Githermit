@@ -1,10 +1,10 @@
+import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { verifyCommitID, verifyRepoName } from "./util";
-import { FastifyInstance } from "fastify";
-import { Git } from "./git";
+import { GitAPI } from "./git";
 /* eslint-disable max-lines-per-function */
 
-export default function(fastify: FastifyInstance, opts, done) {
-	const git = new Git(opts.config.settings.base_dir);
+export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, done: any) {
+	const git = new GitAPI(opts.config.settings.base_dir);
 
 	fastify.route({
 		method: "GET",
@@ -17,9 +17,9 @@ export default function(fastify: FastifyInstance, opts, done) {
 		method: "GET",
 		url: "/repos",
 		handler: async(req, reply) => {
-			let repos = await git.getRepos();
+			const repos = await git.getRepositories();
 
-			if(repos["error"]) {
+			if(!repos) {
 				reply.code(500).send({ error: "Internal server error!" });
 				return;
 			}
@@ -38,7 +38,7 @@ export default function(fastify: FastifyInstance, opts, done) {
 				reply.code(repo_verification.code).send(repo_verification.message);
 			}
 
-			const desc = await git.getRepoFile(params.repo, "description");
+			const desc = await git.getRepositoryFile(params.repo, "description");
 
 			reply.send({ data: { name: params.repo, description: desc, has_readme: await git.doesReadmeExist(params.repo) } });
 		}
@@ -59,20 +59,11 @@ export default function(fastify: FastifyInstance, opts, done) {
 			handler: async(req, reply) => {
 				const log = await git.getLog((<any>req.params).repo);
 
-				if(log["error"]) {
-					if(typeof log["error"] === "string") {
-						reply.code(500).send({ error: log["error"] });
-					}
-
-					switch(log["error"]) {
-					case 404:
-						reply.code(404).send({ error: "Git repository not found!" });
-						return;
-					default:
-						reply.code(500).send({ error: "Internal server error!" });
-						return;
-					}
+				if(log.length === 0) {
+					reply.code(500).send({ error: "Internal server error!" });
+					return;
 				}
+
 				reply.send({ data: log });
 			}
 		});

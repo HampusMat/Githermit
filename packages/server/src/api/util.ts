@@ -1,4 +1,4 @@
-import { Git, GitRequestInfo } from "./git";
+import { Git, GitAPI } from "./git";
 import { readdir } from "fs";
 
 type VerificationResultErrorType = "REPO_NOT_FOUND" | "REPO_INVALID" | "COMMIT_NOT_FOUND" | "COMMIT_INVALID" | "ACCESS_DENIED";
@@ -22,7 +22,7 @@ export class VerificationResult {
 	}
 
 	success: boolean;
-	code: number | null = null;
+	code: number = 0;
 	message: string | null = null;
 }
 
@@ -35,7 +35,7 @@ export function verifyRepoName(base_dir: string, repo_name: string) {
 			return;
 		}
 
-		readdir(base_dir, (err: Error, dir_content: string[]) => {
+		readdir(base_dir, (err, dir_content) => {
 			if(err) {
 				resolve(new VerificationResult(false, "REPO_NOT_FOUND"));
 				return;
@@ -52,7 +52,7 @@ export function verifyRepoName(base_dir: string, repo_name: string) {
 	});
 }
 
-export async function verifyCommitID(git: Git, repo: string, commit_id: string) {
+export async function verifyCommitID(git: GitAPI, repo: string, commit_id: string) {
 	if(!(/^[a-fA-F0-9]+$/u).test(commit_id)) {
 		return new VerificationResult(false, "COMMIT_INVALID");
 	}
@@ -66,7 +66,7 @@ export async function verifyCommitID(git: Git, repo: string, commit_id: string) 
 	return new VerificationResult(true);
 }
 
-export function verifyGitRequest(request_info: GitRequestInfo): VerificationResult {
+export function verifyGitRequest(request_info: Git.RequestInfo): VerificationResult {
 	if((/\.\/|\.\./u).test(request_info.parsed_url.pathname)) {
 		return new VerificationResult(false, "REPO_NOT_FOUND");
 	}
