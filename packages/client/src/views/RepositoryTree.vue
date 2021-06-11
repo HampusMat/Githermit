@@ -1,6 +1,6 @@
 <template>
-	<div class="row mx-0">
-		<div class="col ms-4 ps-4 ps-sm-5 mt-3 fs-5 vld-parent">
+	<div class="row">
+		<div class="col fs-5 vld-parent">
 			<BaseBreadcrumb
 				:items="(pathArr.length === 0) ? [] : [{ name: $router.currentRoute._rawValue.params.repo, path: '/' + $router.currentRoute._rawValue.params.repo + '/tree' }].concat(pathArr.slice(0, -1).map((path_part, index) =>
 				{
@@ -102,8 +102,4 @@ export default {
 
 <style lang="scss" scoped>
 @import "~vue-loading-overlay/dist/vue-loading.css";
-
-.row {
-	height: 100%;
-}
 </style>

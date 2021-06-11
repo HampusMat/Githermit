@@ -1,34 +1,39 @@
 <template>
-	<div class="d-flex align-items-center flex-wrap">
-		<div id="projects-header" class="ms-4">
+	<div id="projects">
+		<div id="projects-header">
 			<span class="fs-1">
 				Projects
 			</span>
 		</div>
-		<div id="projects-search" class="d-flex">
+		<div id="projects-search">
 			<form>
 				<input type="search" name="q">
-				<input
-					type="submit" value="Search"
-					class="btn btn-primary">
+				<BaseButton type="submit" value="Search" />
 			</form>
 		</div>
 	</div>
 </template>
 
 <script>
+import BaseButton from "@/components/BaseButton";
+
 export default {
-	name: "HomeProjectsHeader"
+	name: "HomeProjectsHeader",
+	components: {
+		BaseButton
+	}
 };
 </script>
 
 <style lang="scss" scoped>
-@use "../scss/colors";
-@import "../scss/bootstrap";
-
-@import "~bootstrap/scss/buttons";
+#projects {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+}
 
 #projects-search {
+	display: flex;
 	align-items: center;
 	margin-left: auto;
 	margin-right: 15px;

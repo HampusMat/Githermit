@@ -10,7 +10,7 @@
 		<tbody>
 			<tr v-if="path !== ''" @click="$router.push(`/${repository}/tree/${path.split('/').slice(0, -1).join('/') }`)">
 				<td
-					class="d-flex align-items-center">
+					class="flex-center">
 					<div class="tree-entry-padding" />
 					..
 				</td>
@@ -20,7 +20,7 @@
 			<tr
 				v-for="(entry, entry_name, index) in tree" :key="index"
 				@click="$router.push(`/${repository}/tree${path ? '/' + path : ''}/${entry_name}`)">
-				<td class="d-flex align-items-center">
+				<td class="flex-center">
 					<svg
 						xmlns="http://www.w3.org/2000/svg" height="18px"
 						viewBox="0 0 24 24" width="18px"
@@ -82,33 +82,57 @@ export default {
 
 <style lang="scss" scoped>
 @use "../scss/colors";
-@import "../scss/bootstrap";
 
-#tree {
+table {
 	border-spacing: 0;
-	th {
-		padding-bottom: 5px;
-		color: colors.$secondary;
-		text-align: start;
-		padding-right: 20px;
-	}
-	tbody tr:hover {
-		background-color: lighten(colors.$background, 10%);
-	}
-	td {
-		padding-top: 5px;
-		padding-bottom: 5px;
-		padding-right: 2vw;
-		&:nth-child(2) a, &:nth-child(3) {
-			font-weight: 300;
+	width: 100%;
+	margin-bottom: 1rem;
+	tbody {
+		vertical-align: inherit;
+		tr {
+			&:hover {
+				background-color: lighten(colors.$background, 5%);
+			}
+			td {
+				padding-bottom: 1em;
+				&:nth-child(2) a, &:nth-child(3) {
+					font-weight: 300;
+				}
+				padding-top: 5px;
+				padding-bottom: 5px;
+				padding-right: 2vw;
+			}
 		}
+	}
+	thead {
+		vertical-align: bottom;
+	}
+	th {
+		text-align: start;
+		padding-bottom: 1em;
+		color: colors.$secondary;
+	}
+	> :not(caption) > * > * {
+		padding: 0.2rem 1rem;
+		border-bottom-width: 1px;
 	}
 	.tree-entry-padding, svg {
 		width: 18px;
 		padding-right: 5px;
 	}
-	a {
-		padding-right: 18px;
+}
+
+#log {
+	padding-left: 0;
+}
+
+@media (max-width: 576px) {
+	table > :not(caption) > * > * {
+		padding: 0.1rem;
 	}
+}
+.flex-center {
+	display: flex;
+	align-items: center;
 }
 </style>

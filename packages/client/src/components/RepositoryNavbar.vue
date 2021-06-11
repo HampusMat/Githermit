@@ -1,27 +1,24 @@
 <template>
 	<div id="navbar">
-		<div id="repo-navbar" class="ms-4 ps-4">
-			<nav class="navbar navbar-expand navbar-dark">
-				<div class="container-fluid px-0">
-					<div class="collapse navbar-collapse">
-						<ul class="navbar-nav align-items-center flex-fill">
-							<li
-								v-for="(item, index) in nav_items" :key="index"
-								class="nav-item">
-								<router-link
-									class="nav-link fs-4" :class="{ active: activePage === item }"
-									:aria-current="(activePage === item) ? 'page' : ''" :to="'/' + repository + '/' + item">
-									{{ item }}
-								</router-link>
-							</li>
-							<li class="nav-item ms-auto me-4">
-								<RepositoryCloneDropdown :repository="repository" class="d-block" />
-							</li>
-						</ul>
-					</div>
+		<nav class="navbar">
+			<div class="navbar-container">
+				<div class="nav">
+					<ul>
+						<li
+							v-for="(item, index) in nav_items" :key="index">
+							<router-link
+								class="nav-link fs-4" :class="{ active: activePage === item }"
+								:aria-current="(activePage === item) ? 'page' : ''" :to="'/' + repository + '/' + item">
+								{{ item }}
+							</router-link>
+						</li>
+						<li id="clone-dropdown">
+							<RepositoryCloneDropdown :repository="repository" class="d-block" />
+						</li>
+					</ul>
 				</div>
-			</nav>
-		</div>
+			</div>
+		</nav>
 	</div>
 </template>
 
@@ -54,7 +51,6 @@ export default {
 	},
 	watch: {
 		hasReadme() {
-			console.log("HEEEJ");
 			this.nav_items = [ "about" ].concat(this.nav_items);
 		}
 	}
@@ -63,12 +59,59 @@ export default {
 
 <style lang="scss" scoped>
 @use "../scss/colors";
-@import "../scss/bootstrap";
-
-@import "~bootstrap/scss/nav";
-@import "~bootstrap/scss/navbar";
 
 #navbar {
-	line-height: 0;
+	margin-left: 3rem;
 }
+
+.navbar {
+	position: relative;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+	flex-wrap: nowrap;
+    justify-content: flex-start;
+	.navbar-container {
+		display: flex;
+		flex-wrap: inherit;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		.nav {
+			display: flex;
+			flex-basis: auto;
+			flex-grow: 1;
+			align-items: center;
+			ul {
+				display: flex;
+				flex-direction: row;
+				padding-left: 0;
+				margin-bottom: 0;
+				list-style: none;
+				align-items: center;
+				flex: 1 1 auto;
+				.nav-link {
+					color: darken(#ffffff, 50%);
+					padding-right: 0.5rem;
+					padding-left: 0.5rem;
+					transition: color .15s ease-in-out;
+					&:hover {
+						color: darken(#ffffff, 20%);
+					}
+				}
+				#clone-dropdown {
+					margin-left: auto;
+					margin-right: 40px;
+				}
+				.active {
+					color: darken(#ffffff, 20%);
+				}
+			}
+		}
+	}
+}
+
 </style>

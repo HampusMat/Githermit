@@ -15,17 +15,17 @@ export default {
 		let commit_patch;
 
 		if(props.patch.too_large === false) {
-			let all_hunks = props.patch.hunks.map((hunk) => hunk.hunk);
+			let all_hunks = props.patch.hunks.map((hunk) => hunk.hunk.split("\n").slice(1).join("\n"));
 
 			const language = hljs_languages.find((lang) => lang.extensions.some((extension) => props.patch.to.endsWith(extension)));
 			let highlighted = language ? hljs.highlight(all_hunks.join("\n"), { language: language.name }) : hljs.highlightAuto(all_hunks.join("\n"));
-			console.log(highlighted);
 			highlighted = highlighted.value.split("\n");
 
 			const highlighted_hunks = [];
 			let hunk_start = 0;
-			all_hunks.forEach((hunk) => {
+			all_hunks.forEach((hunk, index) => {
 				const hunk_row_cnt = hunk.split("\n").length;
+				all_hunks[index] = props.patch.hunks[index].hunk.split("\n")[0] + all_hunks[index];
 				highlighted_hunks.push(highlighted.slice(hunk_start, hunk_start + hunk_row_cnt));
 				hunk_start = hunk_start + hunk_row_cnt;
 			});

@@ -1,11 +1,9 @@
 <template>
-	<div id="header" class="d-flex mt-3 mb-3 ms-2">
-		<div class="d-inline ms-3">
-			<span id="title" class="fs-1">{{ title }}</span>
-			<p id="about" class="mb-3 fs-4">
-				{{ about }}
-			</p>
-		</div>
+	<div id="header">
+		<span id="title" class="fs-1">{{ title }}</span>
+		<p id="about" class="fs-4">
+			{{ about }}
+		</p>
 	</div>
 </template>
 
@@ -33,11 +31,17 @@ export default {
 };
 </script>
 
-<style lang="scss">
-@import "../scss/fonts";
+<style lang="scss" scoped>
+@use "../scss/mixins";
+@use "../scss/fonts";
+
+#header {
+	@include mixins.header;
+	flex-direction: column;
+}
 
 #title {
-	font-family: $font-title;
+	font-family: fonts.$title;
 	font-weight: 300;
 	line-height: 0.6;
 }

@@ -33,7 +33,28 @@ export default {
 
 <style lang="scss" scoped>
 @use "../scss/colors";
-@import "../scss/bootstrap";
 
-@import "~bootstrap/scss/breadcrumb";
+.breadcrumb {
+	display: flex;
+	flex-wrap: wrap;
+	padding: 0 0;
+	margin-bottom: 1rem;
+	list-style: none;
+	a {
+		color: colors.$text;
+		text-decoration: none;
+	}
+	.active {
+		color: #6c757d;
+	}
+	.breadcrumb-item {
+		padding-left: 0.5rem;
+	}
+	.breadcrumb-item + .active::before {
+		float: left;
+		padding-right: 0.5rem;
+		color: #6c757d;
+		content: "/";
+	}
+}
 </style>

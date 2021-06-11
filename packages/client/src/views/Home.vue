@@ -1,10 +1,10 @@
 <template>
-	<div class="container-fluid px-0 d-flex">
+	<div class="container">
 		<HomeHeader />
 		<HomeProjectsHeader />
-		<div class="row mx-0">
-			<div class="col ms-4 vld-parent">
-				<ul id="repos" v-if="projects">
+		<div class="row">
+			<div id="projects" class="col vld-parent">
+				<ul v-if="projects">
 					<li v-for="(project, project_name, index) in projects" :key="index">
 						<div v-if="(search !== null && project_name.includes(search)) || search == null">
 							<span class="fs-3">
@@ -69,15 +69,7 @@ export default {
 
 <style lang="scss" scoped>
 @use "../scss/colors";
-@import "../scss/bootstrap";
 @import "~vue-loading-overlay/dist/vue-loading.css";
-
-#repos {
-	margin-top: 25px;
-	li {
-		margin-bottom: 25px;
-	}
-}
 
 .repo-last-updated {
 	display: block;
@@ -85,17 +77,16 @@ export default {
 	font-style: italic;
 }
 
-ul {
-	list-style-type: none;
-	padding: 0;
+#projects {
+	margin-left: 1.5rem;
+	ul {
+		list-style-type: none;
+		padding: 0;
+		margin-top: 25px;
+		li {
+			margin-bottom: 25px;
+		}
+	}
 }
 
-.container-fluid {
-	flex-flow: column;
-	height: 100vh;
-}
-
-.row {
-	height: 100%;
-}
 </style>

@@ -10,7 +10,8 @@
 		</tbody>
 	</table>
 	<span
-		v-else v-html="content_lines" />
+		v-else v-html="content_lines"
+		id="markdown-blob" />
 </template>
 
 <script>
@@ -81,9 +82,9 @@ export default {
 
 <style lang="scss">
 @use "../scss/colors";
+@use "../scss/fonts";
 
 @import "~highlight.js/scss/srcery.scss";
-@import "../scss/fonts";
 
 ul {
 	padding-left: 30px;
@@ -99,10 +100,10 @@ code {
 	white-space: pre-wrap;
 	word-wrap: anywhere;
 	background-color: lighten(#000000, 8%);
-	font-family: $font-primary;
+	font-family: fonts.$primary;
 }
 
-span {
+#markdown-blob {
 	word-wrap: anywhere;
 	a {
 		color: colors.$primary-light;

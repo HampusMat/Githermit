@@ -1,6 +1,6 @@
 <template>
-	<div class="row mx-0">
-		<div class="col ms-4 ps-4 ps-sm-5 mt-3 fs-5 vld-parent">
+	<div class="row">
+		<div class="col fs-5 vld-parent">
 			<RepositoryTreeBlob
 				:repository="$router.currentRoute._rawValue.params.repo" path="README.md"
 				:content="readme" v-if="readme" />
@@ -53,6 +53,6 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @import "~vue-loading-overlay/dist/vue-loading.css";
 </style>

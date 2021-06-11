@@ -1,7 +1,7 @@
 <template>
-	<div id="header" class="mx-0 d-flex mt-3 ms-2">
+	<div id="header">
 		<BaseBackButton to="/" />
-		<div class="d-inline ms-3">
+		<div id="header-content">
 			<span id="title" class="fs-1">{{ name }}</span>
 			<p id="about" class="fs-4">
 				{{ description }}
@@ -33,12 +33,23 @@ export default {
 
 <style lang="scss" scoped>
 @use "../scss/colors";
+@use "../scss/mixins";
+@use "../scss/fonts";
 
-@import "../scss/bootstrap";
-@import "../scss/fonts";
+#header {
+	@include mixins.header;
+	flex-direction: row;
+	div {
+		display: inline;
+	}
+}
+
+#header-content {
+	margin-left: 1rem;
+}
 
 #title {
-	font-family: $font-title;
+	font-family: fonts.$title;
 	font-weight: 300;
 	line-height: 0.6;
 }

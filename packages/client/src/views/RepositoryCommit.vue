@@ -1,10 +1,10 @@
 <template>
-	<div class="row mx-0">
-		<div class="col ms-2 ps-4 ps-sm-5 fs-5 vld-parent">
+	<div class="row">
+		<div class="col fs-5 vld-parent">
 			<BaseBreadcrumb :items="[{ name: 'Log', path: '/' + $router.currentRoute._rawValue.params.repo + '/log' }]" :active-item="$router.currentRoute._rawValue.params.commit" />
 			<template v-if="commit">
 				<table
-					id="commit-info" class="table table-dark">
+					id="commit-info">
 					<tbody>
 						<tr>
 							<td class="commit-info-title">
@@ -30,7 +30,7 @@
 					v-for="(patch, index) in commit['patches']" :key="index"
 					class="commit-patch">
 					<div class="commit-patch-header">
-						<span class="fw-bold">{{ (patch.to === "/dev/null") ? patch.from : patch.to }} </span>
+						<span>{{ (patch.to === "/dev/null") ? patch.from : patch.to }} </span>
 						<span v-if="patch.to === '/dev/null'">Deleted</span>
 						<div class="commit-patch-add-del">
 							<span>+{{ patch.additions }}</span>
@@ -90,22 +90,7 @@ export default {
 
 <style lang="scss">
 @use "../scss/colors";
-@import "../scss/bootstrap";
-
-@import "~bootstrap/scss/tables";
-
-@import "~vue-loading-overlay/dist/vue-loading.css";
 @import "~highlight.js/scss/srcery.scss";
-
-#commit-info {
-	margin-bottom: 2rem;
-	tbody tr {
-		td {
-			padding: 0px;
-			padding-right: 10px;
-		}
-	}
-}
 
 .commit-patch {
 	margin-bottom: 50px;
@@ -136,25 +121,6 @@ export default {
 		}
 	}
 }
-
-.commit-patch-header {
-	display: flex;
-	background-color: lighten(#000000, 14%);
-	padding: 10px;
-	span {
-		margin-right: 30px;
-		&:nth-child(2) {
-			color: colors.$danger;
-		}
-	}
-}
-
-.commit-info-title {
-	color: colors.$secondary;
-	padding-right: 30px;
-	width: 20px;
-}
-
 .patch-too-large {
 	font-weight: 600;
 }
@@ -194,11 +160,7 @@ code {
 	word-wrap: anywhere;
 }
 
-.row {
-	height: 100%;
-}
-
-@include media-breakpoint-down(sm) {
+@media (max-width: 576px) {
 	.commit-patch table tbody tr td {
 		padding-left: 4px;
 		&:nth-child(2) {
@@ -209,4 +171,46 @@ code {
 		}
 	}
 }
+</style>
+
+<style lang="scss" scoped>
+@use "../scss/colors";
+
+@import "~vue-loading-overlay/dist/vue-loading.css";
+
+#commit-info {
+	margin-bottom: 2rem;
+	tbody tr {
+		td {
+			padding: 0px;
+			padding-right: 10px;
+		}
+	}
+}
+
+.commit-patch-header {
+	display: flex;
+	background-color: lighten(#000000, 14%);
+	padding: 10px;
+	span {
+		margin-right: 30px;
+		&:nth-child(1) {
+			font-weight: 700;
+		}
+		&:nth-child(2) {
+			color: colors.$danger;
+		}
+	}
+}
+
+.commit-info-title {
+	color: colors.$secondary;
+	padding-right: 30px;
+	width: 20px;
+}
+
+.row {
+	height: 100%;
+}
+
 </style>

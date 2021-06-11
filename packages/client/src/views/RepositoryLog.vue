@@ -1,24 +1,24 @@
 <template>
-	<div class="row mx-0 vld-parent flex-fill">
-		<div class="col ms-4 ps-4 ps-sm-5 mt-3">
+	<div class="row vld-parent">
+		<div id="log" class="col">
 			<table
-				id="log" class="table table-dark fs-5"
+				class="fs-5"
 				v-if="commits">
 				<thead>
 					<tr>
-						<th class="text-secondary">
+						<th>
 							Subject
 						</th>
-						<th class="text-secondary">
+						<th>
 							Author
 						</th>
-						<th class="text-secondary">
+						<th>
 							Date
 						</th>
-						<th class="text-secondary">
+						<th>
 							Files
 						</th>
-						<th class="text-secondary">
+						<th>
 							Del/Add
 						</th>
 					</tr>
@@ -88,30 +88,44 @@ export default {
 @use "../scss/colors";
 
 @import "~vue-loading-overlay/dist/vue-loading.css";
-@import "../scss/bootstrap";
 @import "../scss/fonts";
 
-@import "~bootstrap/scss/tables";
-
-#log {
+table {
 	border-spacing: 0;
-	tbody tr {
-		&:hover {
-			--bs-table-bg: 0;
-			background-color: lighten(colors.$background, 5%);
+	width: 100%;
+	margin-bottom: 1rem;
+	tbody {
+		vertical-align: inherit;
+		tr {
+			&:hover {
+				--bs-table-bg: 0;
+				background-color: lighten(colors.$background, 5%);
+			}
+			td {
+				padding-bottom: 1em;
+			}
 		}
-		td {
-			padding-bottom: 1em;
-		}
+	}
+	thead {
+		vertical-align: bottom;
 	}
 	th {
 		text-align: start;
 		padding-bottom: 1em;
+		color: colors.$secondary;
+	}
+	> :not(caption) > * > * {
+		padding: 0.2rem 1rem;
+		border-bottom-width: 1px;
 	}
 }
 
-@include media-breakpoint-down(sm) {
-	.table > :not(caption) > * > * {
+#log {
+	padding-left: 0;
+}
+
+@media (max-width: 576px) {
+	table > :not(caption) > * > * {
 		padding: 0.1rem;
 	}
 }
