@@ -17,7 +17,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/info",
 		handler: (req, reply) => {
-			reply.send({ data: opts.config.settings });
+			reply.send({ data: { title: opts.config.settings.title, about: opts.config.settings.about } });
 		}
 	});
 	fastify.route({
