@@ -81,7 +81,7 @@ fastify.route({
 		reply.header("Content-Type", "application/x-git-upload-pack-advertisement");
 
 		const repo_verification = await verifyRepoName(settings.base_dir, (<any>req).params.repo);
-		if(repo_verification.success === false) {
+		if(repo_verification.success === false && repo_verification.code) {
 			reply.code(repo_verification.code).send(repo_verification.message);
 		}
 
@@ -108,7 +108,7 @@ fastify.route({
 	url: "/:repo([a-zA-Z0-9\\.\\-_]+)/git-upload-pack",
 	handler: async(req, reply) => {
 		const repo_verification = await verifyRepoName(settings.base_dir, (<any>req).params.repo);
-		if(repo_verification.success === false) {
+		if(repo_verification.success === false && repo_verification.code) {
 			reply.header("Content-Type", "application/x-git-upload-pack-result");
 			reply.code(repo_verification.code).send(repo_verification.message);
 		}

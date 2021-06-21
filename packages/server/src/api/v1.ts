@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { verifyCommitID, verifyRepoName } from "./util";
+import { verifySHA, verifyRepoName } from "./util";
 import { GitAPI } from "./git";
 /* eslint-disable max-lines-per-function */
 
@@ -26,11 +26,6 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		handler: async(req, reply) => {
 			const repos = await git.getRepositories();
 
-			if(!repos) {
-				reply.code(500).send({ error: "Internal server error!" });
-				return;
-			}
-
 			reply.send({ data: repos });
 		}
 	});
@@ -41,8 +36,8 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		handler: async(req, reply) => {
 			const params: any = req.params;
 			const repo_verification = await verifyRepoName(opts.config.settings.base_dir, params.repo);
-			if(repo_verification.success === false) {
-				reply.code(repo_verification.code).send(repo_verification.message);
+			if(repo_verification.success === false && repo_verification.code) {
+				reply.code(repo_verification.code).send({ error: repo_verification.message });
 			}
 
 			const desc = await git.getRepositoryFile(params.repo, "description");
@@ -55,7 +50,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		fastify_repo.addHook("onRequest", async(req, reply) => {
 			const params: any = req.params;
 			const repo_verification = await verifyRepoName(opts.config.settings.base_dir, params.repo);
-			if(repo_verification.success === false) {
+			if(repo_verification.success === false && repo_verification.code) {
 				reply.code(repo_verification.code).send({ error: repo_verification.message });
 			}
 		});
@@ -80,9 +75,9 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 			url: "/log/:commit",
 			handler: async(req, reply) => {
 				const params: any = req.params;
-				const commit_verification = await verifyCommitID(git, params.repo, params.commit);
-				if(commit_verification.success === false) {
-					reply.code(commit_verification.code).send(commit_verification.message);
+				const commit_verification = await verifySHA(git, params.repo, params.commit);
+				if(commit_verification.success === false && commit_verification.code) {
+					reply.code(commit_verification.code).send({ error: commit_verification.message });
 				}
 
 				const commit = await git.getCommit(params.repo, params.commit);
@@ -102,14 +97,10 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 
 				const tree = await git.getTree(params.repo, tree_path);
 
-				if(tree.error) {
-					if(tree.error === 404) {
-						reply.code(404).send({ error: "Path not found" });
-					}
-					else {
-						reply.code(500).send({ error: "Internal server error" });
-					}
+				if(!tree) {
+					reply.code(404).send({ error: "Path not found" });
 				}
+
 				reply.send({ data: tree });
 			}
 		});

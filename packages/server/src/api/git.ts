@@ -1,4 +1,4 @@
-import { Commit, ConvenientHunk, ConvenientPatch, Object, Repository, Revwalk, Tag, TreeEntry } from "nodegit";
+import { Commit, ConvenientHunk, ConvenientPatch, Object, Oid, Repository, Revwalk, Tag, TreeEntry } from "nodegit";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { join, parse } from "path";
 import { readFile, readdir } from "fs";
@@ -380,7 +380,7 @@ export class GitAPI {
 		const request_info = getRequestInfo(req);
 
 		const valid_request = verifyGitRequest(request_info);
-		if(valid_request.success === false) {
+		if(valid_request.success === false && valid_request.code) {
 			reply.header("Content-Type", request_info.content_type);
 			reply.code(valid_request.code).send(valid_request.message);
 			return;
@@ -431,13 +431,13 @@ export class GitAPI {
 					return { type: "blob", content: (await path_entry.getBlob()).content().toString() };
 				}
 
-				entries = await (await path_entry.getTree()).entries();
+				entries = (await path_entry.getTree()).entries();
 			}
 			catch(err) {
 				if(err.errno === -3) {
-					return { error: 404 };
+					return null;
 				}
-				return { error: 500 };
+				throw(err);
 			}
 		}
 		else {
@@ -466,17 +466,13 @@ export class GitAPI {
 		};
 	}
 
-	async doesCommitExist(repo_name: string, commit_oid: string) {
+	async doesObjectExist(repo_name: string, id: string) {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 
-		try {
-			await repo.getCommit(commit_oid);
-			return true;
-		}
-		catch {
-			return false;
-		}
+		return Object.lookup(repo, Oid.fromString(id), Object.TYPE.ANY)
+			.then(() => true)
+			.catch(() => false);
 	}
 
 	async doesReadmeExist(repo_name: string) {
