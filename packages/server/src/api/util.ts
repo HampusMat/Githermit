@@ -1,4 +1,4 @@
-import { Git, GitAPI } from "./git";
+import { GitAPI, RequestInfo } from "./git";
 import { readdir } from "fs";
 
 type VerificationResultType = "SUCCESS" | "NOT_FOUND" | "INVALID" | "ACCESS_DENIED";
@@ -64,7 +64,7 @@ export async function verifySHA(git: GitAPI, repo_name: string, sha: string) {
 	return new VerificationResult("SUCCESS");
 }
 
-export function verifyGitRequest(request_info: Git.RequestInfo) {
+export function verifyGitRequest(request_info: RequestInfo) {
 	if((/\.\/|\.\./u).test(request_info.parsed_url.pathname)) {
 		return new VerificationResult("INVALID", "path");
 	}

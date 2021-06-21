@@ -10,86 +10,73 @@ import { pack } from "tar-stream";
 import { pipeline } from "stream";
 import { createGzip } from "zlib";
 
-export declare namespace Git {
-	interface Hunk {
-		new_start: number,
-		new_lines_cnt: number,
-		old_start: number,
-		old_lines_cnt: number,
-		new_lines: number[],
-		deleted_lines: number[],
-		hunk: string
-	}
-	// eslint-disable-next-line no-unused-vars
-	interface Patch {
-		from: string,
-		to: string,
-		additions: number,
-		deletions: number,
-		too_large: boolean,
-		hunks: Hunk[] | null
-	}
-	// eslint-disable-next-line no-unused-vars
-	interface RequestInfo {
-		repo: string,
-		url_path: string,
-		parsed_url: URL,
-		url_path_parts: string[],
-		is_discovery: boolean,
-		service: string | null,
-		content_type: string
-	}
-	interface TreeEntryLatestCommit {
-		id: string | null,
-		message: string | null,
-		date: number | null
-	}
-	// eslint-disable-next-line no-unused-vars
-	interface ShortTreeEntry {
-		name: string,
-		id: string,
-		type: "blob" | "tree",
-		latest_commit: TreeEntryLatestCommit
-	}
-	// eslint-disable-next-line no-unused-vars
-	interface ShortRepository {
-		name: string,
-		description: string,
-		owner: string,
-		last_updated: number
-	}
-
-	type CommitAuthor = {
-		name: string,
-		email: string
-	}
-
-	// eslint-disable-next-line no-unused-vars
-	type LogCommit = {
-		id: string,
-		author: CommitAuthor,
-		date: number,
-		message: string,
-		insertions: number,
-		deletions: number,
-		files_changed: number
-	}
-
-	// eslint-disable-next-line no-unused-vars
-	type ShortCommit = {
-		id: string,
-		author: CommitAuthor,
-		message: string,
-		date: number,
-		patches: Patch[]
-	}
-
-	// eslint-disable-next-line no-unused-vars
-	interface Hunks {
-		prev: null | number,
-		hunks: Git.Hunk[]
-	}
-};
+interface Hunk {
+	new_start: number,
+	new_lines_cnt: number,
+	old_start: number,
+	old_lines_cnt: number,
+	new_lines: number[],
+	deleted_lines: number[],
+	hunk: string
+}
+interface Patch {
+	from: string,
+	to: string,
+	additions: number,
+	deletions: number,
+	too_large: boolean,
+	hunks: Hunk[] | null
+}
+export interface RequestInfo {
+	repo: string,
+	url_path: string,
+	parsed_url: URL,
+	url_path_parts: string[],
+	is_discovery: boolean,
+	service: string | null,
+	content_type: string
+}
+interface TreeEntryLatestCommit {
+	id: string | null,
+	message: string | null,
+	date: number | null
+}
+interface ShortTreeEntry {
+	name: string,
+	id: string,
+	type: "blob" | "tree",
+	latest_commit: TreeEntryLatestCommit
+}
+interface ShortRepository {
+	name: string,
+	description: string,
+	owner: string,
+	last_updated: number
+}
+type CommitAuthor = {
+	name: string,
+	email: string
+}
+type LogCommit = {
+	id: string,
+	author: CommitAuthor,
+	date: number,
+	message: string,
+	insertions: number,
+	deletions: number,
+	files_changed: number
+}
+type ShortCommit = {
+	id: string,
+	author: CommitAuthor,
+	message: string,
+	date: number,
+	patches: Patch[]
+}
+interface Hunks {
+	prev: null | number,
+	hunks: Hunk[]
+}
 
 function addRepoDirSuffix(repo_name: string) {
 	return repo_name.endsWith(".git") ? repo_name : `${repo_name}.git`;
@@ -144,8 +131,7 @@ function getPatchHeaderData(patch_headers: string[], all_patches: string[]) {
 }
 
 function getHunks(hunks: ConvenientHunk[], patch_content: string[]) {
-
-	return hunks.reduce((hunks_data: Git.Hunks, hunk, hunk_index) => {
+	return hunks.reduce((hunks_data: Hunks, hunk, hunk_index) => {
 		const hunk_header = hunk.header();
 		const hunk_header_index = patch_content.indexOf(hunk_header.replace(/\n/gu, ""));
 
@@ -165,7 +151,7 @@ function getHunks(hunks: ConvenientHunk[], patch_content: string[]) {
 	}, { prev: null, hunks: [] });
 }
 
-function getPatch(patch: ConvenientPatch, too_large: boolean, hunks?: Git.Hunk[]): Git.Patch {
+function getPatch(patch: ConvenientPatch, too_large: boolean, hunks?: Hunk[]): Patch {
 	return {
 		from: patch.oldFile().path(),
 		to: patch.newFile().path(),
@@ -176,7 +162,7 @@ function getPatch(patch: ConvenientPatch, too_large: boolean, hunks?: Git.Hunk[]
 	};
 }
 
-function getRequestInfo(req: FastifyRequest): Git.RequestInfo {
+function getRequestInfo(req: FastifyRequest): RequestInfo {
 	const params: any = req.params;
 
 	const repo = params.repo + ".git";
@@ -231,7 +217,7 @@ async function getTreeEntryLastCommit(repo: Repository, tree_entry: TreeEntry) {
 
 			return result;
 		});
-	}, Promise.resolve(<Git.TreeEntryLatestCommit>{ id: null, message: null, date: null }));
+	}, Promise.resolve(<TreeEntryLatestCommit>{ id: null, message: null, date: null }));
 }
 
 function readDirectory(directory: string) {
@@ -262,7 +248,7 @@ export class GitAPI {
 
 		const raw_commits = await walker.getCommitsUntil(() => true);
 
-		return Promise.all(raw_commits.map(async commit => <Git.LogCommit>{
+		return Promise.all(raw_commits.map(async commit => <LogCommit>{
 			id: commit.sha(),
 			author: {
 				name: commit.author().name(),
@@ -321,10 +307,10 @@ export class GitAPI {
 					});
 				});
 			});
-		}, Promise.resolve(<Git.ShortRepository[]>[]));
+		}, Promise.resolve(<ShortRepository[]>[]));
 	}
 
-	async getCommit(repo_name: string, commit_oid: string): Promise<Git.ShortCommit> {
+	async getCommit(repo_name: string, commit_oid: string): Promise<ShortCommit> {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 		const commit = await repo.getCommit(commit_oid);
@@ -362,7 +348,7 @@ export class GitAPI {
 
 				return arr;
 			}));
-		}, Promise.resolve(<Git.Patch[]>[]));
+		}, Promise.resolve(<Patch[]>[]));
 
 		return {
 			id: commit.sha(),
@@ -462,7 +448,7 @@ export class GitAPI {
 						return result;
 					});
 				});
-			}, Promise.resolve(<Git.ShortTreeEntry[]>[]))
+			}, Promise.resolve(<ShortTreeEntry[]>[]))
 		};
 	}
 
