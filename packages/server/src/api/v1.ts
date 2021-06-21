@@ -121,6 +121,11 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 			url: "/branches/:branch",
 			handler: async(req, reply) => {
 				const params: any = req.params;
+				const branch_verification = await verifySHA(git, params.repo, params.branch);
+				if(branch_verification.success === false && branch_verification.code) {
+					reply.code(branch_verification.code).send({ error: branch_verification.message });
+				}
+
 				const branch = await git.getBranch(params.repo, params.branch);
 
 				if(!branch) {
