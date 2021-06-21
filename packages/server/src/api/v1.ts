@@ -6,6 +6,13 @@ import { GitAPI } from "./git";
 export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, done: any) {
 	const git = new GitAPI(opts.config.settings.base_dir);
 
+	fastify.setErrorHandler((err, req, reply) => {
+		reply.code(500).send({ error: "Internal server error!" });
+	});
+	fastify.setNotFoundHandler((req, reply) => {
+		reply.code(404).send({ error: "Endpoint not found!" });
+	})
+
 	fastify.route({
 		method: "GET",
 		url: "/info",
@@ -104,6 +111,43 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 					}
 				}
 				reply.send({ data: tree });
+			}
+		});
+
+		fastify_repo.route({
+			method: "GET",
+			url: "/branches",
+			handler: async(req, reply) => {
+				const params: any = req.params;
+				const branches = await git.getBranches(params.repo);
+
+				reply.send({ data: branches });
+			}
+		});
+
+		fastify_repo.route({
+			method: "GET",
+			url: "/branches/:branch",
+			handler: async(req, reply) => {
+				const params: any = req.params;
+				const branch = await git.getBranch(params.repo, params.branch);
+
+				if(!branch) {
+					reply.code(404).send({ error: "Branch not found!" });
+					return;
+				}
+
+				reply.send({ data: branch });
+			}
+		});
+
+		fastify_repo.route({
+			method: "GET",
+			url: "/tags",
+			handler: async(req, reply) => {
+				const params: any = req.params;
+				const refs = await git.getTags(params.repo);
+				reply.send({ data: refs });
 			}
 		});
 

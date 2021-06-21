@@ -1,4 +1,4 @@
-import { ConvenientHunk, ConvenientPatch, Repository, Revwalk, TreeEntry } from "nodegit";
+import { Commit, ConvenientHunk, ConvenientPatch, Object, Repository, Revwalk, Tag, TreeEntry } from "nodegit";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { join, parse } from "path";
 import { readFile, readdir } from "fs";
@@ -6,6 +6,9 @@ import { IncomingMessage } from "http";
 import { URL } from "whatwg-url";
 import { spawn } from "child_process";
 import { verifyGitRequest } from "./util";
+import { pack } from "tar-stream";
+import { pipeline } from "stream";
+import { createGzip } from "zlib";
 
 export declare namespace Git {
 	interface Hunk {
@@ -73,7 +76,7 @@ export declare namespace Git {
 	}
 
 	// eslint-disable-next-line no-unused-vars
-	type Commit = {
+	type ShortCommit = {
 		id: string,
 		author: string,
 		message: string,
@@ -321,7 +324,7 @@ export class GitAPI {
 		}, Promise.resolve(<Git.ShortRepository[]>[]));
 	}
 
-	async getCommit(repo_name: string, commit_oid: string): Promise<Git.Commit> {
+	async getCommit(repo_name: string, commit_oid: string): Promise<Git.ShortCommit> {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 		const commit = await repo.getCommit(commit_oid);
@@ -483,5 +486,122 @@ export class GitAPI {
 		const readme = await tree.getEntry("README.md").catch(() => null);
 
 		return Boolean(readme);
+	}
+
+	async getBranches(repo_name: string) {
+		const full_repo_name = addRepoDirSuffix(repo_name);
+		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+
+		const references = await repo.getReferences();
+
+		return references.filter(ref => ref.isBranch()).map(ref => {
+			return {
+				id: ref.target().tostrS(),
+				name: ref.shorthand()
+			}
+		});
+	}
+
+	async getBranch(repo_name: string, branch_id: string) {
+		const full_repo_name = addRepoDirSuffix(repo_name);
+		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+
+		const references = await repo.getReferences();
+		const branches = references.filter(ref => ref.isBranch());
+
+		const branch = branches.find(_branch => _branch.target().tostrS() === branch_id);
+		if(!branch) {
+			return null;
+		}
+
+		const latest_commit = await repo.getBranchCommit(branch);
+
+		return {
+			name: branch.shorthand(),
+			latest_commit: {
+				id: latest_commit.sha(),
+				message: latest_commit.message(),
+				date: latest_commit.time()
+			}
+		};
+	}
+
+	async getTags(repo_name: string) {
+		const full_repo_name = addRepoDirSuffix(repo_name);
+		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+
+		const references = await repo.getReferences();
+
+		return Promise.all(references.filter(ref => ref.isTag()).map(async ref => {
+			const tagger = (await Tag.lookup(repo, ref.target())).tagger();
+
+			return {
+				name: ref.shorthand(),
+				author: {
+					name: tagger.name(),
+					email: tagger.email()
+				},
+				date: tagger.when().time()
+			};
+		}));
+	}
+
+	async downloadTagArchive(repo_name: string, tag_name: string, reply: FastifyReply): Promise<void> {
+		const full_repo_name = addRepoDirSuffix(repo_name);
+		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+
+		const reference = await repo.getReference(tag_name)
+			.catch(() => {
+				reply.code(404).send("Tag not found!");
+				return null;
+			});
+		if(!reference) {
+			return;
+		}
+
+		let tree;
+
+		try {
+			const commit = await Commit.lookup(repo, (await reference.peel(Object.TYPE.COMMIT)).id())
+			tree = await commit.getTree()
+		}
+		catch {
+			reply.code(500).send("Internal server error!");
+			return;
+		}
+
+		const archive = pack();
+		const gzip = createGzip();
+
+		reply.raw.writeHead(200, {
+			"Content-Encoding": "gzip",
+			"Content-Type": "application/gzip",
+			"Content-Disposition": `attachment; filename="${repo_name}-${tag_name}.tar.gz"`
+		});
+
+		pipeline(archive, gzip, reply.raw, () => reply.raw.end());
+
+		gzip.on("close", () => reply.raw.end());
+		gzip.on("error", () => reply.raw.end());
+		archive.on("error", () => reply.raw.end());
+
+		async function addArchiveEntries(entries: TreeEntry[]) {
+			for(const tree_entry of entries) {
+				if(tree_entry.isBlob()) {
+					const blob = await tree_entry.getBlob();
+					archive.entry({ name: `${repo_name}/${tree_entry.path()}` }, blob.content().toString());
+				}
+				else if(tree_entry.isTree()) {
+					await addArchiveEntries((await tree_entry.getTree()).entries());
+				}
+			}
+		}
+
+		addArchiveEntries(tree.entries())
+			.then(() => archive.finalize())
+			.catch(() => {
+				archive.finalize();
+				reply.raw.end();
+			});
 	}
 };

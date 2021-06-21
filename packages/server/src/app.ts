@@ -117,6 +117,15 @@ fastify.route({
 	}
 });
 
+fastify.route({
+	method: "GET",
+	url: "/:repo([a-zA-Z0-9\\.\\-_]+)/refs/tags/:tag",
+	handler: (req, reply) => {
+		const params: any = req.params;
+		git.downloadTagArchive(params.repo, params.tag, reply);
+	}
+});
+
 fastify.listen(settings.port, settings.host, (err: Error, addr: string) => {
 	if(err) {
 		console.error(err);

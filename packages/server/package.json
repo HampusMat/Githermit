@@ -14,12 +14,14 @@
     "js-yaml": "^4.1.0",
     "nodegit": "^0.27.0",
     "nodemon": "^2.0.7",
+    "tar-stream": "^2.2.0",
     "whatwg-url": "^8.5.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.1",
     "@types/node": "^15.12.1",
     "@types/nodegit": "^0.27.2",
+    "@types/tar-stream": "^2.2.0",
     "@types/whatwg-url": "^8.2.0",
     "@typescript-eslint/eslint-plugin": "^4.26.0",
     "@typescript-eslint/parser": "^4.26.0",
