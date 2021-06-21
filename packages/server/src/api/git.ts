@@ -39,24 +39,24 @@ export declare namespace Git {
 		service: string | null,
 		content_type: string
 	}
-	interface TreeEntryLastCommit {
+	interface TreeEntryLatestCommit {
 		id: string | null,
 		message: string | null,
-		date: Date | null
+		date: number | null
 	}
 	// eslint-disable-next-line no-unused-vars
 	interface ShortTreeEntry {
 		name: string,
-		oid: string,
+		id: string,
 		type: "blob" | "tree",
-		last_commit: TreeEntryLastCommit
+		latest_commit: TreeEntryLatestCommit
 	}
 	// eslint-disable-next-line no-unused-vars
 	interface ShortRepository {
 		name: string,
 		description: string,
 		owner: string,
-		last_updated: Date
+		last_updated: number
 	}
 
 	type CommitAuthor = {
@@ -68,7 +68,7 @@ export declare namespace Git {
 	type LogCommit = {
 		id: string,
 		author: CommitAuthor,
-		date: Date,
+		date: number,
 		message: string,
 		insertions: number,
 		deletions: number,
@@ -78,9 +78,9 @@ export declare namespace Git {
 	// eslint-disable-next-line no-unused-vars
 	type ShortCommit = {
 		id: string,
-		author: string,
+		author: CommitAuthor,
 		message: string,
-		date: Date,
+		date: number,
 		patches: Patch[]
 	}
 
@@ -223,7 +223,7 @@ async function getTreeEntryLastCommit(repo: Repository, tree_entry: TreeEntry) {
 					if(matching_path_patch) {
 						result.id = commit.sha();
 						result.message = commit.message().replace(/\n/gu, "");
-						result.date = commit.date();
+						result.date = commit.time();
 					}
 					return result;
 				}));
@@ -231,7 +231,7 @@ async function getTreeEntryLastCommit(repo: Repository, tree_entry: TreeEntry) {
 
 			return result;
 		});
-	}, Promise.resolve(<Git.TreeEntryLastCommit>{ id: null, message: null, date: null }));
+	}, Promise.resolve(<Git.TreeEntryLatestCommit>{ id: null, message: null, date: null }));
 }
 
 function readDirectory(directory: string) {
@@ -268,8 +268,8 @@ export class GitAPI {
 				name: commit.author().name(),
 				email: commit.author().email()
 			},
-			date: commit.date(),
-			message: commit.message().replace(/\n/gu, ""),
+			date: commit.time(),
+			message: commit.message(),
 			insertions: <number>(await (await commit.getDiff())[0].getStats()).insertions(),
 			deletions: <number>(await (await commit.getDiff())[0].getStats()).deletions(),
 			files_changed: <number>(await (await commit.getDiff())[0].getStats()).filesChanged()
@@ -282,7 +282,7 @@ export class GitAPI {
 
 		const master_commit = await repo.getMasterCommit();
 
-		return master_commit.date();
+		return master_commit.time();
 	}
 
 	getRepositoryFile(repo_name: string, file: string) {
@@ -366,9 +366,12 @@ export class GitAPI {
 
 		return {
 			id: commit.sha(),
-			author: commit.author().toString(),
+			author: {
+				name: commit.author().name(),
+				email: commit.author().email()
+			},
 			message: commit.message(),
-			date: commit.date(),
+			date: commit.time(),
 			patches: await parsed_patches
 		};
 	}
@@ -448,9 +451,9 @@ export class GitAPI {
 					return getTreeEntryLastCommit(repo, entry).then(last_commit => {
 						result.push({
 							name: parse(entry.path()).base,
-							oid: entry.oid(),
+							id: entry.sha(),
 							type: entry.isBlob() ? "blob" : "tree",
-							last_commit: {
+							latest_commit: {
 								id: last_commit.id,
 								message: last_commit.message,
 								date: last_commit.date
