@@ -1,13 +1,25 @@
 import { readFileSync, readdirSync } from "fs";
 import { GitAPI } from "./api/git";
+import { Route } from "./fastify_types";
 import api from "./api/v1";
 import { exit } from "process";
 import { fastify as fastifyFactory } from "fastify";
+import fastifyStatic from "fastify-static";
 import { join } from "path";
 import { load } from "js-yaml";
 import { verifyRepoName } from "./api/util";
 
-const settings = <any>load(readFileSync(join(__dirname, "/../../../settings.yml"), "utf8"));
+type Settings = {
+	host: string,
+	port: number,
+	dev_port: number,
+	title: string,
+	about: string,
+	base_dir: string,
+	production: boolean
+}
+
+const settings = <Settings>load(readFileSync(join(__dirname, "/../../../settings.yml"), "utf8"));
 const settings_keys = Object.keys(settings);
 
 const mandatory_settings = [ "host", "port", "dev_port", "title", "about", "base_dir", "production" ];
@@ -57,12 +69,14 @@ fastify.setNotFoundHandler({}, function(req, reply) {
 });
 
 if(settings.production) {
-	fastify.register(require("fastify-static"), { root: dist_dir });
+	fastify.register(fastifyStatic, { root: dist_dir });
 
 	fastify.route({
 		method: "GET",
 		url: "/",
-		handler: (req, reply: any) => reply.sendFile("index.html")
+		handler: (req, reply) => {
+			reply.sendFile("index.html");
+		}
 	});
 }
 
@@ -70,31 +84,26 @@ fastify.addContentTypeParser("application/x-git-upload-pack-request", (req, payl
 
 fastify.register(api, { prefix: "/api/v1", config: { settings: settings } });
 
-interface Query {
-	[key: string]: string
-}
-
-fastify.route({
+fastify.route<Route>({
 	method: "GET",
 	url: "/:repo([a-zA-Z0-9\\.\\-_]+)/info/refs",
 	handler: async(req, reply) => {
 		reply.header("Content-Type", "application/x-git-upload-pack-advertisement");
 
-		const repo_verification = await verifyRepoName(settings.base_dir, (<any>req).params.repo);
+		const repo_verification = await verifyRepoName(settings.base_dir, req.params.repo);
 		if(repo_verification.success === false && repo_verification.code) {
 			reply.code(repo_verification.code).send(repo_verification.message);
 		}
 
-		const query: Query = <any>req.query;
-		if(!query.service) {
+		if(!req.query.service) {
 			reply.code(403).send("Missing service query parameter\n");
 			return;
 		}
-		else if(query.service !== "git-upload-pack") {
+		else if(req.query.service !== "git-upload-pack") {
 			reply.code(403).send("Access denied!\n");
 			return;
 		}
-		else if(Object.keys(query).length !== 1) {
+		else if(Object.keys(req.query).length !== 1) {
 			reply.code(403).send("Too many query parameters!\n");
 			return;
 		}
@@ -103,11 +112,12 @@ fastify.route({
 	}
 });
 
-fastify.route({
+fastify.route<Route>({
 	method: "POST",
 	url: "/:repo([a-zA-Z0-9\\.\\-_]+)/git-upload-pack",
 	handler: async(req, reply) => {
-		const repo_verification = await verifyRepoName(settings.base_dir, (<any>req).params.repo);
+		const repo_verification = await verifyRepoName(settings.base_dir, req.params.repo);
+
 		if(repo_verification.success === false && repo_verification.code) {
 			reply.header("Content-Type", "application/x-git-upload-pack-result");
 			reply.code(repo_verification.code).send(repo_verification.message);
@@ -117,12 +127,11 @@ fastify.route({
 	}
 });
 
-fastify.route({
+fastify.route<Route>({
 	method: "GET",
 	url: "/:repo([a-zA-Z0-9\\.\\-_]+)/refs/tags/:tag",
 	handler: (req, reply) => {
-		const params: any = req.params;
-		git.downloadTagArchive(params.repo, params.tag, reply);
+		git.downloadTagArchive(req.params.repo, req.params.tag, reply);
 	}
 });
 

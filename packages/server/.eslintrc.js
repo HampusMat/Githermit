@@ -4,7 +4,7 @@ module.exports = {
 		es2021: true,
 		node: true
 	},
-	extends: [ "standard" ],
+	extends: [ "standard", "plugin:@typescript-eslint/recommended" ],
 	parser: "@typescript-eslint/parser",
 	parserOptions: {
 		ecmaVersion: 12
@@ -106,13 +106,13 @@ module.exports = {
 		"max-params": [ "error", 6 ],
 		"max-statements": "off",
 		"max-statements-per-line": "error",
-		"multiline-comment-style": "error",
+		"multiline-comment-style": [ "error", "bare-block" ],
 		"new-cap": "error",
 		"new-parens": "error",
 		"newline-per-chained-call": "error",
 		"no-alert": "error",
 		"no-array-constructor": "error",
-		"no-await-in-loop": "error",
+		"no-await-in-loop": "off",
 		"no-bitwise": "error",
 		"no-caller": "error",
 		"no-confusing-arrow": "error",

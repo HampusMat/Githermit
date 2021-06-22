@@ -1,15 +1,16 @@
-import { GitAPI, RequestInfo } from "./git";
+import { GitAPI } from "./git";
+import { RequestInfo } from "./git_types";
 import { readdir } from "fs";
 
 type VerificationResultType = "SUCCESS" | "NOT_FOUND" | "INVALID" | "ACCESS_DENIED";
 
 export class VerificationResult {
 	constructor(result: VerificationResultType, subject?: string) {
-		this.success = result === "SUCCESS" ? true : false;
+		this.success = result === "SUCCESS";
 
 		if(result !== "SUCCESS") {
 			const verification_error_types = {
-				NOT_FOUND: { code: 404, message: `${ String(subject?.substr(0, 1).toUpperCase()) + subject?.substr(1)} not found!` },
+				NOT_FOUND: { code: 404, message: `${String(subject?.substr(0, 1).toUpperCase()) + subject?.substr(1)} not found!` },
 				INVALID: { code: 403, message: `Invalid ${subject}` },
 				ACCESS_DENIED: { code: 403, message: "Access denied!" }
 			};
@@ -24,7 +25,7 @@ export class VerificationResult {
 	message: string | null = null;
 }
 
-export function verifyRepoName(base_dir: string, repo_name: string) {
+export function verifyRepoName(base_dir: string, repo_name: string): Promise<VerificationResult> {
 	return new Promise<VerificationResult>(resolve => {
 		console.log(repo_name);
 		const is_valid_repo_name = (/^[a-zA-Z0-9.\-_]+$/u).test(repo_name);
@@ -50,7 +51,7 @@ export function verifyRepoName(base_dir: string, repo_name: string) {
 	});
 }
 
-export async function verifySHA(git: GitAPI, repo_name: string, sha: string) {
+export async function verifySHA(git: GitAPI, repo_name: string, sha: string): Promise<VerificationResult> {
 	if(!(/^[a-fA-F0-9]+$/u).test(sha)) {
 		return new VerificationResult("INVALID", "sha");
 	}
@@ -64,7 +65,7 @@ export async function verifySHA(git: GitAPI, repo_name: string, sha: string) {
 	return new VerificationResult("SUCCESS");
 }
 
-export function verifyGitRequest(request_info: RequestInfo) {
+export function verifyGitRequest(request_info: RequestInfo): VerificationResult {
 	if((/\.\/|\.\./u).test(request_info.parsed_url.pathname)) {
 		return new VerificationResult("INVALID", "path");
 	}

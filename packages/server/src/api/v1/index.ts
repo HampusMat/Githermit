@@ -1,9 +1,10 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { verifyRepoName } from "../util";
 import { GitAPI } from "../git";
+import { Route } from "../../fastify_types";
 import repo from "./repo";
+import { verifyRepoName } from "../util";
 
-export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, done: any) {
+export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, done: (err?: Error) => void): void {
 	const git = new GitAPI(opts.config.settings.base_dir);
 
 	fastify.setErrorHandler((err, req, reply) => {
@@ -12,7 +13,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 	});
 	fastify.setNotFoundHandler((req, reply) => {
 		reply.code(404).send({ error: "Endpoint not found!" });
-	})
+	});
 
 	fastify.route({
 		method: "GET",
@@ -31,23 +32,22 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		}
 	});
 
-	fastify.route({
+	fastify.route<Route>({
 		method: "GET",
 		url: "/repos/:repo",
 		handler: async(req, reply) => {
-			const params: any = req.params;
-			const repo_verification = await verifyRepoName(opts.config.settings.base_dir, params.repo);
+			const repo_verification = await verifyRepoName(opts.config.settings.base_dir, req.params.repo);
 			if(repo_verification.success === false && repo_verification.code) {
 				reply.code(repo_verification.code).send({ error: repo_verification.message });
 			}
 
-			const desc = await git.getRepositoryFile(params.repo, "description");
+			const desc = await git.getRepositoryFile(req.params.repo, "description");
 
-			reply.send({ data: { name: params.repo, description: desc, has_readme: await git.doesReadmeExist(params.repo) } });
+			reply.send({ data: { name: req.params.repo, description: desc, has_readme: await git.doesReadmeExist(req.params.repo) } });
 		}
 	});
 
 	fastify.register(repo, { prefix: "/repos/:repo", config: { git: git, settings: opts.config.settings } });
 
 	done();
-};
+}

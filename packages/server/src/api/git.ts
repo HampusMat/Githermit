@@ -1,82 +1,16 @@
+import { Branch, Hunk, Hunks, LatestCommit, LogCommit, Patch, PatchHeaderData, RequestInfo, ShortBranch, ShortCommit, ShortRepository, ShortTag, ShortTreeEntry, Tree } from "./git_types";
 import { Commit, ConvenientHunk, ConvenientPatch, Object, Oid, Repository, Revwalk, Tag, TreeEntry } from "nodegit";
 import { FastifyReply, FastifyRequest } from "fastify";
+import { Pack, pack } from "tar-stream";
 import { join, parse } from "path";
 import { readFile, readdir } from "fs";
 import { IncomingMessage } from "http";
+import { Route } from "../fastify_types";
 import { URL } from "whatwg-url";
+import { createGzip } from "zlib";
+import { pipeline } from "stream";
 import { spawn } from "child_process";
 import { verifyGitRequest } from "./util";
-import { pack } from "tar-stream";
-import { pipeline } from "stream";
-import { createGzip } from "zlib";
-
-interface Hunk {
-	new_start: number,
-	new_lines_cnt: number,
-	old_start: number,
-	old_lines_cnt: number,
-	new_lines: number[],
-	deleted_lines: number[],
-	hunk: string
-}
-interface Patch {
-	from: string,
-	to: string,
-	additions: number,
-	deletions: number,
-	too_large: boolean,
-	hunks: Hunk[] | null
-}
-export interface RequestInfo {
-	repo: string,
-	url_path: string,
-	parsed_url: URL,
-	url_path_parts: string[],
-	is_discovery: boolean,
-	service: string | null,
-	content_type: string
-}
-interface TreeEntryLatestCommit {
-	id: string | null,
-	message: string | null,
-	date: number | null
-}
-interface ShortTreeEntry {
-	name: string,
-	id: string,
-	type: "blob" | "tree",
-	latest_commit: TreeEntryLatestCommit
-}
-interface ShortRepository {
-	name: string,
-	description: string,
-	owner: string,
-	last_updated: number
-}
-type CommitAuthor = {
-	name: string,
-	email: string
-}
-type LogCommit = {
-	id: string,
-	author: CommitAuthor,
-	date: number,
-	message: string,
-	insertions: number,
-	deletions: number,
-	files_changed: number
-}
-type ShortCommit = {
-	id: string,
-	author: CommitAuthor,
-	message: string,
-	date: number,
-	patches: Patch[]
-}
-interface Hunks {
-	prev: null | number,
-	hunks: Hunk[]
-}
 
 function addRepoDirSuffix(repo_name: string) {
 	return repo_name.endsWith(".git") ? repo_name : `${repo_name}.git`;
@@ -104,12 +38,6 @@ function getHunkContent(hunk: string[]) {
 }
 
 function getPatchHeaderData(patch_headers: string[], all_patches: string[]) {
-	interface PatchHeaderData {
-		indexes: number[],
-		lengths: number[],
-		last: number | null
-	};
-
 	return patch_headers.reduce((patch_header_data, line, index) => {
 		// The start of a patch header
 		if((/^diff --git/u).test(line)) {
@@ -162,11 +90,13 @@ function getPatch(patch: ConvenientPatch, too_large: boolean, hunks?: Hunk[]): P
 	};
 }
 
-function getRequestInfo(req: FastifyRequest): RequestInfo {
-	const params: any = req.params;
+interface Request extends FastifyRequest {
+	params: Route["Params"],
+}
 
-	const repo = params.repo + ".git";
-	const url_path = req.url.replace(params.repo, repo);
+function getRequestInfo(req: Request): RequestInfo {
+	const repo = req.params.repo + ".git";
+	const url_path = req.url.replace(req.params.repo, repo);
 
 	const parsed_url = new URL(`${req.protocol}://${req.hostname}${url_path}`);
 	const url_path_parts = parsed_url.pathname.split("/");
@@ -217,7 +147,7 @@ async function getTreeEntryLastCommit(repo: Repository, tree_entry: TreeEntry) {
 
 			return result;
 		});
-	}, Promise.resolve(<TreeEntryLatestCommit>{ id: null, message: null, date: null }));
+	}, Promise.resolve(<LatestCommit>{ id: null, message: null, date: null }));
 }
 
 function readDirectory(directory: string) {
@@ -232,6 +162,39 @@ function readDirectory(directory: string) {
 	});
 }
 
+async function addArchiveEntries(entries: TreeEntry[], repo_name: string, archive: Pack) {
+	for(const tree_entry of entries) {
+		if(tree_entry.isBlob()) {
+			const blob = await tree_entry.getBlob();
+			archive.entry({ name: `${repo_name}/${tree_entry.path()}` }, blob.content().toString());
+		}
+		else if(tree_entry.isTree()) {
+			const tree = await tree_entry.getTree();
+			addArchiveEntries(tree.entries(), repo_name, archive);
+		}
+	}
+}
+
+function getTreeEntries(repo: Repository, entries: TreeEntry[]) {
+	return entries.reduce((acc, entry) => {
+		return acc.then(result => {
+			return getTreeEntryLastCommit(repo, entry).then(last_commit => {
+				result.push({
+					name: parse(entry.path()).base,
+					id: entry.sha(),
+					type: entry.isBlob() ? "blob" : "tree",
+					latest_commit: {
+						id: last_commit.id,
+						message: last_commit.message,
+						date: last_commit.date
+					}
+				});
+				return result;
+			});
+		});
+	}, Promise.resolve(<ShortTreeEntry[]>[]));
+}
+
 export class GitAPI {
 	base_dir: string;
 
@@ -239,7 +202,7 @@ export class GitAPI {
 		this.base_dir = base_dir;
 	}
 
-	async getLog(repo_name: string) {
+	async getLog(repo_name: string): Promise<LogCommit[]> {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 
@@ -262,7 +225,7 @@ export class GitAPI {
 		}));
 	}
 
-	async getRepositoryLastCommit(repo_name: string) {
+	async getRepositoryLastCommit(repo_name: string): Promise<number> {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 
@@ -271,20 +234,20 @@ export class GitAPI {
 		return master_commit.time();
 	}
 
-	getRepositoryFile(repo_name: string, file: string) {
-		return new Promise<string>(resolve => {
+	getRepositoryFile(repo_name: string, file: string): Promise<string | null> {
+		return new Promise(resolve => {
 			const full_repo_name = addRepoDirSuffix(repo_name);
 			readFile(`${this.base_dir}/${full_repo_name}/${file}`, (err, content) => {
-				if(!err) {
-					resolve(content.toString().replace(/\n/gu, ""));
+				if(err) {
+					resolve(null);
 					return;
 				}
-				resolve("");
+				resolve(content.toString().replace(/\n/gu, ""));
 			});
 		});
 	}
 
-	async getRepositories() {
+	async getRepositories(): Promise<ShortRepository[] | null> {
 		const dir_content = await readDirectory(this.base_dir);
 
 		if(dir_content.length === 0) {
@@ -323,7 +286,6 @@ export class GitAPI {
 				const patch_start = patch_header_data.indexes[patch_index] + patch_header_data.lengths[patch_index];
 				const patch_end = (typeof patch_header_data.indexes[patch_index + 1] === "undefined") ? all_patches.length - 1 : patch_header_data.indexes[patch_index + 1];
 				const patch_content = all_patches.slice(patch_start, patch_end);
-
 				const line_lengths = patch_content.map(line => line.length).reduce((result, length) => result + length);
 
 				if(patch_content.length > 5000 || line_lengths > 5000) {
@@ -362,7 +324,7 @@ export class GitAPI {
 		};
 	}
 
-	connectToGitHTTPBackend(req: FastifyRequest, reply: FastifyReply) {
+	connectToGitHTTPBackend(req: Request, reply: FastifyReply): void {
 		const request_info = getRequestInfo(req);
 
 		const valid_request = verifyGitRequest(request_info);
@@ -401,58 +363,33 @@ export class GitAPI {
 		git_pack.on("close", () => reply.raw.end());
 	}
 
-	async getTree(repo_name: string, tree_path: string) {
+	async getTree(repo_name: string, tree_path: string | null): Promise<Tree | null> {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 		const master_commit = await repo.getMasterCommit();
 
 		const tree = await master_commit.getTree();
 
-		let entries = [];
 		if(tree_path) {
-			try {
-				const path_entry = await tree.getEntry(tree_path);
+			const path_entry = await tree.getEntry(tree_path)
+				.catch(() => null);
 
-				if(path_entry.isBlob()) {
-					return { type: "blob", content: (await path_entry.getBlob()).content().toString() };
-				}
+			if(!path_entry) {
+				return null;
+			}
 
-				entries = (await path_entry.getTree()).entries();
+			if(path_entry.isBlob()) {
+				return { type: "blob", content: (await path_entry.getBlob()).content().toString() };
 			}
-			catch(err) {
-				if(err.errno === -3) {
-					return null;
-				}
-				throw(err);
-			}
-		}
-		else {
-			entries = tree.entries();
+
+			const path_entry_tree = await path_entry.getTree();
+			return { type: "tree", content: await getTreeEntries(repo, path_entry_tree.entries()) };
 		}
 
-		return {
-			type: "tree",
-			tree: await entries.reduce((acc, entry) => {
-				return acc.then(result => {
-					return getTreeEntryLastCommit(repo, entry).then(last_commit => {
-						result.push({
-							name: parse(entry.path()).base,
-							id: entry.sha(),
-							type: entry.isBlob() ? "blob" : "tree",
-							latest_commit: {
-								id: last_commit.id,
-								message: last_commit.message,
-								date: last_commit.date
-							}
-						});
-						return result;
-					});
-				});
-			}, Promise.resolve(<ShortTreeEntry[]>[]))
-		};
+		return { type: "tree", content: await getTreeEntries(repo, tree.entries()) };
 	}
 
-	async doesObjectExist(repo_name: string, id: string) {
+	async doesObjectExist(repo_name: string, id: string): Promise<boolean> {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 
@@ -461,19 +398,19 @@ export class GitAPI {
 			.catch(() => false);
 	}
 
-	async doesReadmeExist(repo_name: string) {
+	async doesReadmeExist(repo_name: string): Promise<boolean> {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 
 		const master_commit = await repo.getMasterCommit();
 		const tree = await master_commit.getTree();
 
-		const readme = await tree.getEntry("README.md").catch(() => null);
-
-		return Boolean(readme);
+		return tree.getEntry("README.md").catch(() => null)
+			.then(() => true)
+			.catch(() => false);
 	}
 
-	async getBranches(repo_name: string) {
+	async getBranches(repo_name: string): Promise<ShortBranch[]> {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 
@@ -483,11 +420,11 @@ export class GitAPI {
 			return {
 				id: ref.target().tostrS(),
 				name: ref.shorthand()
-			}
+			};
 		});
 	}
 
-	async getBranch(repo_name: string, branch_id: string) {
+	async getBranch(repo_name: string, branch_id: string): Promise<Branch | null> {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 
@@ -502,6 +439,7 @@ export class GitAPI {
 		const latest_commit = await repo.getBranchCommit(branch);
 
 		return {
+			id: branch.target().tostrS(),
 			name: branch.shorthand(),
 			latest_commit: {
 				id: latest_commit.sha(),
@@ -511,7 +449,7 @@ export class GitAPI {
 		};
 	}
 
-	async getTags(repo_name: string) {
+	async getTags(repo_name: string): Promise<ShortTag[]> {
 		const full_repo_name = addRepoDirSuffix(repo_name);
 		const repo = await Repository.openBare(`${this.base_dir}/${full_repo_name}`);
 
@@ -544,16 +482,8 @@ export class GitAPI {
 			return;
 		}
 
-		let tree;
-
-		try {
-			const commit = await Commit.lookup(repo, (await reference.peel(Object.TYPE.COMMIT)).id())
-			tree = await commit.getTree()
-		}
-		catch {
-			reply.code(500).send("Internal server error!");
-			return;
-		}
+		const commit = await Commit.lookup(repo, (await reference.peel(Object.TYPE.COMMIT)).id());
+		const tree = await commit.getTree();
 
 		const archive = pack();
 		const gzip = createGzip();
@@ -570,23 +500,11 @@ export class GitAPI {
 		gzip.on("error", () => reply.raw.end());
 		archive.on("error", () => reply.raw.end());
 
-		async function addArchiveEntries(entries: TreeEntry[]) {
-			for(const tree_entry of entries) {
-				if(tree_entry.isBlob()) {
-					const blob = await tree_entry.getBlob();
-					archive.entry({ name: `${repo_name}/${tree_entry.path()}` }, blob.content().toString());
-				}
-				else if(tree_entry.isTree()) {
-					await addArchiveEntries((await tree_entry.getTree()).entries());
-				}
-			}
-		}
-
-		addArchiveEntries(tree.entries())
+		addArchiveEntries(tree.entries(), repo_name, archive)
 			.then(() => archive.finalize())
 			.catch(() => {
 				archive.finalize();
 				reply.raw.end();
 			});
 	}
-};
+}
