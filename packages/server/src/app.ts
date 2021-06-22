@@ -96,14 +96,18 @@ fastify.route<Route>({
 		}
 
 		if(!req.query.service) {
+			reply.header("Content-Type", "text/plain");
 			reply.code(403).send("Missing service query parameter\n");
 			return;
 		}
-		else if(req.query.service !== "git-upload-pack") {
+
+		if(req.query.service !== "git-upload-pack") {
+			reply.header("Content-Type", "text/plain");
 			reply.code(403).send("Access denied!\n");
 			return;
 		}
-		else if(Object.keys(req.query).length !== 1) {
+
+		if(Object.keys(req.query).length !== 1) {
 			reply.code(403).send("Too many query parameters!\n");
 			return;
 		}
@@ -124,6 +128,15 @@ fastify.route<Route>({
 		}
 
 		git.connectToGitHTTPBackend(req, reply);
+	}
+});
+
+fastify.route({
+	method: "POST",
+	url: "/:repo([a-zA-Z0-9\\.\\-_]+)/git-receive-pack",
+	handler: (req, reply) => {
+		reply.header("Content-Type", "application/x-git-receive-pack-result");
+		reply.code(403).send("Access denied!");
 	}
 });
 
