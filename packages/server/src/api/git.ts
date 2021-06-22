@@ -20,7 +20,7 @@ import { pipeline } from "stream";
 import { spawn } from "child_process";
 import { verifyGitRequest } from "./util";
 
-function addRepoDirSuffix(repo_name: string) {
+function getFullRepositoryName(repo_name: string) {
 	return repo_name.endsWith(".git") ? repo_name : `${repo_name}.git`;
 }
 
@@ -210,9 +210,12 @@ export class GitAPI {
 		this.base_dir = base_dir;
 	}
 
+	openRepository(repo_name: string): Promise<nodegit.Repository> {
+		return nodegit.Repository.openBare(`${this.base_dir}/${getFullRepositoryName(repo_name)}`);
+	}
+
 	async getLog(repo_name: string): Promise<LogCommit[]> {
-		const full_repo_name = addRepoDirSuffix(repo_name);
-		const repo = await nodegit.Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+		const repo = await this.openRepository(repo_name);
 
 		const walker: nodegit.Revwalk = nodegit.Revwalk.create(repo);
 		walker.pushHead();
@@ -234,8 +237,7 @@ export class GitAPI {
 	}
 
 	async getRepositoryLastCommit(repo_name: string): Promise<number> {
-		const full_repo_name = addRepoDirSuffix(repo_name);
-		const repo = await nodegit.Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+		const repo = await this.openRepository(repo_name);
 
 		const master_commit = await repo.getMasterCommit();
 
@@ -244,7 +246,7 @@ export class GitAPI {
 
 	getRepositoryFile(repo_name: string, file: string): Promise<string | null> {
 		return new Promise(resolve => {
-			const full_repo_name = addRepoDirSuffix(repo_name);
+			const full_repo_name = getFullRepositoryName(repo_name);
 			readFile(`${this.base_dir}/${full_repo_name}/${file}`, (err, content) => {
 				if(err) {
 					resolve(null);
@@ -282,8 +284,7 @@ export class GitAPI {
 	}
 
 	async getCommit(repo_name: string, commit_oid: string): Promise<Commit> {
-		const full_repo_name = addRepoDirSuffix(repo_name);
-		const repo = await nodegit.Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+		const repo = await this.openRepository(repo_name);
 		const commit = await repo.getCommit(commit_oid);
 		const diff = (await commit.getDiff())[0];
 		const all_patches = (await diff.toBuf(1)).toString().split("\n");
@@ -372,8 +373,7 @@ export class GitAPI {
 	}
 
 	async getTree(repo_name: string, tree_path: string | null): Promise<Tree | null> {
-		const full_repo_name = addRepoDirSuffix(repo_name);
-		const repo = await nodegit.Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+		const repo = await this.openRepository(repo_name);
 		const master_commit = await repo.getMasterCommit();
 
 		const tree = await master_commit.getTree();
@@ -398,8 +398,7 @@ export class GitAPI {
 	}
 
 	async doesObjectExist(repo_name: string, id: string): Promise<boolean> {
-		const full_repo_name = addRepoDirSuffix(repo_name);
-		const repo = await nodegit.Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+		const repo = await this.openRepository(repo_name);
 
 		return nodegit.Object.lookup(repo, nodegit.Oid.fromString(id), nodegit.Object.TYPE.ANY)
 			.then(() => true)
@@ -407,8 +406,7 @@ export class GitAPI {
 	}
 
 	async doesReadmeExist(repo_name: string): Promise<boolean> {
-		const full_repo_name = addRepoDirSuffix(repo_name);
-		const repo = await nodegit.Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+		const repo = await this.openRepository(repo_name);
 
 		const master_commit = await repo.getMasterCommit();
 		const tree = await master_commit.getTree();
@@ -419,8 +417,7 @@ export class GitAPI {
 	}
 
 	async getBranches(repo_name: string): Promise<ShortBranch[]> {
-		const full_repo_name = addRepoDirSuffix(repo_name);
-		const repo = await nodegit.Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+		const repo = await this.openRepository(repo_name);
 
 		const references = await repo.getReferences();
 
@@ -433,8 +430,7 @@ export class GitAPI {
 	}
 
 	async getBranch(repo_name: string, branch_id: string): Promise<Branch | null> {
-		const full_repo_name = addRepoDirSuffix(repo_name);
-		const repo = await nodegit.Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+		const repo = await this.openRepository(repo_name);
 
 		const references = await repo.getReferences();
 		const branches = references.filter(ref => ref.isBranch());
@@ -458,8 +454,7 @@ export class GitAPI {
 	}
 
 	async getTags(repo_name: string): Promise<Tag[]> {
-		const full_repo_name = addRepoDirSuffix(repo_name);
-		const repo = await nodegit.Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+		const repo = await this.openRepository(repo_name);
 
 		const references = await repo.getReferences();
 
@@ -478,8 +473,7 @@ export class GitAPI {
 	}
 
 	async downloadTagArchive(repo_name: string, tag_name: string, reply: FastifyReply): Promise<void> {
-		const full_repo_name = addRepoDirSuffix(repo_name);
-		const repo = await nodegit.Repository.openBare(`${this.base_dir}/${full_repo_name}`);
+		const repo = await this.openRepository(repo_name);
 
 		const reference = await repo.getReference(tag_name)
 			.catch(() => {
