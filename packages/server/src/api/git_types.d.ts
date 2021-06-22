@@ -1,4 +1,28 @@
-export interface Hunk {
+/*
+	Types
+*/
+
+// General
+export type Author = {
+	name: string,
+	email: string
+}
+export type LatestCommit = {
+	id: string | null,
+	message: string | null,
+	date: number | null
+}
+
+// Repository
+export type Repository = {
+	name: string,
+	description: string | null,
+	owner: string | null,
+	last_updated: number
+}
+
+// Diff
+export type Hunk = {
 	new_start: number,
 	new_lines_cnt: number,
 	old_start: number,
@@ -7,7 +31,7 @@ export interface Hunk {
 	deleted_lines: number[],
 	hunk: string
 }
-export interface Patch {
+export type Patch = {
 	from: string,
 	to: string,
 	additions: number,
@@ -15,7 +39,18 @@ export interface Patch {
 	too_large: boolean,
 	hunks: Hunk[] | null
 }
-export interface RequestInfo {
+export type Hunks = {
+	prev: null | number,
+	hunks: Hunk[]
+}
+export type PatchHeaderData = {
+	indexes: number[],
+	lengths: number[],
+	last: number | null
+}
+
+// Request
+export type RequestInfo = {
 	repo: string,
 	url_path: string,
 	parsed_url: URL,
@@ -24,12 +59,9 @@ export interface RequestInfo {
 	service: string | null,
 	content_type: string
 }
-export interface LatestCommit {
-	id: string | null,
-	message: string | null,
-	date: number | null
-}
-export interface ShortTreeEntry {
+
+// Tree
+export type TreeEntry = {
 	name: string,
 	id: string,
 	type: "blob" | "tree",
@@ -37,18 +69,10 @@ export interface ShortTreeEntry {
 }
 export type Tree = {
 	type: "blob" | "tree",
-	content: string | ShortTreeEntry[]
+	content: string | TreeEntry[]
 }
-export interface ShortRepository {
-	name: string,
-	description: string | null,
-	owner: string | null,
-	last_updated: number
-}
-export type Author = {
-	name: string,
-	email: string
-}
+
+// Log
 export type LogCommit = {
 	id: string,
 	author: Author,
@@ -58,31 +82,30 @@ export type LogCommit = {
 	deletions: number,
 	files_changed: number
 }
-export type ShortCommit = {
+export type Commit = {
 	id: string,
 	author: Author,
 	message: string,
 	date: number,
 	patches: Patch[]
 }
-export interface Hunks {
-	prev: null | number,
-	hunks: Hunk[]
+
+// Tag
+export type Tag = {
+	name: string,
+	date: number,
+	author: Author
 }
+
+/*
+	Interfaces
+*/
+
+// Branch
 export interface ShortBranch {
 	id: string,
 	name: string
 }
 export interface Branch extends ShortBranch {
 	latest_commit: LatestCommit
-}
-export type ShortTag = {
-	name: string,
-	date: number,
-	author: Author
-}
-export type PatchHeaderData = {
-	indexes: number[],
-	lengths: number[],
-	last: number | null
 }
