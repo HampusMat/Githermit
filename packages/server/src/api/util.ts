@@ -1,5 +1,6 @@
-import { GitAPI } from "./git";
-import { RequestInfo } from "./git_types";
+import { Commit } from "../git/commit";
+import { Repository } from "../git/repository";
+import { RequestInfo } from "../git/http";
 import { readdir } from "fs";
 
 type VerificationResultType = "SUCCESS" | "NOT_FOUND" | "INVALID" | "ACCESS_DENIED";
@@ -51,12 +52,12 @@ export function verifyRepoName(base_dir: string, repo_name: string): Promise<Ver
 	});
 }
 
-export async function verifySHA(git: GitAPI, repo_name: string, sha: string): Promise<VerificationResult> {
+export async function verifySHA(repository: Repository, sha: string): Promise<VerificationResult> {
 	if(!(/^[a-fA-F0-9]+$/u).test(sha)) {
 		return new VerificationResult("INVALID", "sha");
 	}
 
-	const object_exists = await git.doesObjectExist(repo_name, sha);
+	const object_exists = await Commit.lookupExists(repository, sha);
 
 	if(!object_exists) {
 		return new VerificationResult("NOT_FOUND", "object");

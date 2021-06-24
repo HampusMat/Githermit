@@ -182,7 +182,7 @@ module.exports = {
 		"no-throw-literal": "error",
 		"no-undef-init": "error",
 		"no-undefined": "error",
-		"no-underscore-dangle": "error",
+		"no-underscore-dangle": [ "error", { "allowAfterThis": true } ],
 		"no-unmodified-loop-condition": "error",
 		"no-unneeded-ternary": "error",
 		"no-unreachable-loop": "error",

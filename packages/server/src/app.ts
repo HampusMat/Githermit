@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from "fs";
-import { GitAPI } from "./api/git";
+import { Repository } from "./git/repository";
 import { Route } from "./fastify_types";
+import { Tag } from "./git/tag";
 import api from "./api/v1";
 import { exit } from "process";
 import { fastify as fastifyFactory } from "fastify";
@@ -62,7 +63,11 @@ if(settings.production) {
 }
 
 const fastify = fastifyFactory();
-const git = new GitAPI(settings.base_dir);
+
+fastify.setErrorHandler((err, req, reply) => {
+	console.log(err);
+	reply.code(500).send("Internal server error!");
+});
 
 fastify.setNotFoundHandler({}, function(req, reply) {
 	reply.code(404).send("Page not found!");
@@ -112,7 +117,8 @@ fastify.route<Route>({
 			return;
 		}
 
-		git.connectToGitHTTPBackend(req, reply);
+		const repository = await Repository.open(settings.base_dir, req.params.repo);
+		repository.HTTPconnect(req, reply);
 	}
 });
 
@@ -127,7 +133,8 @@ fastify.route<Route>({
 			reply.code(repo_verification.code).send(repo_verification.message);
 		}
 
-		git.connectToGitHTTPBackend(req, reply);
+		const repository = await Repository.open(settings.base_dir, req.params.repo);
+		repository.HTTPconnect(req, reply);
 	}
 });
 
@@ -143,8 +150,16 @@ fastify.route({
 fastify.route<Route>({
 	method: "GET",
 	url: "/:repo([a-zA-Z0-9\\.\\-_]+)/refs/tags/:tag",
-	handler: (req, reply) => {
-		git.downloadTagArchive(req.params.repo, req.params.tag, reply);
+	handler: async(req, reply) => {
+		const repository = await Repository.open(settings.base_dir, req.params.repo);
+		const tag = await Tag.lookup(repository, req.params.tag);
+
+		if(!tag) {
+			reply.code(404).send("Tag not found!");
+			return;
+		}
+
+		tag.downloadTarball(reply);
 	}
 });
 

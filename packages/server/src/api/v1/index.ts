@@ -1,12 +1,10 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { GitAPI } from "../git";
+import { Repository } from "../../git/repository";
 import { Route } from "../../fastify_types";
 import repo from "./repo";
 import { verifyRepoName } from "../util";
 
-export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, done: (err?: Error) => void): void {
-	const git = new GitAPI(opts.config.settings.base_dir);
-
+function setHandlers(fastify: FastifyInstance): void {
 	fastify.setErrorHandler((err, req, reply) => {
 		console.log(err);
 		reply.code(500).send({ error: "Internal server error!" });
@@ -14,21 +12,29 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 	fastify.setNotFoundHandler((req, reply) => {
 		reply.code(404).send({ error: "Endpoint not found!" });
 	});
+}
 
-	fastify.route({
-		method: "GET",
-		url: "/info",
-		handler: (req, reply) => {
-			reply.send({ data: { title: opts.config.settings.title, about: opts.config.settings.about } });
-		}
-	});
+function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, done: (err?: Error) => void): void {
 	fastify.route({
 		method: "GET",
 		url: "/repos",
 		handler: async(req, reply) => {
-			const repos = await git.getRepositories();
+			const repos = await Repository.openAll(opts.config.settings.base_dir);
 
-			reply.send({ data: repos });
+			if(!repos) {
+				reply.send({ data: [] });
+				return;
+			}
+
+			reply.send({
+				data: await Promise.all(repos.map(async repository => {
+					return {
+						name: repository.name.short,
+						description: repository.description,
+						last_updated: (await repository.latestCommit()).date
+					};
+				}))
+			});
 		}
 	});
 
@@ -39,15 +45,36 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 			const repo_verification = await verifyRepoName(opts.config.settings.base_dir, req.params.repo);
 			if(repo_verification.success === false && repo_verification.code) {
 				reply.code(repo_verification.code).send({ error: repo_verification.message });
+				return;
 			}
 
-			const desc = await git.getRepositoryFile(req.params.repo, "description");
+			const repository = await Repository.open(opts.config.settings.base_dir, req.params.repo);
 
-			reply.send({ data: { name: req.params.repo, description: desc, has_readme: await git.doesReadmeExist(req.params.repo) } });
+			reply.send({
+				data: {
+					name: repository.name.short,
+					description: repository.description,
+					has_readme: await (await repository.tree()).findExists("README.md")
+				}
+			});
+		}
+	});
+	done();
+}
+
+export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, done: (err?: Error) => void): void {
+	setHandlers(fastify);
+
+	fastify.route({
+		method: "GET",
+		url: "/info",
+		handler: (req, reply) => {
+			reply.send({ data: { title: opts.config.settings.title, about: opts.config.settings.about } });
 		}
 	});
 
-	fastify.register(repo, { prefix: "/repos/:repo", config: { git: git, settings: opts.config.settings } });
+	fastify.register(reposEndpoints, { config: { settings: opts.config.settings } });
+	fastify.register(repo, { prefix: "/repos/:repo", config: { settings: opts.config.settings } });
 
 	done();
 }

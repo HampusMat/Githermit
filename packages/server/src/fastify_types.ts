@@ -1,5 +1,5 @@
+import { FastifyRequest, RequestGenericInterface } from "fastify";
 import { ReplyGenericInterface } from "fastify/types/reply";
-import { RequestGenericInterface } from "fastify";
 
 export interface Request extends RequestGenericInterface {
 	Params: {
@@ -11,3 +11,5 @@ export interface Request extends RequestGenericInterface {
 }
 
 export interface Route extends Request, ReplyGenericInterface {}
+
+export type CoolFastifyRequest = FastifyRequest<Route>;
