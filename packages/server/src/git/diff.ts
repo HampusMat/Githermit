@@ -19,7 +19,7 @@ export class Diff {
 	}
 
 	public async patchHeaderData(): Promise<PatchHeaderData> {
-		const raw_patches = await this.rawPatches();
+		const raw_patches = (await this.rawPatches()).split("\n");
 		const patch_headers = String(await this._ng_diff.toBuf(2)).split("\n");
 
 		return patch_headers.reduce((result, line, index) => {

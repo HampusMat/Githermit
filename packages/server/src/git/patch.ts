@@ -62,7 +62,7 @@ export class Patch {
 	}
 
 	private async bounds(index: number): Promise<PatchBounds> {
-		const raw_patches = await (await this._diff.rawPatches()).split("\n");
+		const raw_patches = (await this._diff.rawPatches()).split("\n");
 		const patch_header_data = await this._diff.patchHeaderData();
 
 		return {
@@ -72,7 +72,7 @@ export class Patch {
 	}
 
 	private async content(index: number): Promise<string> {
-		const raw_patches = await (await this._diff.rawPatches()).split("\n");
+		const raw_patches = (await this._diff.rawPatches()).split("\n");
 		const bounds = await this.bounds(index);
 
 		return raw_patches.slice(bounds.start, bounds.end).join("\n");
