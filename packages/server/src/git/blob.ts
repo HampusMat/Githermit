@@ -7,7 +7,7 @@ export class Blob {
 		this._ng_tree_entry = entry;
 	}
 
-	async content(): Promise<string> {
+	public async content(): Promise<string> {
 		return this._ng_tree_entry.isBlob() ? (await this._ng_tree_entry.getBlob()).toString() : "";
 	}
 }

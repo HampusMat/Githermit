@@ -7,29 +7,25 @@ type PatchHeaderData = {
 	last: number | null
 }
 
-type DiffConstructorData = {
-	patch_buf: string,
-	patch_header_buf: string
-}
-
 export class Diff {
 	private _ng_diff: NodeGitDiff;
 
-	public raw_patches: string;
-	public patch_header_indexes: number[];
-	public patch_header_lengths: number[];
-
-	constructor(diff: NodeGitDiff, data: DiffConstructorData) {
+	constructor(diff: NodeGitDiff) {
 		this._ng_diff = diff;
-		this.raw_patches = data.patch_buf;
+	}
 
-		const raw_patches_arr = this.raw_patches.split("\n");
-		const patch_headers = data.patch_header_buf.split("\n");
+	public async rawPatches(): Promise<string> {
+		return String(await this._ng_diff.toBuf(1));
+	}
 
-		const patch_header_data = patch_headers.reduce((result, line, index) => {
+	public async patchHeaderData(): Promise<PatchHeaderData> {
+		const raw_patches = await this.rawPatches();
+		const patch_headers = String(await this._ng_diff.toBuf(2)).split("\n");
+
+		return patch_headers.reduce((result, line, index) => {
 			// The start of a patch header
 			if((/^diff --git/u).test(line)) {
-				result.indexes.push(raw_patches_arr.indexOf(line));
+				result.indexes.push(raw_patches.indexOf(line));
 
 				if(result.last !== null) {
 					result.lengths.push(patch_headers.slice(result.last, index).length);
@@ -44,20 +40,9 @@ export class Diff {
 
 			return result;
 		}, <PatchHeaderData>{ indexes: [], lengths: [], last: null });
-
-		this.patch_header_indexes = patch_header_data.indexes;
-		this.patch_header_lengths = patch_header_data.lengths;
-
 	}
 
-	async getPatches(): Promise<Patch[]> {
-		return (await this._ng_diff.patches()).map((patch, index) => new Patch(this, patch, index));
-	}
-
-	static async get(diff: NodeGitDiff): Promise<Diff> {
-		return new Diff(diff, {
-			patch_buf: String((await diff.toBuf(1))),
-			patch_header_buf: String((await diff.toBuf(2)))
-		});
+	public async patches(): Promise<Patch[]> {
+		return (await this._ng_diff.patches()).map(patch => new Patch(this, patch));
 	}
 }

@@ -3,7 +3,7 @@ import { Reference } from "./reference";
 import { Repository } from "./repository";
 
 export class Branch extends Reference {
-	async latestCommit(): Promise<CommitSummary> {
+	public async latestCommit(): Promise<CommitSummary> {
 		const latest_commit = this._owner.nodegitRepository.getBranchCommit(this._ng_reference);
 		return {
 			id: (await latest_commit).sha(),
@@ -12,7 +12,7 @@ export class Branch extends Reference {
 		};
 	}
 
-	static async lookup(owner: Repository, branch: string): Promise<Branch | null> {
+	public static async lookup(owner: Repository, branch: string): Promise<Branch | null> {
 		const reference = await owner.nodegitRepository.getBranch(branch).catch(err => {
 			if(err.errno === -3) {
 				return null;

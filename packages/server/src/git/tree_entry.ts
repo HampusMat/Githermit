@@ -21,12 +21,12 @@ export class TreeEntry {
 		this.type = entry.isBlob() ? "blob" : "tree";
 	}
 
-	async latestCommit(): Promise<Commit> {
+	public async latestCommit(): Promise<Commit> {
 		const commits = await this._owner.commits();
 
 		return findAsync(commits, async commit => {
 			const diff = await commit.diff();
-			const patches = await diff.getPatches();
+			const patches = await diff.patches();
 
 			return Boolean(this.type === "blob"
 				? patches.find(patch => patch.to === this.path)
@@ -34,7 +34,7 @@ export class TreeEntry {
 		});
 	}
 
-	async peel(): Promise<Blob | Tree> {
+	public async peel(): Promise<Blob | Tree> {
 		return this.type === "blob" ? new Blob(this._ng_tree_entry) : new Tree(this._owner, await this._ng_tree_entry.getTree());
 	}
 }

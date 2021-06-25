@@ -38,11 +38,11 @@ export class Commit {
 		this.message = commit.message();
 	}
 
-	async diff(): Promise<Diff> {
-		return Diff.get((await this._ng_commit.getDiff())[0]);
+	public async diff(): Promise<Diff> {
+		return new Diff((await this._ng_commit.getDiff())[0]);
 	}
 
-	async stats(): Promise<DiffStats> {
+	public async stats(): Promise<DiffStats> {
 		const stats = await (await this._ng_commit.getDiff())[0].getStats();
 
 		return {
@@ -52,16 +52,16 @@ export class Commit {
 		};
 	}
 
-	async tree(): Promise<Tree> {
+	public async tree(): Promise<Tree> {
 		return new Tree(this._owner, await this._ng_commit.getTree());
 	}
 
-	static async lookup(repository: Repository, id: string | NodeGitOid): Promise<Commit> {
+	public static async lookup(repository: Repository, id: string | NodeGitOid): Promise<Commit> {
 		const commit = await NodeGitCommit.lookup(repository.nodegitRepository, id instanceof NodeGitOid ? id : NodeGitOid.fromString(id));
 		return new Commit(repository, commit);
 	}
 
-	static lookupExists(repository: Repository, id: string): Promise<boolean> {
+	public static lookupExists(repository: Repository, id: string): Promise<boolean> {
 		return NodeGitCommit.lookup(repository.nodegitRepository, NodeGitOid.fromString(id))
 			.then(() => true)
 			.catch(() => false);

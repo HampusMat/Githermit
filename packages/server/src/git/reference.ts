@@ -5,8 +5,8 @@ export abstract class Reference {
 	protected _ng_reference: NodeGitReference;
 	protected _owner: Repository;
 
-	id: string;
-	name: string;
+	public id: string;
+	public name: string;
 
 	constructor(owner: Repository, reference: NodeGitReference) {
 		this._ng_reference = reference;

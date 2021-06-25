@@ -12,11 +12,11 @@ export class Tree {
 		this._owner = owner;
 	}
 
-	entries(): TreeEntry[] {
+	public entries(): TreeEntry[] {
 		return this._ng_tree.entries().map(entry => new TreeEntry(this._owner, entry));
 	}
 
-	async find(path: string): Promise<Blob | Tree | null> {
+	public async find(path: string): Promise<Blob | Tree | null> {
 		const entry = await this._ng_tree.getEntry(path).catch(err => {
 			if(err.errno === -3) {
 				return null;
@@ -31,7 +31,7 @@ export class Tree {
 		return entry.isBlob() ? new Blob(entry) : new Tree(this._owner, await entry.getTree());
 	}
 
-	findExists(path: string): Promise<boolean> {
+	public findExists(path: string): Promise<boolean> {
 		return this._ng_tree.getEntry(path)
 			.then(() => true)
 			.catch(() => false);

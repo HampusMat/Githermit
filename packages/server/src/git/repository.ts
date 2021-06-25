@@ -41,48 +41,48 @@ export class Repository {
 		this.owner = data.owner;
 	}
 
-	async commits(): Promise<Commit[]> {
+	public async commits(): Promise<Commit[]> {
 		const walker = NodeGitRevwalk.create(this._ng_repository);
 		walker.pushHead();
 
 		return Promise.all((await walker.getCommitsUntil(() => true)).map(commit => new Commit(this, commit)));
 	}
 
-	async tree(): Promise<Tree> {
+	public async tree(): Promise<Tree> {
 		const master_commit = await this._ng_repository.getMasterCommit();
 		const tree = await master_commit.getTree();
 		return new Tree(this, tree);
 	}
 
-	lookupExists(id: string): Promise<boolean> {
+	public lookupExists(id: string): Promise<boolean> {
 		return NodeGitObject.lookup(this._ng_repository, NodeGitOid.fromString(id), NodeGitObject.TYPE.ANY)
 			.then(() => true)
 			.catch(() => false);
 	}
 
-	async branches(): Promise<Branch[]> {
+	public async branches(): Promise<Branch[]> {
 		const references = await this._ng_repository.getReferences();
 		return references.filter(ref => ref.isBranch()).map(branch => new Branch(this, branch));
 	}
 
-	async tags(): Promise<Tag[]> {
+	public async tags(): Promise<Tag[]> {
 		const references = await this._ng_repository.getReferences();
 		return references.filter(ref => ref.isTag()).map(tag => new Tag(this, tag));
 	}
 
-	async latestCommit(): Promise<Commit> {
+	public async latestCommit(): Promise<Commit> {
 		return new Commit(this, await this._ng_repository.getMasterCommit());
 	}
 
-	HTTPconnect(req: Request, reply: FastifyReply): void {
+	public HTTPconnect(req: Request, reply: FastifyReply): void {
 		connect(this, req, reply);
 	}
 
-	get nodegitRepository(): NodeGitRepository {
+	public get nodegitRepository(): NodeGitRepository {
 		return this._ng_repository;
 	}
 
-	static async open(base_dir: string, repository: string): Promise<Repository> {
+	public static async open(base_dir: string, repository: string): Promise<Repository> {
 		const ng_repository = await NodeGitRepository.openBare(`${base_dir}/${getFullRepositoryName(repository)}`);
 
 		return new Repository(ng_repository, {
@@ -91,7 +91,7 @@ export class Repository {
 		});
 	}
 
-	static async openAll(base_dir: string): Promise<Repository[] | null> {
+	public static async openAll(base_dir: string): Promise<Repository[] | null> {
 		const dir_content = await getDirectory(base_dir);
 
 		if(dir_content.length === 0) {

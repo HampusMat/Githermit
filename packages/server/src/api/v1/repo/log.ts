@@ -20,14 +20,14 @@ async function commitMap(commit: Commit) {
 	};
 }
 
-async function patchMap(patch: Patch) {
+async function patchMap(patch: Patch, index: number) {
 	return {
 		additions: patch.additions,
 		deletions: patch.deletions,
 		from: patch.from,
 		to: patch.to,
-		too_large: patch.too_large,
-		hunks: await patch.getHunks()
+		too_large: await patch.isTooLarge(index),
+		hunks: await patch.getHunks(index)
 	};
 }
 
@@ -68,7 +68,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 					insertions: stats.insertions,
 					deletions: stats.deletions,
 					files_changed: stats.files_changed,
-					diff: await Promise.all((await (await commit.diff()).getPatches()).map(patchMap))
+					diff: await Promise.all((await (await commit.diff()).patches()).map(patchMap))
 				}
 			});
 		}

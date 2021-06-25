@@ -21,13 +21,13 @@ async function addArchiveEntries(entries: TreeEntry[], repository: string, archi
 			}
 		}
 		else if(peeled instanceof Tree) {
-			addArchiveEntries(peeled.entries(), repository, archive);
+			await addArchiveEntries(peeled.entries(), repository, archive);
 		}
 	}
 }
 
 export class Tag extends Reference {
-	async author(): Promise<Author> {
+	public async author(): Promise<Author> {
 		const tagger = (await NodeGitTag.lookup(this._owner.nodegitRepository, this._ng_reference.target())).tagger();
 		return {
 			name: tagger.name(),
@@ -35,12 +35,12 @@ export class Tag extends Reference {
 		};
 	}
 
-	async date(): Promise<number> {
+	public async date(): Promise<number> {
 		return (await NodeGitTag.lookup(this._owner.nodegitRepository, this._ng_reference.target())).tagger().when()
 			.time();
 	}
 
-	async downloadTarball(reply: FastifyReply): Promise<void> {
+	public async downloadTarball(reply: FastifyReply): Promise<void> {
 		const commit = await Commit.lookup(this._owner, (await this._ng_reference.peel(NodeGitObject.TYPE.COMMIT)).id());
 		const tree = await commit.tree();
 
@@ -59,15 +59,17 @@ export class Tag extends Reference {
 		gzip.on("error", () => reply.raw.end());
 		archive.on("error", () => reply.raw.end());
 
-		addArchiveEntries(await tree.entries(), this._owner.name.short, archive)
-			.then(() => archive.finalize())
+		addArchiveEntries(tree.entries(), this._owner.name.short, archive)
+			.then(() => {
+				archive.finalize();
+			})
 			.catch(() => {
 				archive.finalize();
 				reply.raw.end();
 			});
 	}
 
-	static async lookup(owner: Repository, tag: string): Promise<Tag | null> {
+	public static async lookup(owner: Repository, tag: string): Promise<Tag | null> {
 		const reference = await owner.nodegitRepository.getReference(tag).catch(err => {
 			if(err.errno === -3) {
 				return null;

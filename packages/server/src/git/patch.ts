@@ -16,6 +16,11 @@ type Hunks = {
 	hunks: Hunk[]
 }
 
+type PatchBounds = {
+	start: number,
+	end: number
+}
+
 function getHunkContent(hunk: string[]) {
 	interface Lines {
 		new_lines: number[],
@@ -39,45 +44,53 @@ function getHunkContent(hunk: string[]) {
 
 export class Patch {
 	private _ng_patch: NodeGitPatch;
+	private _diff: Diff;
 
 	public from: string;
 	public to: string;
 	public additions: number;
 	public deletions: number;
-	public too_large = false;
-	public content: string | null = null;
 
-	constructor(diff: Diff, patch: NodeGitPatch, index: number) {
+	constructor(diff: Diff, patch: NodeGitPatch) {
 		this._ng_patch = patch;
+		this._diff = diff;
 
 		this.from = patch.oldFile().path();
 		this.to = patch.newFile().path();
 		this.additions = patch.lineStats()["total_additions"];
 		this.deletions = patch.lineStats()["total_deletions"];
-
-		const raw_patches_arr = diff.raw_patches.split("\n");
-		const start = diff.patch_header_indexes[index] + diff.patch_header_lengths[index];
-		const end = (typeof diff.patch_header_indexes[index + 1] === "undefined") ? raw_patches_arr.length - 1 : diff.patch_header_indexes[index + 1];
-
-		const patch_content = raw_patches_arr.slice(start, end);
-
-		if(patch_content.length !== 0) {
-			this.content = patch_content.join("\n");
-
-			const line_lengths = patch_content.map(line => line.length).reduce((result, length) => result + length);
-
-			if(patch_content.length > 5000 || line_lengths > 5000) {
-				this.too_large = true;
-			}
-		}
 	}
 
-	async getHunks(): Promise<Hunk[] | null> {
-		if(!this.content) {
-			return null;
+	private async bounds(index: number): Promise<PatchBounds> {
+		const raw_patches = await (await this._diff.rawPatches()).split("\n");
+		const patch_header_data = await this._diff.patchHeaderData();
+
+		return {
+			start: patch_header_data.indexes[index] + patch_header_data.lengths[index],
+			end: (typeof patch_header_data.indexes[index + 1] === "undefined") ? raw_patches.length - 1 : patch_header_data.indexes[index + 1]
+		};
+	}
+
+	private async content(index: number): Promise<string> {
+		const raw_patches = await (await this._diff.rawPatches()).split("\n");
+		const bounds = await this.bounds(index);
+
+		return raw_patches.slice(bounds.start, bounds.end).join("\n");
+	}
+
+	public async isTooLarge(index: number): Promise<boolean> {
+		const content = (await this.content(index)).split("\n");
+		const line_lengths = content.map(line => line.length).reduce((result, length) => result + length);
+
+		if(content.length > 5000 || line_lengths > 5000) {
+			return true;
 		}
 
-		const content = this.content.split("\n");
+		return false;
+	}
+
+	public async getHunks(index: number): Promise<Hunk[] | null> {
+		const content = (await this.content(index)).split("\n");
 		const hunks = await this._ng_patch.hunks();
 
 		const hunks_data = hunks.reduce((result: Hunks, hunk, hunk_index) => {
