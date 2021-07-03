@@ -54,7 +54,7 @@ export default {
 			const projects_data = await fetchData("repos", fetch_failed, is_loading, "projects");
 
 			projects_data.reduce((result, project) => {
-				project.last_updated = formatDistance(Date.parse(project.last_updated), new Date(), { addSuffix: true });
+				project.last_updated = formatDistance(new Date(project.last_updated * 1000), new Date(), { addSuffix: true });
 				result.push(projects);
 				return result;
 			}, []);

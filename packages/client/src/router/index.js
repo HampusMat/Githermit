@@ -1,11 +1,10 @@
 import { createRouter, createWebHashHistory } from "vue-router";
-import Home from "../views/Home";
 
 const routes = [
 	{
 		path: "/",
 		name: "Home",
-		component: Home
+		component: () => import("../views/Home")
 	},
 	{
 		path: "/:repo([a-zA-Z0-9\\.\\-_]+)",
@@ -34,12 +33,16 @@ const routes = [
 				name: "Tree",
 				component: () => import("../views/RepositoryTree"),
 				props: route => ({ pathArr: route.params.path ? route.params.path : [] })
-			},
-			{
-				path: "",
-				redirect: to => `/${to.params.repo}/log`
 			}
+			/* {
+				path: "",
+				component: () => import("../views/RepositoryRedirect")
+			} */
 		]
+	},
+	{
+		path: "/:PageNotFound(.*)*",
+		component: () => import("../views/PageNotFound")
 	}
 ];
 

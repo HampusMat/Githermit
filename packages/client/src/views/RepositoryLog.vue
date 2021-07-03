@@ -31,7 +31,7 @@
 							</router-link>
 						</td>
 						<td>{{ commit.author.name }}</td>
-						<td>{{ format(new Date(commit.date), "yyyy-MM-dd hh:mm") }}</td>
+						<td>{{ format(new Date(commit.date * 1000), "yyyy-MM-dd hh:mm") }}</td>
 						<td>{{ commit.files_changed }}</td>
 						<td class="add-del">
 							<span>-{{ commit.deletions }}</span> / <span>+{{ commit.insertions }}</span>
@@ -104,7 +104,8 @@ table {
 				background-color: lighten(colors.$background, 5%);
 			}
 			td {
-				padding-bottom: 1em;
+				padding-bottom: 0.5rem;
+				padding-top: 0.5rem;
 			}
 		}
 	}

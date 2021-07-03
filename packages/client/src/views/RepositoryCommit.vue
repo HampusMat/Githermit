@@ -10,7 +10,7 @@
 							<td class="commit-info-title">
 								Author
 							</td>
-							<td>{{ commit["author"] }}</td>
+							<td>{{ commit.author.name }} &lt;{{ commit.author.email }}></td>
 						</tr>
 						<tr>
 							<td class="commit-info-title">
@@ -27,7 +27,7 @@
 					</tbody>
 				</table>
 				<div
-					v-for="(patch, index) in commit['patches']" :key="index"
+					v-for="(patch, index) in commit['diff']" :key="index"
 					class="commit-patch">
 					<div class="commit-patch-header">
 						<span>{{ (patch.to === "/dev/null") ? patch.from : patch.to }} </span>
@@ -75,7 +75,7 @@ export default {
 			const commit_data = await fetchData(`repos/${repository}/log/${commit_id}`, fetch_failed, is_loading, "commit");
 
 			if(commit_data) {
-				commit_data.date = format(new Date(commit_data.date), "yyyy-MM-dd hh:mm");
+				commit_data.date = format(new Date(commit_data.date * 1000), "yyyy-MM-dd hh:mm");
 				commit.value = commit_data;
 			}
 		};

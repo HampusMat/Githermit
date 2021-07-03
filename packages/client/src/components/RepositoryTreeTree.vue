@@ -35,12 +35,12 @@
 					</div>
 				</td>
 				<td>
-					<a @click="routeToCommit(entry.last_commit.id, $event)" :href="`/${repository}/log/${entry.last_commit.id}`">
-						{{ entry.last_commit.message }}
+					<a @click="routeToCommit(entry.latest_commit.id, $event)" :href="`/${repository}/log/${entry.latest_commit.id}`">
+						{{ entry.latest_commit.message }}
 					</a>
 				</td>
 				<td>
-					{{ getPrettyLastUpdated(entry.last_commit.date) }}
+					{{ getPrettyLastUpdated(entry.latest_commit.date) }}
 				</td>
 			</tr>
 		</tbody>
@@ -76,7 +76,7 @@ export default {
 			this.$router.push(`/${this.repository}/log/${commit_id}`);
 		},
 		getPrettyLastUpdated(date) {
-			return formatDistance(new Date(date), new Date(), { addSuffix: true });
+			return formatDistance(new Date(date * 1000), new Date(), { addSuffix: true });
 		}
 	}
 };
