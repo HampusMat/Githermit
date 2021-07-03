@@ -4,6 +4,7 @@ import { Blob } from "../../../git/blob";
 import { Repository } from "../../../git/repository";
 import { Tag } from "../../../git/tag";
 import { TreeEntry } from "../../../git/tree_entry";
+import { basename } from "path";
 import branches from "./branches";
 import log from "./log";
 import { verifyRepoName } from "../../util";
@@ -32,7 +33,8 @@ function addHooks(fastify: FastifyInstance, opts: FastifyPluginOptions): void {
 async function treeEntryMap(entry: TreeEntry) {
 	const latest_commit = await entry.latestCommit();
 	return {
-		path: entry.path,
+		name: basename(entry.path),
+		type: entry.type,
 		latest_commit: {
 			id: latest_commit.id,
 			message: latest_commit.message,
@@ -80,7 +82,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 				return;
 			}
 
-			reply.send({ data: await Promise.all(tree.entries().map(treeEntryMap)) });
+			reply.send({ data: { type: "tree", content: await Promise.all(tree.entries().map(treeEntryMap)) } });
 		}
 	});
 
