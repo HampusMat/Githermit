@@ -23,7 +23,7 @@
     "@types/nodegit": "^0.27.2",
     "@types/tar-stream": "^2.2.0",
     "@types/whatwg-url": "^8.2.0",
-	"shared_types": "workspace:shared_types",
+	"shared_types": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^4.26.0",
     "@typescript-eslint/parser": "^4.26.0",
     "eslint": "^7.30.0",
