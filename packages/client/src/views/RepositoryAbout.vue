@@ -13,14 +13,16 @@
 	</div>
 </template>
 
-<script>
-import RepositoryTreeBlob from "@/components/RepositoryTreeBlob";
-import Loading from "vue-loading-overlay";
-import BaseErrorMessage from "@/components/BaseErrorMessage";
-import { ref } from "vue";
-import fetchData from "@/util/fetch";
+<script lang="ts">
+import { defineComponent, Ref, ref } from "vue";
+import fetchData from "../util/fetch";
 
-export default {
+import RepositoryTreeBlob from "../components/RepositoryTreeBlob.vue";
+import Loading from "vue-loading-overlay";
+import BaseErrorMessage from "../components/BaseErrorMessage.vue";
+import { getParam } from "../util/util";
+
+export default defineComponent({
 	name: "RepositoryAbout",
 	components: {
 		RepositoryTreeBlob,
@@ -28,11 +30,11 @@ export default {
 		BaseErrorMessage
 	},
 	setup(props) {
-		const readme = ref(null);
-		const is_loading = ref(true);
-		const fetch_failed = ref(null);
+		const readme: Ref<string | null> = ref(null);
+		const is_loading: Ref<boolean> = ref(true);
+		const fetch_failed: Ref<string> = ref("");
 
-		const fetchReadme = async(repository) => {
+		const fetchReadme = async(repository: string) => {
 			const readme_data = await fetchData(`repos/${repository}/tree?path=README.md`, fetch_failed, is_loading, "tree");
 
 			if(readme_data) {
@@ -48,9 +50,9 @@ export default {
 		};
 	},
 	created() {
-		this.fetchReadme(this.$router.currentRoute._rawValue.params.repo);
+		this.fetchReadme(getParam(this.$route.params, "repo"));
 	}
-};
+});
 </script>
 
 <style lang="scss" scoped>

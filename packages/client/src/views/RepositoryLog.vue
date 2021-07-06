@@ -48,14 +48,29 @@
 	</div>
 </template>
 
-<script>
-import Loading from "vue-loading-overlay";
-import BaseErrorMessage from "@/components/BaseErrorMessage";
-import { ref } from "vue";
+<script lang="ts">
+import { defineComponent, Ref, ref } from "vue";
 import { format } from "date-fns";
-import fetchData from "@/util/fetch";
+import fetchData from "../util/fetch";
+import { getParam } from "../util/util";
 
-export default {
+import Loading from "vue-loading-overlay";
+import BaseErrorMessage from "../components/BaseErrorMessage.vue";
+
+type Commit = {
+	id: string,
+	author: {
+		name: string,
+		email: string
+	},
+	message: string,
+	date: number,
+	insertions: number,
+	deletions: number,
+	files_changed: number
+}
+
+export default defineComponent({
 	name: "RepositoryLog",
 	components: {
 		Loading,
@@ -67,12 +82,12 @@ export default {
 		};
 	},
 	setup() {
-		const commits = ref(null);
-		const is_loading = ref(true);
-		const fetch_failed = ref(null);
+		const commits: Ref<Commit[] | null> = ref(null);
+		const is_loading: Ref<boolean> = ref(true);
+		const fetch_failed: Ref<string> = ref("");
 
-		const fetchLog = async(repository) => {
-			const log_data = await fetchData(`repos/${repository}/log`, fetch_failed, is_loading, "log");
+		const fetchLog = async(repository: string) => {
+			const log_data: Commit[] = await fetchData(`repos/${repository}/log`, fetch_failed, is_loading, "log");
 			if(log_data) {
 				commits.value = log_data;
 			}
@@ -81,9 +96,9 @@ export default {
 		return { commits, is_loading, fetch_failed, fetchLog };
 	},
 	created() {
-		this.fetchLog(this.$router.currentRoute._rawValue.params.repo);
+		this.fetchLog(getParam(this.$route.params, "repo"));
 	}
-};
+});
 </script>
 
 <style lang="scss" scoped>

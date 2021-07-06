@@ -15,8 +15,10 @@
 	</nav>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
 	name: "BaseBreadcrumb",
 	props: {
 		items: {
@@ -28,7 +30,7 @@ export default {
 			required: true
 		}
 	}
-};
+});
 </script>
 
 <style lang="scss" scoped>

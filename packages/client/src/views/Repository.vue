@@ -8,25 +8,26 @@
 	</div>
 </template>
 
-<script>
-import RepositoryHeader from "@/components/RepositoryHeader";
-import RepositoryNavbar from "@/components/RepositoryNavbar";
-import { ref } from "vue";
+<script lang="ts">
+import { defineComponent, Ref, ref } from "vue";
+import { Router } from "vue-router";
 
-export default {
+import RepositoryHeader from "../components/RepositoryHeader.vue";
+import RepositoryNavbar from "../components/RepositoryNavbar.vue";
+import { getParam } from "../util/util";
+
+export default defineComponent({
 	name: "Repository",
 	components: {
 		RepositoryHeader,
 		RepositoryNavbar
 	},
 	setup(props) {
-		const name = ref("");
-		const description = ref("");
-		const has_readme = ref(null);
+		const name: Ref<string> = ref("");
+		const description: Ref<string> = ref("");
+		const has_readme: Ref<boolean> = ref(false);
 
-		const fetchProjects = async(router, path) => {
-			const repository = router.currentRoute._rawValue.params.repo;
-
+		const fetchProjects = async(repository: string, router: Router, path: string) => {
 			const repository_data = await fetch(`${window.location.protocol}//${window.location.host}/api/v1/repos/${repository}`)
 				.catch(() => {
 					if(path.split("/").length === 2) {
@@ -46,7 +47,7 @@ export default {
 		return { name, description, has_readme, fetchProjects };
 	},
 	created() {
-		this.fetchProjects(this.$router, this.$route.path);
+		this.fetchProjects(getParam(this.$route.params, "repo"), this.$router, this.$route.path);
 	}
-};
+});
 </script>

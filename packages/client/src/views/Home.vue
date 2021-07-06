@@ -27,16 +27,22 @@
 	</div>
 </template>
 
-<script>
-import HomeHeader from "@/components/HomeHeader";
-import HomeProjectsHeader from "@/components/HomeProjectsHeader";
+<script lang="ts">
+import { defineComponent, Ref, ref } from "vue";
+import HomeHeader from "../components/HomeHeader.vue";
+import HomeProjectsHeader from "../components/HomeProjectsHeader.vue";
 import Loading from "vue-loading-overlay";
-import BaseErrorMessage from "@/components/BaseErrorMessage";
-import fetchData from "@/util/fetch";
-import { ref } from "vue";
+import BaseErrorMessage from "../components/BaseErrorMessage.vue";
+import fetchData from "../util/fetch";
 import { formatDistance } from "date-fns";
 
-export default {
+type Repository = {
+	name: string,
+	description: string,
+	last_updated: number | string
+}
+
+export default defineComponent({
 	name: "Home",
 	components: {
 		HomeHeader,
@@ -46,16 +52,18 @@ export default {
 	},
 	setup() {
 		const projects = ref({});
-		const search = ref(null);
-		const is_loading = ref(true);
-		const fetch_failed = ref(null);
+		const search: Ref<string | null> = ref(null);
+		const is_loading: Ref<boolean> = ref(true);
+		const fetch_failed: Ref<string | null> = ref(null);
 
 		const fetchProjects = async() => {
-			const projects_data = await fetchData("repos", fetch_failed, is_loading, "projects");
+			const projects_data: Repository[] = await fetchData("repos", fetch_failed, is_loading, "projects");
 
-			projects_data.reduce((result, project) => {
-				project.last_updated = formatDistance(new Date(project.last_updated * 1000), new Date(), { addSuffix: true });
-				result.push(projects);
+			projects_data.reduce((result: Repository[], project) => {
+				if(typeof project.last_updated === "number") {
+					project.last_updated = formatDistance(new Date(project.last_updated * 1000), new Date(), { addSuffix: true });
+					result.push(project);
+				}
 				return result;
 			}, []);
 
@@ -72,7 +80,7 @@ export default {
 	created() {
 		this.fetchProjects();
 	}
-};
+});
 </script>
 
 <style lang="scss" scoped>

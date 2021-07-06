@@ -5,10 +5,11 @@ module.exports = {
 	},
 	extends: [
 		"plugin:vue/vue3-strongly-recommended",
-		"@vue/standard"
+		"@vue/standard",
+		"@vue/typescript"
 	],
 	parserOptions: {
-		parser: "babel-eslint"
+		parser: "@typescript-eslint/parser"
 	},
 	ignorePatterns: [ "/src/lib/*" ],
 	rules: {

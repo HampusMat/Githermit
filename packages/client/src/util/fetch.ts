@@ -1,4 +1,6 @@
-export default async function(endpoint, fetch_failed, is_loading, data_name) {
+import { Ref } from "vue";
+
+export default async function(endpoint: string, fetch_failed: Ref<string | null>, is_loading: Ref<boolean>, data_name: string) {
 	const fetch_timeout = setTimeout(() => {
 		if(!fetch_failed.value) {
 			fetch_failed.value = `Failed to fetch ${data_name} data.`;

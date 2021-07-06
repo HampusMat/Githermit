@@ -2,8 +2,11 @@
 	<router-view />
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from "vue";
+import { RouteLocation } from "vue-router";
+
+export default defineComponent({
 	name: "App",
 	data: function() {
 		return {
@@ -12,9 +15,9 @@ export default {
 	},
 	methods: {
 		setTitle() {
-			const repo = this.$route.params.repo;
-			const route = this.$route.name;
-			document.title = repo ? `${repo} - ${route}` : this.base_title;
+			const route: RouteLocation = this.$route;
+
+			document.title = route.params.repo ? `${route.params.repo} - ${route.name?.toString()}` : this.base_title;
 		}
 	},
 	created() {
@@ -26,7 +29,7 @@ export default {
 			this.setTitle();
 		}
 	}
-};
+});
 </script>
 
 <style lang="scss">

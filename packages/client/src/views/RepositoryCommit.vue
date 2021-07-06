@@ -49,16 +49,18 @@
 	</div>
 </template>
 
-<script>
-import BaseBreadcrumb from "@/components/BaseBreadcrumb";
-import CommitPatch from "@/components/CommitPatch";
-import Loading from "vue-loading-overlay";
-import BaseErrorMessage from "@/components/BaseErrorMessage";
-import { ref } from "vue";
+<script lang="ts">
+import { defineComponent, Ref, ref } from "vue";
 import { format } from "date-fns";
-import fetchData from "@/util/fetch";
+import fetchData from "../util/fetch";
 
-export default {
+import BaseBreadcrumb from "../components/BaseBreadcrumb.vue";
+import CommitPatch from "../components/CommitPatch.vue";
+import Loading from "vue-loading-overlay";
+import BaseErrorMessage from "../components/BaseErrorMessage.vue";
+import { getParam } from "../util/util";
+
+export default defineComponent({
 	name: "RepositoryCommit",
 	components: {
 		BaseBreadcrumb,
@@ -68,10 +70,10 @@ export default {
 	},
 	setup() {
 		const commit = ref(null);
-		const is_loading = ref(true);
-		const fetch_failed = ref(null);
+		const is_loading: Ref<boolean> = ref(true);
+		const fetch_failed: Ref<string> = ref("");
 
-		const fetchCommit = async(repository, commit_id) => {
+		const fetchCommit = async(repository: string, commit_id: string) => {
 			const commit_data = await fetchData(`repos/${repository}/log/${commit_id}`, fetch_failed, is_loading, "commit");
 
 			if(commit_data) {
@@ -83,9 +85,9 @@ export default {
 		return { commit, is_loading, fetch_failed, fetchCommit };
 	},
 	created() {
-		this.fetchCommit(this.$router.currentRoute._rawValue.params.repo, this.$router.currentRoute._rawValue.params.commit);
+		this.fetchCommit(getParam(this.$route.params, "repo"), getParam(this.$route.params, "commit"));
 	}
-};
+});
 </script>
 
 <style lang="scss">

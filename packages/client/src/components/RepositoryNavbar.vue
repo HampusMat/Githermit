@@ -22,10 +22,12 @@
 	</div>
 </template>
 
-<script>
-import RepositoryCloneDropdown from "@/components/RepositoryCloneDropdown";
+<script lang="ts">
+import { defineComponent } from "vue";
 
-export default {
+import RepositoryCloneDropdown from "../components/RepositoryCloneDropdown.vue";
+
+export default defineComponent({
 	name: "RepositoryNavbar",
 	props: {
 		repository: {
@@ -54,7 +56,7 @@ export default {
 			this.nav_items = [ "about" ].concat(this.nav_items);
 		}
 	}
-};
+});
 </script>
 
 <style lang="scss" scoped>

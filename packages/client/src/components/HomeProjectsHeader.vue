@@ -14,15 +14,17 @@
 	</div>
 </template>
 
-<script>
-import BaseButton from "@/components/BaseButton";
+<script lang="ts">
+import { defineComponent } from "vue";
 
-export default {
+import BaseButton from "../components/BaseButton.vue";
+
+export default defineComponent({
 	name: "HomeProjectsHeader",
 	components: {
 		BaseButton
 	}
-};
+});
 </script>
 
 <style lang="scss" scoped>

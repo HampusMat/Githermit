@@ -10,10 +10,12 @@
 	</div>
 </template>
 
-<script>
-import BaseBackButton from "@/components/BaseBackButton";
+<script lang="ts">
+import { defineComponent } from "vue";
 
-export default {
+import BaseBackButton from "../components/BaseBackButton.vue";
+
+export default defineComponent({
 	name: "RepositoryHeader",
 	props: {
 		name: {
@@ -28,7 +30,7 @@ export default {
 	components: {
 		BaseBackButton
 	}
-};
+});
 </script>
 
 <style lang="scss" scoped>

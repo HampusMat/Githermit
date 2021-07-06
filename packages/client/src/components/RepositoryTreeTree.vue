@@ -47,10 +47,11 @@
 	</table>
 </template>
 
-<script>
-const { formatDistance } = require("date-fns");
+<script lang="ts">
+import { defineComponent } from "vue";
+import { formatDistance } from "date-fns";
 
-export default {
+export default defineComponent({
 	name: "RepositoryTreeTree",
 	props: {
 		repository: {
@@ -67,19 +68,19 @@ export default {
 		}
 	},
 	methods: {
-		stopClick(event) {
+		stopClick(event: Event) {
 			event.preventDefault();
 		},
-		routeToCommit(commit_id, event) {
+		routeToCommit(commit_id: string, event: Event) {
 			event.stopPropagation();
 			event.preventDefault();
 			this.$router.push(`/${this.repository}/log/${commit_id}`);
 		},
-		getPrettyLastUpdated(date) {
+		getPrettyLastUpdated(date: number) {
 			return formatDistance(new Date(date * 1000), new Date(), { addSuffix: true });
 		}
 	}
-};
+});
 </script>
 
 <style lang="scss" scoped>

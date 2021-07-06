@@ -10,18 +10,17 @@
 		</tbody>
 	</table>
 	<span
-		v-else v-html="content_lines"
+		v-else v-html="content_blob"
 		id="markdown-blob" />
 </template>
 
-<script>
-import { ref } from "vue";
+<script lang="ts">
+import { defineComponent, Ref, ref } from "vue";
 import hljs from "highlight.js";
 import hljs_languages from "../util/hljs-languages";
-import path from "path";
-import marked from "@/lib/marked.min.js";
+import marked from "marked";
 
-export default {
+export default defineComponent({
 	name: "RepositoryTreeBlob",
 	props: {
 		repository: {
@@ -46,17 +45,29 @@ export default {
 		this.initHighlightedContent();
 	},
 	setup(props) {
-		const content_lines = ref([]);
-		const is_markdown = ref(false);
+		const content_lines: Ref<string[]> = ref([]);
+		const content_blob: Ref<string> = ref("");
+		const is_markdown: Ref<boolean> = ref(false);
 
 		const initHighlightedContent = async() => {
-			if(path.extname(props.path) === ".md") {
+			const path_extension = /(?:\.([^.]+))?$/;
+
+			const path_ext = path_extension.exec(props.path);
+			let ext = "";
+
+			if(path_ext) {
+				ext = `.${path_ext[1]}`;
+			}
+
+			if(ext === ".md") {
 				const markdown = document.createElement("html");
 				markdown.innerHTML = marked(props.content);
 
 				const checkboxes = markdown.querySelectorAll("ul > li > input[type=\"checkbox\"]");
 				checkboxes.forEach((checkbox) => {
-					checkbox.parentElement.parentElement.classList.add("checkbox-list");
+					if(checkbox.parentElement) {
+						checkbox.parentElement.classList.add("checkbox-list");
+					}
 				});
 
 				const codeblocks = markdown.querySelectorAll("code");
@@ -64,20 +75,20 @@ export default {
 					codeblock.classList.add("markdown-codeblock");
 				});
 
-				content_lines.value = markdown.innerHTML;
+				content_blob.value = markdown.innerHTML;
 				is_markdown.value = true;
 				return;
 			}
 
-			const language = hljs_languages.find((lang) => lang.extensions.some((extension) => path.extname(props.path) === extension));
+			const language = hljs_languages.find((lang) => lang.extensions.some((extension) => ext === extension));
 			const highlighted = language ? hljs.highlight(props.content, { language: language.name }) : hljs.highlightAuto(props.content);
 
 			content_lines.value = highlighted.value.split("\n");
 		};
 
-		return { content_lines, is_markdown, initHighlightedContent };
+		return { content_lines, content_blob, is_markdown, initHighlightedContent };
 	}
-};
+});
 </script>
 
 <style lang="scss">

@@ -7,10 +7,10 @@
 	</div>
 </template>
 
-<script>
-import { ref } from "vue";
+<script lang="ts">
+import { defineComponent, ref } from "vue";
 
-export default {
+export default defineComponent({
 	name: "HomeHeader",
 	setup() {
 		const title = ref("");
@@ -28,7 +28,7 @@ export default {
 	mounted() {
 		this.fetchInfo();
 	}
-};
+});
 </script>
 
 <style lang="scss" scoped>

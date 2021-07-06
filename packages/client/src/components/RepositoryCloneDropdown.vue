@@ -34,10 +34,11 @@
 	</div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import { createPopper } from "@popperjs/core";
 
-export default {
+export default defineComponent({
 	name: "RepositoryCloneDropdown",
 	props: {
 		repository: {
@@ -46,18 +47,25 @@ export default {
 		}
 	},
 	methods: {
-		async copyToClipboard(event) {
-			const url_box = document.getElementById("clone").getElementsByTagName("input")[0];
+		async copyToClipboard(event: Event) {
+			const url_box = document.getElementById("clone")?.getElementsByTagName("input")[0];
+
+			if(!url_box) {
+				return;
+			}
 
 			url_box.select();
 			url_box.setSelectionRange(0, 99999);
 			document.execCommand("copy");
 
 			const copied_tooltip = document.querySelector("#copied-tooltip");
-			copied_tooltip.classList.add("show");
 
-			await new Promise(resolve => setTimeout(resolve, 2000));
-			copied_tooltip.classList.remove("show");
+			if(copied_tooltip) {
+				copied_tooltip.classList.add("show");
+
+				await new Promise(resolve => setTimeout(resolve, 2000));
+				copied_tooltip.classList.remove("show");
+			}
 		},
 		getURL() {
 			return `${window.location.protocol}//${window.location.host}/${this.repository}`;
@@ -65,52 +73,64 @@ export default {
 	},
 	mounted() {
 		const dropdown_button = document.querySelector("#dropdown-button");
-		const dropdown_menu = document.querySelector("#dropdown-menu");
+		const dropdown_menu = document.getElementById("dropdown-menu");
 
-		const copied_tooltip = document.querySelector("#copied-tooltip");
+		const copied_tooltip = document.getElementById("copied-tooltip");
 		const copy = document.querySelector("#copy");
 		const tooltip_arrow = document.querySelector("#tooltip-arrow");
-		createPopper(dropdown_button, dropdown_menu, {
-			placement: "bottom-end",
-			modifiers: [
-				{
-					name: "offset",
-					options: { offset: [ 0, 2 ] }
-				}
-			]
-		});
-		createPopper(copy, copied_tooltip, {
-			placement: "top",
-			modifiers: [
-				{
-					name: "offset",
-					options: { offset: [ 0, 10 ] }
-				},
-				{
-					name: "arrow",
-					options: { element: tooltip_arrow }
-				}
-			]
-		});
 
-		const clickOutsideDropdown = (event) => {
-			if(!dropdown_menu.contains(event.target) && event.target !== dropdown_button) {
+		if(dropdown_button && dropdown_menu) {
+			createPopper(dropdown_button, dropdown_menu, {
+				placement: "bottom-end",
+				modifiers: [
+					{
+						name: "offset",
+						options: { offset: [ 0, 2 ] }
+					}
+				]
+			});
+		}
+
+		if(copy && copied_tooltip) {
+			createPopper(copy, copied_tooltip, {
+				placement: "top",
+				modifiers: [
+					{
+						name: "offset",
+						options: { offset: [ 0, 10 ] }
+					},
+					{
+						name: "arrow",
+						options: { element: tooltip_arrow }
+					}
+				]
+			});
+		}
+
+		const clickOutsideDropdown = (event: Event) => {
+			const target = event.target as HTMLElement;
+
+			if(dropdown_menu && dropdown_menu.contains(target) === false && target !== dropdown_button) {
 				dropdown_menu.classList.remove("show");
 				document.removeEventListener("click", clickOutsideDropdown);
 			}
 		};
 
-		dropdown_button.addEventListener("click", () => {
-			if(dropdown_menu.classList.contains("show")) {
-				dropdown_menu.classList.remove("show");
-				document.removeEventListener("click", clickOutsideDropdown);
-			} else {
-				dropdown_menu.classList.add("show");
-				document.addEventListener("click", clickOutsideDropdown);
-			}
-		});
+		if(dropdown_button) {
+			dropdown_button.addEventListener("click", () => {
+				if(dropdown_menu) {
+					if(dropdown_menu.classList.contains("show")) {
+						dropdown_menu.classList.remove("show");
+						document.removeEventListener("click", clickOutsideDropdown);
+					} else {
+						dropdown_menu.classList.add("show");
+						document.addEventListener("click", clickOutsideDropdown);
+					}
+				}
+			});
+		}
 	}
-};
+});
 </script>
 
 <style lang="scss" scoped>
