@@ -5,9 +5,9 @@ import { Repository } from "./repository";
 import { Tree } from "./tree";
 
 export type CommitSummary = {
-	id: string | null,
-	message: string | null,
-	date: number | null
+	id: string,
+	message: string,
+	date: number
 }
 
 type DiffStats = {

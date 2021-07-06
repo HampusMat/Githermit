@@ -3,10 +3,11 @@ import { Commit } from "../../../git/commit";
 import { Patch } from "../../../git/patch";
 import { Route } from "../../../fastify_types";
 import { verifySHA } from "../../util";
+import { LogCommit as APILogCommit, Patch as APIPatch, Commit as APICommit } from "shared_types";
 
 async function commitMap(commit: Commit) {
 	const stats = await commit.stats();
-	return {
+	return <APILogCommit>{
 		id: commit.id,
 		author: {
 			name: commit.author.name,
@@ -21,7 +22,7 @@ async function commitMap(commit: Commit) {
 }
 
 async function patchMap(patch: Patch, index: number) {
-	return {
+	return <APIPatch>{
 		additions: patch.additions,
 		deletions: patch.deletions,
 		from: patch.from,
@@ -57,19 +58,21 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 
 			const stats = await commit.stats();
 
+			const data: APICommit = {
+				message: commit.message,
+				author: {
+					name: commit.author.name,
+					email: commit.author.email
+				},
+				date: commit.date,
+				insertions: stats.insertions,
+				deletions: stats.deletions,
+				files_changed: stats.files_changed,
+				diff: await Promise.all((await (await commit.diff()).patches()).map(patchMap))
+			};
+
 			reply.send({
-				data: {
-					message: commit.message,
-					author: {
-						name: commit.author.name,
-						email: commit.author.email
-					},
-					date: commit.date,
-					insertions: stats.insertions,
-					deletions: stats.deletions,
-					files_changed: stats.files_changed,
-					diff: await Promise.all((await (await commit.diff()).patches()).map(patchMap))
-				}
+				data: data
 			});
 		}
 	});

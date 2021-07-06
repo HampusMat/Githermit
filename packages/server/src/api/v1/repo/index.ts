@@ -8,6 +8,7 @@ import { basename } from "path";
 import branches from "./branches";
 import log from "./log";
 import { verifyRepoName } from "../../util";
+import { Tree as APITree, Tag as APITag, TreeEntry as APITreeEntry } from "shared_types";
 
 declare module "fastify" {
 	interface FastifyRequest {
@@ -32,7 +33,7 @@ function addHooks(fastify: FastifyInstance, opts: FastifyPluginOptions): void {
 }
 async function treeEntryMap(entry: TreeEntry) {
 	const latest_commit = await entry.latestCommit();
-	return {
+	return <APITreeEntry>{
 		name: basename(entry.path),
 		type: entry.type,
 		latest_commit: {
@@ -45,7 +46,7 @@ async function treeEntryMap(entry: TreeEntry) {
 
 async function tagMap(tag: Tag) {
 	const author = await tag.author();
-	return {
+	return <APITag>{
 		name: tag.name,
 		author: { name: author.name, email: author.email },
 		date: await tag.date()
@@ -65,6 +66,9 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 			const tree = await (await req.repository).tree();
 
 			const tree_path = (Object.keys(req.query).length !== 0 && req.query.path) ? req.query.path : null;
+
+			let data: APITree;
+
 			if(tree_path) {
 				const tree_found = await tree.find(tree_path);
 
@@ -73,16 +77,15 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 					return;
 				}
 
-				reply.send({
-					data: tree_found instanceof Blob
-						? { type: "blob", content: await tree_found.content() }
-						: { type: "tree", content: await Promise.all(tree_found.entries().map(treeEntryMap)) }
-				});
-
-				return;
+				data = tree_found instanceof Blob
+					? { type: "blob", content: await tree_found.content() }
+					: { type: "tree", content: await Promise.all(tree_found.entries().map(treeEntryMap)) };
+			}
+			else {
+				data = { type: "tree", content: await Promise.all(tree.entries().map(treeEntryMap)) };
 			}
 
-			reply.send({ data: { type: "tree", content: await Promise.all(tree.entries().map(treeEntryMap)) } });
+			reply.send({ data: data });
 		}
 	});
 

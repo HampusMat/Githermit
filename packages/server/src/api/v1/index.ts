@@ -3,6 +3,7 @@ import { Repository } from "../../git/repository";
 import { Route } from "../../fastify_types";
 import repo from "./repo";
 import { verifyRepoName } from "../util";
+import { Info as APIInfo, RepositorySummary as APIRepositorySummary, Repository as APIRepository } from "shared_types";
 
 function setHandlers(fastify: FastifyInstance): void {
 	fastify.setErrorHandler((err, req, reply) => {
@@ -28,7 +29,7 @@ function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 
 			reply.send({
 				data: await Promise.all(repos.map(async repository => {
-					return {
+					return <APIRepositorySummary>{
 						name: repository.name.short,
 						description: repository.description,
 						last_updated: (await repository.latestCommit()).date
@@ -50,13 +51,13 @@ function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 
 			const repository = await Repository.open(opts.config.settings.base_dir, req.params.repo);
 
-			reply.send({
-				data: {
-					name: repository.name.short,
-					description: repository.description,
-					has_readme: await (await repository.tree()).findExists("README.md")
-				}
-			});
+			const data: APIRepository = {
+				name: repository.name.short,
+				description: repository.description,
+				has_readme: await (await repository.tree()).findExists("README.md")
+			};
+
+			reply.send({ data: data });
 		}
 	});
 	done();
@@ -69,7 +70,12 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/info",
 		handler: (req, reply) => {
-			reply.send({ data: { title: opts.config.settings.title, about: opts.config.settings.about } });
+			const data: APIInfo = {
+				title: opts.config.settings.title,
+				about: opts.config.settings.about
+			};
+
+			reply.send({ data: data });
 		}
 	});
 

@@ -1,6 +1,6 @@
 interface RepositoryBase {
 	name: string,
-	description: string
+	description: string | null
 }
 
 export interface RepositorySummary extends RepositoryBase {

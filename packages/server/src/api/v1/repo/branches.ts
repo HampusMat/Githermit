@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { Branch } from "../../../git/branch";
 import { Route } from "../../../fastify_types";
+import { BranchSummary as APIBranchSummary, Branch as APIBranch } from "shared_types";
 
 export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, done: (err?: Error) => void): void {
 	fastify.route<Route>({
@@ -11,7 +12,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 
 			reply.send({
 				data: branches.map(branch => {
-					return {
+					return <APIBranchSummary>{
 						id: branch.id,
 						name: branch.name
 					};
@@ -31,12 +32,14 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 				return;
 			}
 
+			const data: APIBranch = {
+				id: branch.id,
+				name: branch.name,
+				latest_commit: await branch.latestCommit()
+			};
+
 			reply.send({
-				data: {
-					id: branch.id,
-					name: branch.name,
-					latest_commit: await branch.latestCommit()
-				}
+				data: data
 			});
 		}
 	});
