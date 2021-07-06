@@ -1,0 +1,8 @@
+{
+  "name": "shared_types",
+  "version": "1.0.0",
+  "main": "src/index.d.ts",
+  "author": "HampusMat",
+  "license": "MIT",
+  "private": true
+}
