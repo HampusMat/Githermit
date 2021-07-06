@@ -11,10 +11,11 @@
 <script lang="ts">
 import { defineComponent, Ref, ref } from "vue";
 import { Router } from "vue-router";
+import { Repository } from "shared_types";
+import { getParam } from "../util/util";
 
 import RepositoryHeader from "../components/RepositoryHeader.vue";
 import RepositoryNavbar from "../components/RepositoryNavbar.vue";
-import { getParam } from "../util/util";
 
 export default defineComponent({
 	name: "Repository",
@@ -37,7 +38,7 @@ export default defineComponent({
 				});
 
 			if(repository_data) {
-				const data = (await repository_data.json()).data;
+				const data: Repository = (await repository_data.json()).data;
 				name.value = data.name;
 				description.value = data.description;
 				has_readme.value = data.has_readme;

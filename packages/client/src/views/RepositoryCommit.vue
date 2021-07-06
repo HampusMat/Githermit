@@ -16,18 +16,18 @@
 							<td class="commit-info-title">
 								Date
 							</td>
-							<td>{{ commit["date"] }}</td>
+							<td>{{ commit.pretty_date }}</td>
 						</tr>
 						<tr>
 							<td class="commit-info-title">
 								Message
 							</td>
-							<td>{{ commit["message"] }}</td>
+							<td>{{ commit.message }}</td>
 						</tr>
 					</tbody>
 				</table>
 				<div
-					v-for="(patch, index) in commit['diff']" :key="index"
+					v-for="(patch, index) in commit.diff" :key="index"
 					class="commit-patch">
 					<div class="commit-patch-header">
 						<span>{{ (patch.to === "/dev/null") ? patch.from : patch.to }} </span>
@@ -53,12 +53,17 @@
 import { defineComponent, Ref, ref } from "vue";
 import { format } from "date-fns";
 import fetchData from "../util/fetch";
+import { Commit } from "shared_types";
 
 import BaseBreadcrumb from "../components/BaseBreadcrumb.vue";
 import CommitPatch from "../components/CommitPatch.vue";
 import Loading from "vue-loading-overlay";
 import BaseErrorMessage from "../components/BaseErrorMessage.vue";
 import { getParam } from "../util/util";
+
+interface PrettyDateCommit extends Commit {
+	pretty_date: string
+}
 
 export default defineComponent({
 	name: "RepositoryCommit",
@@ -69,16 +74,17 @@ export default defineComponent({
 		BaseErrorMessage
 	},
 	setup() {
-		const commit = ref(null);
+		const commit: Ref<PrettyDateCommit | null> = ref(null);
 		const is_loading: Ref<boolean> = ref(true);
 		const fetch_failed: Ref<string> = ref("");
 
 		const fetchCommit = async(repository: string, commit_id: string) => {
-			const commit_data = await fetchData(`repos/${repository}/log/${commit_id}`, fetch_failed, is_loading, "commit");
+			const commit_data: Commit = await fetchData(`repos/${repository}/log/${commit_id}`, fetch_failed, is_loading, "commit");
 
 			if(commit_data) {
-				commit_data.date = format(new Date(commit_data.date * 1000), "yyyy-MM-dd hh:mm");
-				commit.value = commit_data;
+				const pretty_commit = commit_data as PrettyDateCommit;
+				pretty_commit.pretty_date = format(new Date(commit_data.date * 1000), "yyyy-MM-dd hh:mm");
+				commit.value = pretty_commit;
 			}
 		};
 

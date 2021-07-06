@@ -16,11 +16,12 @@
 <script lang="ts">
 import { defineComponent, Ref, ref } from "vue";
 import fetchData from "../util/fetch";
+import { Tree } from "shared_types";
+import { getParam } from "../util/util";
 
 import RepositoryTreeBlob from "../components/RepositoryTreeBlob.vue";
 import Loading from "vue-loading-overlay";
 import BaseErrorMessage from "../components/BaseErrorMessage.vue";
-import { getParam } from "../util/util";
 
 export default defineComponent({
 	name: "RepositoryAbout",
@@ -35,9 +36,9 @@ export default defineComponent({
 		const fetch_failed: Ref<string> = ref("");
 
 		const fetchReadme = async(repository: string) => {
-			const readme_data = await fetchData(`repos/${repository}/tree?path=README.md`, fetch_failed, is_loading, "tree");
+			const readme_data: Tree = await fetchData(`repos/${repository}/tree?path=README.md`, fetch_failed, is_loading, "tree");
 
-			if(readme_data) {
+			if(readme_data && typeof readme_data.content === "string") {
 				readme.value = readme_data.content;
 			}
 		};

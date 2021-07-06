@@ -2,25 +2,7 @@
 import { defineComponent, h, PropType, VNode } from "vue";
 import hljs from "highlight.js";
 import hljs_languages from "../util/hljs-languages";
-
-type Hunk = {
-	new_start: number,
-	new_lines_cnt: number,
-	new_lines: number[],
-	old_start: number,
-	old_lines_cnt: number,
-	deleted_lines: number[],
-	hunk: string
-}
-
-type Patch = {
-	additions: number,
-	deletions: number,
-	from: string,
-	to: string,
-	too_large: boolean,
-	hunks: Hunk[]
-}
+import { Patch } from "shared_types";
 
 export default defineComponent({
 	name: "CommitPatch",

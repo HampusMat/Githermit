@@ -29,18 +29,14 @@
 
 <script lang="ts">
 import { defineComponent, Ref, ref } from "vue";
+import fetchData from "../util/fetch";
+import { formatDistance } from "date-fns";
+import { RepositorySummary } from "shared_types";
+
 import HomeHeader from "../components/HomeHeader.vue";
 import HomeProjectsHeader from "../components/HomeProjectsHeader.vue";
 import Loading from "vue-loading-overlay";
 import BaseErrorMessage from "../components/BaseErrorMessage.vue";
-import fetchData from "../util/fetch";
-import { formatDistance } from "date-fns";
-
-type Repository = {
-	name: string,
-	description: string,
-	last_updated: number | string
-}
 
 export default defineComponent({
 	name: "Home",
@@ -51,15 +47,15 @@ export default defineComponent({
 		BaseErrorMessage
 	},
 	setup() {
-		const projects = ref({});
+		const projects: Ref<RepositorySummary[] | null> = ref(null);
 		const search: Ref<string | null> = ref(null);
 		const is_loading: Ref<boolean> = ref(true);
-		const fetch_failed: Ref<string | null> = ref(null);
+		const fetch_failed: Ref<string> = ref("");
 
 		const fetchProjects = async() => {
-			const projects_data: Repository[] = await fetchData("repos", fetch_failed, is_loading, "projects");
+			const projects_data: RepositorySummary[] = await fetchData("repos", fetch_failed, is_loading, "projects");
 
-			projects_data.reduce((result: Repository[], project) => {
+			projects_data.reduce((result: RepositorySummary[], project) => {
 				if(typeof project.last_updated === "number") {
 					project.last_updated = formatDistance(new Date(project.last_updated * 1000), new Date(), { addSuffix: true });
 					result.push(project);

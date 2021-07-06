@@ -53,22 +53,10 @@ import { defineComponent, Ref, ref } from "vue";
 import { format } from "date-fns";
 import fetchData from "../util/fetch";
 import { getParam } from "../util/util";
+import { LogCommit } from "shared_types";
 
 import Loading from "vue-loading-overlay";
 import BaseErrorMessage from "../components/BaseErrorMessage.vue";
-
-type Commit = {
-	id: string,
-	author: {
-		name: string,
-		email: string
-	},
-	message: string,
-	date: number,
-	insertions: number,
-	deletions: number,
-	files_changed: number
-}
 
 export default defineComponent({
 	name: "RepositoryLog",
@@ -82,12 +70,12 @@ export default defineComponent({
 		};
 	},
 	setup() {
-		const commits: Ref<Commit[] | null> = ref(null);
+		const commits: Ref<LogCommit[] | null> = ref(null);
 		const is_loading: Ref<boolean> = ref(true);
 		const fetch_failed: Ref<string> = ref("");
 
 		const fetchLog = async(repository: string) => {
-			const log_data: Commit[] = await fetchData(`repos/${repository}/log`, fetch_failed, is_loading, "log");
+			const log_data: LogCommit[] = await fetchData(`repos/${repository}/log`, fetch_failed, is_loading, "log");
 			if(log_data) {
 				commits.value = log_data;
 			}

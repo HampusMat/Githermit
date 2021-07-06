@@ -28,27 +28,13 @@
 import { defineComponent, Ref, ref } from "vue";
 import fetchData from "../util/fetch";
 import { getParam } from "../util/util";
+import { Tree, TreeEntry } from "shared_types";
 
 import BaseBreadcrumb from "../components/BaseBreadcrumb.vue";
 import RepositoryTreeBlob from "../components/RepositoryTreeBlob.vue";
 import RepositoryTreeTree from "../components/RepositoryTreeTree.vue";
 import BaseErrorMessage from "../components/BaseErrorMessage.vue";
 import Loading from "vue-loading-overlay";
-
-type TreeEntry = {
-	name: string,
-	type: "tree" | "blob",
-	latest_commit: {
-		id: string,
-		message: string,
-		date: number
-	}
-};
-
-type Tree = {
-	type: "tree" | "blob",
-	content: string | TreeEntry[]
-};
 
 export default defineComponent({
 	name: "RepositoryTree",

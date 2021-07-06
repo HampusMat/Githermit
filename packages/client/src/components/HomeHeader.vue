@@ -9,6 +9,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
+import { Info } from "shared_types";
 
 export default defineComponent({
 	name: "HomeHeader",
@@ -17,10 +18,10 @@ export default defineComponent({
 		const about = ref("");
 
 		const fetchInfo = async() => {
-			const data = await (await fetch(`${window.location.protocol}//${window.location.host}/api/v1/info`)).json();
-			console.log(data.data);
-			title.value = data.data.title;
-			about.value = data.data.about;
+			const info: Info = (await (await fetch(`${window.location.protocol}//${window.location.host}/api/v1/info`)).json()).data;
+
+			title.value = info.title;
+			about.value = info.about;
 		};
 
 		return { title, about, fetchInfo };

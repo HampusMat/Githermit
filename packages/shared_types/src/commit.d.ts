@@ -18,7 +18,7 @@ export type Patch = {
 	too_large: boolean,
 	hunks: Hunk[]
 }
-export type Commit = {
+export interface Commit {
 	message: string,
 	author: Author,
 	date: number,
