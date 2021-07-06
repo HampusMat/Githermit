@@ -4,7 +4,10 @@
 		<RepositoryNavbar
 			:repository="$router.currentRoute._rawValue.params.repo" :active-page="$router.currentRoute._rawValue.path.split('/')[2]"
 			:has-readme="has_readme" />
-		<router-view />
+		<router-view v-if="!error" />
+		<template v-else>
+			{{ error }}
+		</template>
 	</div>
 </template>
 
@@ -25,27 +28,33 @@ export default defineComponent({
 	},
 	setup(props) {
 		const name: Ref<string> = ref("");
-		const description: Ref<string> = ref("");
+		const description: Ref<string | null> = ref(null);
 		const has_readme: Ref<boolean> = ref(false);
+		const error: Ref<string | null> = ref(null);
 
 		const fetchProjects = async(repository: string, router: Router, path: string) => {
-			const repository_data = await fetch(`${window.location.protocol}//${window.location.host}/api/v1/repos/${repository}`)
-				.catch(() => {
-					if(path.split("/").length === 2) {
-						router.replace(`/${repository}/log`);
-					};
-					return null;
-				});
+			const repository_data = await fetch(`${window.location.protocol}//${window.location.host}/api/v1/repos/${repository}`);
 
-			if(repository_data) {
-				const data: Repository = (await repository_data.json()).data;
-				name.value = data.name;
-				description.value = data.description;
-				has_readme.value = data.has_readme;
+			if(!repository_data.ok) {
+				error.value = repository_data.status === 404
+					? "404: Not found"
+					: "Unknown error has occurred!";
+
+				return;
 			}
+
+			if(path.split("/").length === 2) {
+				router.replace(`/${repository}/log`);
+			};
+
+			const data: Repository = (await repository_data.json()).data;
+
+			name.value = data.name;
+			description.value = data.description;
+			has_readme.value = data.has_readme;
 		};
 
-		return { name, description, has_readme, fetchProjects };
+		return { name, description, has_readme, fetchProjects, error };
 	},
 	created() {
 		this.fetchProjects(getParam(this.$route.params, "repo"), this.$router, this.$route.path);
