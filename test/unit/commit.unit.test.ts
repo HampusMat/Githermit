@@ -33,6 +33,8 @@ describe("Commit", () => {
 		let commit: Commit;
 
 		beforeAll(async () => {
+			jest.setTimeout(10000);
+
 			commit = await repository.latestCommit();
 		});
 

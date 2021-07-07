@@ -7,8 +7,6 @@ const promiseExec = promisify(exec);
 config({ path: "test/test.env" });
 
 export default async function init() {
-	jest.setTimeout(10000);
-
 	const can_access = await access(process.env.BASE_DIR)
 		.then(() => true)
 		.catch(() => false);
