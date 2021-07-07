@@ -5,7 +5,7 @@
 	"author": "HampusMat",
 	"private": true,
 	"scripts": {
-		"clean": "rm -rf node_modules dist packages/*/node_modules packages/*/dist",
+		"clean": "rm -rf node_modules git packages/*/node_modules packages/*/dist",
 		"dev": "concurrently -k --kill-others-on-fail \"cd packages/client && yarn serve\" \"cd packages/server && yarn dev\"",
 		"build": "cd packages/client && yarn build && cd ../server && yarn tsc",
 		"start": "node packages/server/dist/app.js",
@@ -15,12 +15,15 @@
 		"packages/*"
 	],
 	"devDependencies": {
+		"@types/fs-extra": "^9.0.12",
 		"@types/jest": "^26.0.23",
-		"concurrently": "^6.2.0",
-		"jest": "^27.0.6",
-		"ts-jest": "^27.0.3",
-		"typescript": "^4.3.5",
 		"client": "^1.0.0",
-		"server": "^1.0.0"
+		"concurrently": "^6.2.0",
+		"dotenv": "^10.0.0",
+		"fs-extra": "^10.0.0",
+		"jest": "^27.0.6",
+		"server": "^1.0.0",
+		"ts-jest": "^27.0.3",
+		"typescript": "^4.3.5"
 	}
 }

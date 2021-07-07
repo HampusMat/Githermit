@@ -1,10 +1,8 @@
 import { Repository } from "server/src/git/repository";
 
 describe("Repository", () => {
-	const base_dir = "/home/hampus/Projects";
-
 	test("Open existing repository", async () => {
-		const openRepository = jest.fn(() => Repository.open(base_dir, "githermit"));
+		const openRepository = jest.fn(() => Repository.open(process.env.BASE_DIR, process.env.AVAIL_REPO));
 
 		await openRepository();
 		
@@ -12,11 +10,11 @@ describe("Repository", () => {
 	});
 
 	test("Open nonexistant repository throws", async () => {
-		expect(Repository.open(base_dir, "angular")).rejects.toThrow();
+		expect(Repository.open(process.env.BASE_DIR, process.env.UNAVAIL_REPO)).rejects.toThrow();
 	});
 
 	test("Open all repositories", async () => {
-		const openAllRepositories = jest.fn(() => Repository.openAll(base_dir));
+		const openAllRepositories = jest.fn(() => Repository.openAll(process.env.BASE_DIR));
 
 		await openAllRepositories();
 
@@ -27,17 +25,17 @@ describe("Repository", () => {
 		let repository: Repository;
 
 		beforeAll(async () => {
-			repository = await Repository.open(base_dir, "githermit");
+			repository = await Repository.open(process.env.BASE_DIR, process.env.AVAIL_REPO);
 		});
 
 		test("Lookup if an existing object exists", async () => {
-			const exists = await repository.lookupExists("16778756fb25808a1311403590cd7d36fbbeee6c");
+			const exists = await repository.lookupExists(process.env.AVAIL_OBJECT);
 
 			expect(exists).toBeTruthy();
 		});
 
 		test("Lookup if an nonexistant object exists", async () => {
-			const exists = await repository.lookupExists("601747563bff808a1d12403690cd7d36fbbeafcc");
+			const exists = await repository.lookupExists(process.env.UNAVAIL_OBJECT);
 
 			expect(exists).toBeFalsy();
 		});
