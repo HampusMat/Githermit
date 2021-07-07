@@ -1,4 +1,4 @@
-import { access, mkdir, remove, copy } from "fs-extra";
+import { access, mkdir, remove } from "fs-extra";
 import { promisify } from "util";
 import { exec } from "child_process";
 import { config } from "dotenv";
@@ -11,24 +11,15 @@ export default async function init() {
 		.then(() => true)
 		.catch(() => false);
 
-	console.log(can_access);
-
 	if(can_access) {
 		await remove(process.env.BASE_DIR);
 	}
 
 	await mkdir(process.env.BASE_DIR);
-	await mkdir(`${process.env.BASE_DIR}/${process.env.AVAIL_REPO}`);
 
-	await copy(".git", `${process.env.BASE_DIR}/${process.env.AVAIL_REPO}`);
+	const git_clone = await promiseExec(`git clone -q --bare ${process.env.AVAIL_REPO_URL} ${process.env.BASE_DIR}/${process.env.AVAIL_REPO}`);
 
-	process.chdir(`${process.env.BASE_DIR}/${process.env.AVAIL_REPO}`);
-
-	const { stdout, stderr } = await promiseExec("git config core.bare true");
-
-	if(stderr) {
-		throw(stderr);
+	if(git_clone.stderr) {
+		throw(git_clone.stderr);
 	}
-
-	process.chdir("../..");
 }
