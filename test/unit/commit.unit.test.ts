@@ -1,6 +1,8 @@
 import { Repository } from "server/src/git/repository";
 import { Commit } from "server/src/git/commit";
 
+jest.setTimeout(10000);
+
 describe("Commit", () => {
 	let repository: Repository;
 
@@ -33,14 +35,11 @@ describe("Commit", () => {
 		let commit: Commit;
 
 		beforeAll(async () => {
-			jest.setTimeout(10000);
-
 			commit = await repository.latestCommit();
 		});
 
 		test("Get stats", async () => {
 			const getStats = jest.fn(() => commit.stats());
-
 			await getStats();
 
 			expect(getStats).toReturn();
