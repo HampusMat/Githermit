@@ -5,6 +5,7 @@ cache:
         - node_modules/
 
 test:
+    stage: test
     before_script:
         - apt-get update -y -qq
         - apt-get install -y -qq apt-utils
@@ -12,3 +13,4 @@ test:
     script:
         - yarn install
         - yarn test
+
