@@ -15,20 +15,22 @@
     "nodegit": "^0.27.0",
     "nodemon": "^2.0.7",
     "tar-stream": "^2.2.0",
-    "whatwg-url": "^8.5.0"
+    "whatwg-url": "^9.0.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.1",
-    "@types/node": "^15.12.1",
+    "@types/node": "^16.3.1",
     "@types/nodegit": "^0.27.2",
     "@types/tar-stream": "^2.2.0",
     "@types/whatwg-url": "^8.2.0",
-	"shared_types": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^4.26.0",
     "@typescript-eslint/parser": "^4.26.0",
     "eslint": "^7.30.0",
     "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "shared_types": "^1.0.0",
     "typescript": "^4.3.2"
   }
 }
