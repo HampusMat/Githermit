@@ -2,7 +2,7 @@
 	<div class="container">
 		<RepositoryHeader :name="name" :description="description" />
 		<RepositoryNavbar
-			:repository="$router.currentRoute._rawValue.params.repo" :active-page="$router.currentRoute._rawValue.path.split('/')[2]"
+			:repository="$route.params.repo" :active-page="$route.path.split('/')[2]"
 			:has-readme="has_readme" />
 		<router-view v-if="!error" />
 		<template v-else>

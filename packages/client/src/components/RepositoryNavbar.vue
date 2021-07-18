@@ -36,7 +36,8 @@ export default defineComponent({
 		},
 		activePage: {
 			type: String,
-			required: true
+			required: false,
+			default: null
 		},
 		hasReadme: {
 			type: Boolean,
