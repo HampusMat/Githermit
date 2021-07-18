@@ -23,7 +23,7 @@ Githermit requires no such thing. All the steps to get it set up are in [Usage](
 - [x] Blob page
 - [x] Markdown support
 - [ ] Tests
-- [ ] Fix the stupid bug caused by empty patches
+- [x] Fix the stupid bug caused by empty patches
 - [ ] Branch switching
 - [x] Custom favicon support
 - [x] Custom website title support

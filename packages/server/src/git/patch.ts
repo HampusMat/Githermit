@@ -89,9 +89,13 @@ export class Patch {
 		return false;
 	}
 
-	public async getHunks(index: number): Promise<Hunk[] | null> {
-		const content = (await this.content(index)).split("\n");
+	public async getHunks(patch_index: number): Promise<Hunk[] | null> {
+		const content = (await this.content(patch_index)).split("\n");
 		const hunks = await this._ng_patch.hunks();
+
+		if(hunks.length === 0) {
+			return null;
+		}
 
 		const hunks_data = hunks.reduce((result: Hunks, hunk, hunk_index) => {
 			const hunk_header = hunk.header();

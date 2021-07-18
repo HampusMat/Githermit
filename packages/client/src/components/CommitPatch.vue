@@ -19,6 +19,12 @@ export default defineComponent({
 			]);
 		}
 
+		if(!props.patch.hunks) {
+			return () => h("div", { class: "ps-3 pt-3" }, [
+				h("span", "Empty.")
+			]);
+		}
+
 		// Array of hunks without the first chunk headers
 		const all_hunks = props.patch.hunks.map((hunk) => hunk.hunk.split("\n").slice(1).join("\n"));
 
