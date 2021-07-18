@@ -5,7 +5,7 @@
   "author": "HampusMat",
   "license": "MIT",
   "scripts": {
-    "dev": "yarn tsc && concurrently -k --kill-others-on-fail \"yarn tsc --watch \" \"nodemon --exitcrash dist/app.js\""
+    "dev": "nodemon --exitcrash src/app.ts"
   },
   "dependencies": {
     "date-fns": "^2.22.1",
@@ -13,7 +13,6 @@
     "fastify-static": "^4.2.2",
     "js-yaml": "^4.1.0",
     "nodegit": "^0.27.0",
-    "nodemon": "^2.0.7",
     "tar-stream": "^2.2.0",
     "whatwg-url": "^9.0.0"
   },
@@ -30,7 +29,9 @@
     "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.0",
+    "nodemon": "^2.0.12",
     "shared_types": "^1.0.0",
+    "ts-node": "^10.1.0",
     "typescript": "^4.3.2"
   }
 }
