@@ -68,15 +68,15 @@ describe("Repository", () => {
 			await expect(repository.lookupExists(env.UNAVAIL_OBJECT)).resolves.toBeFalsy();
 		});
 
-		it("Gets the latest commit", async () => {
+		it("Gets the master commit", async () => {
 			expect.assertions(8);
 
-			const latest_commit = await repository.latestCommit();
+			const master_commit = await repository.masterCommit();
 
-			expect(latest_commit).toBeDefined();
-			expect(latest_commit).toBeInstanceOf(Commit);
+			expect(master_commit).toBeDefined();
+			expect(master_commit).toBeInstanceOf(Commit);
 
-			expectCommitProperties(latest_commit);
+			expectCommitProperties(master_commit);
 		});
 
 		it("Gets the commits", async () => {

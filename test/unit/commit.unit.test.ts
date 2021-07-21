@@ -48,7 +48,7 @@ describe("Commit", () => {
 		let commit: Commit;
 
 		beforeAll(async () => {
-			commit = await repository.latestCommit();
+			commit = await repository.masterCommit();
 		});
 
 		it("Gets the stats", async () => {
