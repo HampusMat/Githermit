@@ -5,7 +5,7 @@
   "author": "HampusMat",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon --exitcrash src/app.ts"
+    "dev": "nodemon src/app.ts"
   },
   "dependencies": {
     "date-fns": "^2.22.1",
