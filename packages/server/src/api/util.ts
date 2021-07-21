@@ -26,30 +26,8 @@ export class VerificationResult {
 	message: string | null = null;
 }
 
-export function verifyRepoName(base_dir: string, repo_name: string): Promise<VerificationResult> {
-	return new Promise<VerificationResult>(resolve => {
-		console.log(repo_name);
-		const is_valid_repo_name = (/^[a-zA-Z0-9.\-_]+$/u).test(repo_name);
-		if(!is_valid_repo_name) {
-			resolve(new VerificationResult("INVALID", "repository"));
-			return;
-		}
-
-		readdir(base_dir, (err, dir_content) => {
-			if(err) {
-				resolve(new VerificationResult("NOT_FOUND", "repository"));
-				return;
-			}
-
-			const dir_content_repos = dir_content.filter(repo => repo.endsWith(".git"));
-			if(!dir_content_repos.includes(repo_name + ".git")) {
-				resolve(new VerificationResult("NOT_FOUND", "repository"));
-				return;
-			}
-
-			resolve(new VerificationResult("SUCCESS"));
-		});
-	});
+export function verifyRepoName(repo_name: string): boolean {
+	return /^[a-zA-Z0-9.\-_]+$/u.test(repo_name);
 }
 
 export async function verifySHA(repository: Repository, sha: string): Promise<VerificationResult> {

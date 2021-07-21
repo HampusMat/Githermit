@@ -1,5 +1,5 @@
 import { Commit as NodeGitCommit, Oid as NodeGitOid } from "nodegit";
-import { Author } from "./misc";
+import { Author } from "../../../shared_types/src";
 import { Diff } from "./diff";
 import { Repository } from "./repository";
 import { Tree } from "./tree";
@@ -65,5 +65,9 @@ export class Commit {
 		return NodeGitCommit.lookup(repository.nodegitRepository, NodeGitOid.fromString(id))
 			.then(() => true)
 			.catch(() => false);
+	}
+
+	public static async masterCommit(owner: Repository): Promise<Commit> {
+		return new Commit(owner, await owner.nodegitRepository.getMasterCommit());
 	}
 }

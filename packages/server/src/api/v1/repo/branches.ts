@@ -8,7 +8,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/branches",
 		handler: async(req, reply) => {
-			const branches = await (await req.repository).branches();
+			const branches = await req.repository.branches();
 
 			reply.send({
 				data: branches.map(branch => {
@@ -25,7 +25,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/branches/:branch",
 		handler: async(req, reply) => {
-			const branch = await Branch.lookup(await req.repository, req.params.branch);
+			const branch = await Branch.lookup(req.repository, req.params.branch);
 
 			if(!branch) {
 				reply.code(404).send({ error: "Branch not found!" });

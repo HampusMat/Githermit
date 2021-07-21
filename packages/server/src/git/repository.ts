@@ -7,6 +7,8 @@ import { Commit } from "./commit";
 import { FastifyReply } from "fastify";
 import { Tag } from "./tag";
 import { Tree } from "./tree";
+import { BranchError, createError, RepositoryError } from "./error";
+import { isNodeGitReferenceBranch, isNodeGitReferenceTag, Reference } from "./reference";
 
 function getFullRepositoryName(repo_name: string) {
 	return repo_name.endsWith(".git") ? repo_name : `${repo_name}.git`;
@@ -19,11 +21,20 @@ type RepositoryName = {
 
 type RepositoryConstructorData = {
 	description: string | null,
-	owner: string | null
+	owner: string | null,
+	branch: string
+}
+
+// This fucking shit isn't in the Nodegit documentation.
+interface WeirdNodeGitError extends Error {
+	errno: number;
+	errorFunction: string;
 }
 
 export class Repository {
 	private _ng_repository: NodeGitRepository;
+
+	private _branch: string;
 
 	public name: RepositoryName;
 	public base_dir: string;
@@ -39,6 +50,12 @@ export class Repository {
 		this.base_dir = dirname(repository.path());
 		this.description = data.description;
 		this.owner = data.owner;
+
+		this._branch = data.branch;
+	}
+
+	public branch(): Promise<Branch> {
+		return Branch.lookup(this, this._branch);
 	}
 
 	public async commits(): Promise<Commit[]> {
@@ -49,9 +66,7 @@ export class Repository {
 	}
 
 	public async tree(): Promise<Tree> {
-		const master_commit = await this._ng_repository.getMasterCommit();
-		const tree = await master_commit.getTree();
-		return new Tree(this, tree);
+		return Tree.ofRepository(this);
 	}
 
 	public lookupExists(id: string): Promise<boolean> {
@@ -60,18 +75,16 @@ export class Repository {
 			.catch(() => false);
 	}
 
-	public async branches(): Promise<Branch[]> {
-		const references = await this._ng_repository.getReferences();
-		return references.filter(ref => ref.isBranch()).map(branch => new Branch(this, branch));
+	public branches(): Promise<Branch[]> {
+		return Reference.all(this, Branch, isNodeGitReferenceBranch);
 	}
 
 	public async tags(): Promise<Tag[]> {
-		const references = await this._ng_repository.getReferences();
-		return references.filter(ref => ref.isTag()).map(tag => new Tag(this, tag));
+		return Reference.all(this, Tag, isNodeGitReferenceTag);
 	}
 
-	public async latestCommit(): Promise<Commit> {
-		return new Commit(this, await this._ng_repository.getMasterCommit());
+	public async masterCommit(): Promise<Commit> {
+		return Commit.masterCommit(this);
 	}
 
 	public HTTPconnect(req: Request, reply: FastifyReply): void {
@@ -82,12 +95,25 @@ export class Repository {
 		return this._ng_repository;
 	}
 
-	public static async open(base_dir: string, repository: string): Promise<Repository> {
-		const ng_repository = await NodeGitRepository.openBare(`${base_dir}/${getFullRepositoryName(repository)}`);
+	public static async open(base_dir: string, repository: string, branch?: string): Promise<Repository> {
+		let ng_repository = await NodeGitRepository.openBare(`${base_dir}/${getFullRepositoryName(repository)}`).catch((err: WeirdNodeGitError) => {
+			if(err.errno === -3) {
+				throw(createError(RepositoryError, 404, "Repository not found"));
+			}
+
+			throw(createError(RepositoryError, 500, "Unknown error"));
+		});
+
+		if(branch) {
+			if(!await Branch.lookupExists(ng_repository, branch)) {
+				throw(createError(BranchError, 404, "Branch not found!"));
+			}
+		}
 
 		return new Repository(ng_repository, {
 			description: await getFile(base_dir, getFullRepositoryName(repository), "description"),
-			owner: await getFile(base_dir, getFullRepositoryName(repository), "owner")
+			owner: await getFile(base_dir, getFullRepositoryName(repository), "owner"),
+			branch: branch || "master"
 		});
 	}
 

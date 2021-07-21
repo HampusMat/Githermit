@@ -9,26 +9,31 @@ import branches from "./branches";
 import log from "./log";
 import { verifyRepoName } from "../../util";
 import { Tree as APITree, Tag as APITag, TreeEntry as APITreeEntry } from "shared_types";
+import { BaseError } from "../../../git/error";
+import { Tree } from "../../../git/tree";
 
 declare module "fastify" {
 	interface FastifyRequest {
-		repository: Promise<Repository>,
+		repository: Repository,
 	}
 }
 
 function addHooks(fastify: FastifyInstance, opts: FastifyPluginOptions): void {
-	fastify.addHook("preHandler", (req: CoolFastifyRequest, reply, hookDone) => {
-		req.repository = Repository.open(opts.config.settings.base_dir, req.params.repo);
+	fastify.addHook("preHandler", async(req: CoolFastifyRequest, reply) => {
+		const repository = await Repository.open(opts.config.settings.base_dir, req.params.repo, req.query.branch).catch((err: BaseError) => err);
 
-		hookDone();
+		if(repository instanceof BaseError) {
+			reply.code(repository.code).send({ error: repository.message });
+			return;
+		}
+
+		req.repository = repository;
 	});
 
 	fastify.addHook("onRequest", async(req: CoolFastifyRequest, reply) => {
-		const repo_verification = await verifyRepoName(opts.config.settings.base_dir, req.params.repo);
-		if(repo_verification.success === false && repo_verification.code) {
-			reply.code(repo_verification.code).send({ error: repo_verification.message });
+		if(!verifyRepoName(req.params.repo)) {
+			reply.code(400).send({ error: "Bad request" });
 		}
-
 	});
 }
 async function treeEntryMap(entry: TreeEntry) {
@@ -63,23 +68,28 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/tree",
 		handler: async(req, reply) => {
-			const tree = await (await req.repository).tree();
+			const tree: Tree | BaseError = await req.repository.tree().catch(err => err);
+
+			if(tree instanceof BaseError) {
+				reply.code(tree.code).send({ error: tree.message });
+				return;
+			}
 
 			const tree_path = (Object.keys(req.query).length !== 0 && req.query.path) ? req.query.path : null;
 
 			let data: APITree;
 
 			if(tree_path) {
-				const tree_found = await tree.find(tree_path);
+				const tree_path_entry: Tree | Blob | BaseError = await tree.find(tree_path).catch(err => err);
 
-				if(!tree_found) {
-					reply.code(404).send({ error: "Tree path not found!" });
+				if(tree_path_entry instanceof BaseError) {
+					reply.code(tree_path_entry.code).send({ error: tree_path_entry.message });
 					return;
 				}
 
-				data = tree_found instanceof Blob
-					? { type: "blob", content: await tree_found.content() }
-					: { type: "tree", content: await Promise.all(tree_found.entries().map(treeEntryMap)) };
+				data = tree_path_entry instanceof Blob
+					? { type: "blob", content: await tree_path_entry.content() }
+					: { type: "tree", content: await Promise.all(tree_path_entry.entries().map(treeEntryMap)) };
 			}
 			else {
 				data = { type: "tree", content: await Promise.all(tree.entries().map(treeEntryMap)) };
@@ -93,7 +103,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/tags",
 		handler: async(req, reply) => {
-			const tags = await (await req.repository).tags();
+			const tags = await req.repository.tags();
 			reply.send({
 				data: await Promise.all(tags.map(tagMap))
 			});

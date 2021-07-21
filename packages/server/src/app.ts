@@ -9,6 +9,7 @@ import fastifyStatic from "fastify-static";
 import { join } from "path";
 import { load } from "js-yaml";
 import { verifyRepoName } from "./api/util";
+import { BaseError } from "./git/error";
 
 type Settings = {
 	host: string,
@@ -95,9 +96,9 @@ fastify.route<Route>({
 	handler: async(req, reply) => {
 		reply.header("Content-Type", "application/x-git-upload-pack-advertisement");
 
-		const repo_verification = await verifyRepoName(settings.base_dir, req.params.repo);
-		if(repo_verification.success === false && repo_verification.code) {
-			reply.code(repo_verification.code).send(repo_verification.message);
+		if(!verifyRepoName(req.params.repo)) {
+			reply.code(400).send({ error: "Bad request" });
+			return;
 		}
 
 		if(!req.query.service) {
@@ -126,11 +127,9 @@ fastify.route<Route>({
 	method: "POST",
 	url: "/:repo([a-zA-Z0-9\\.\\-_]+)/git-upload-pack",
 	handler: async(req, reply) => {
-		const repo_verification = await verifyRepoName(settings.base_dir, req.params.repo);
-
-		if(repo_verification.success === false && repo_verification.code) {
-			reply.header("Content-Type", "application/x-git-upload-pack-result");
-			reply.code(repo_verification.code).send(repo_verification.message);
+		if(!verifyRepoName(req.params.repo)) {
+			reply.code(400).send({ error: "Bad request" });
+			return;
 		}
 
 		const repository = await Repository.open(settings.base_dir, req.params.repo);
@@ -151,11 +150,22 @@ fastify.route<Route>({
 	method: "GET",
 	url: "/:repo([a-zA-Z0-9\\.\\-_]+)/refs/tags/:tag",
 	handler: async(req, reply) => {
-		const repository = await Repository.open(settings.base_dir, req.params.repo);
-		const tag = await Tag.lookup(repository, req.params.tag);
+		if(!verifyRepoName(req.params.repo)) {
+			reply.code(400).send({ error: "Bad request" });
+			return;
+		}
 
-		if(!tag) {
-			reply.code(404).send("Tag not found!");
+		const repository: Repository | BaseError = await Repository.open(settings.base_dir, req.params.repo).catch(err => err);
+
+		if(repository instanceof BaseError) {
+			reply.code(repository.code).send(repository.message);
+			return;
+		}
+
+		const tag = await Tag.lookup(repository, req.params.tag).catch(err => err);
+
+		if(tag instanceof BaseError) {
+			reply.code(tag.code).send(tag.message);
 			return;
 		}
 

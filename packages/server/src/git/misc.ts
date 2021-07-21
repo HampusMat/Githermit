@@ -6,11 +6,6 @@ export async function findAsync<T>(arr: T[], callback: (t: T) => Promise<boolean
 	return arr[index];
 }
 
-export type Author = {
-	name: string,
-	email: string
-}
-
 export function getFile(base_dir: string, repository: string, file: string): Promise<string | null> {
 	return new Promise(resolve => {
 		readFile(`${base_dir}/${repository}/${file}`, (err, content) => {

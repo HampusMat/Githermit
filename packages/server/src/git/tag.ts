@@ -1,6 +1,5 @@
 import { Object as NodeGitObject, Tag as NodeGitTag } from "nodegit";
 import { Pack, pack } from "tar-stream";
-import { Author } from "./misc";
 import { Blob } from "./blob";
 import { Commit } from "./commit";
 import { FastifyReply } from "fastify";
@@ -10,6 +9,8 @@ import { Tree } from "./tree";
 import { TreeEntry } from "./tree_entry";
 import { createGzip } from "zlib";
 import { pipeline } from "stream";
+import { createError, TagError } from "./error";
+import { Author } from "../../../shared_types/src";
 
 async function addArchiveEntries(entries: TreeEntry[], repository: string, archive: Pack) {
 	for(const tree_entry of entries) {
@@ -69,14 +70,15 @@ export class Tag extends Reference {
 			});
 	}
 
-	public static async lookup(owner: Repository, tag: string): Promise<Tag | null> {
+	public static async lookup(owner: Repository, tag: string): Promise<Tag> {
 		const reference = await owner.nodegitRepository.getReference(tag).catch(err => {
 			if(err.errno === -3) {
-				return null;
+				throw(createError(TagError, 404, "Tag not found"));
 			}
 
-			throw(err);
+			throw(createError(TagError, 404, "Failed to get tag"));
 		});
-		return reference ? new Tag(owner, reference) : null;
+
+		return new Tag(owner, reference);
 	}
 }

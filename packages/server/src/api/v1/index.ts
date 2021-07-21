@@ -4,6 +4,7 @@ import { Route } from "../../fastify_types";
 import repo from "./repo";
 import { verifyRepoName } from "../util";
 import { Info as APIInfo, RepositorySummary as APIRepositorySummary, Repository as APIRepository } from "shared_types";
+import { BaseError } from "../../git/error";
 
 function setHandlers(fastify: FastifyInstance): void {
 	fastify.setErrorHandler((err, req, reply) => {
@@ -32,7 +33,7 @@ function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 					return <APIRepositorySummary>{
 						name: repository.name.short,
 						description: repository.description,
-						last_updated: (await repository.latestCommit()).date
+						last_updated: (await repository.masterCommit()).date
 					};
 				}))
 			});
@@ -43,13 +44,17 @@ function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/repos/:repo",
 		handler: async(req, reply) => {
-			const repo_verification = await verifyRepoName(opts.config.settings.base_dir, req.params.repo);
-			if(repo_verification.success === false && repo_verification.code) {
-				reply.code(repo_verification.code).send({ error: repo_verification.message });
+			if(!verifyRepoName(req.params.repo)) {
+				reply.code(400).send({ error: "Bad request" });
 				return;
 			}
 
-			const repository = await Repository.open(opts.config.settings.base_dir, req.params.repo);
+			const repository = await Repository.open(opts.config.settings.base_dir, req.params.repo).catch(err => err);
+
+			if(repository instanceof BaseError) {
+				reply.code(repository.code).send({ error: repository.message });
+				return;
+			}
 
 			const data: APIRepository = {
 				name: repository.name.short,

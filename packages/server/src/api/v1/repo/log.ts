@@ -37,7 +37,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/log",
 		handler: async(req, reply) => {
-			const commits = (await (await req.repository).commits());
+			const commits = await req.repository.commits();
 
 			reply.send({
 				data: await Promise.all(commits.map(commitMap))
@@ -49,12 +49,12 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/log/:commit",
 		handler: async(req, reply) => {
-			const commit_verification = await verifySHA(await req.repository, req.params.commit);
+			const commit_verification = await verifySHA(req.repository, req.params.commit);
 			if(commit_verification.success === false && commit_verification.code) {
 				reply.code(commit_verification.code).send({ error: commit_verification.message });
 			}
 
-			const commit = await Commit.lookup(await req.repository, req.params.commit);
+			const commit = await Commit.lookup(req.repository, req.params.commit);
 
 			const stats = await commit.stats();
 
