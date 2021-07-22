@@ -4,6 +4,7 @@ import { Tree } from "server/src/git/tree";
 import { Branch } from "server/src/git/branch";
 import { Tag } from "server/src/git/tag";
 import { EnvironmentVariables, expectCommitProperties } from "../util";
+import { BaseError } from "server/src/git/error";
 
 const env = process.env as EnvironmentVariables;
 
@@ -20,7 +21,7 @@ describe("Repository", () => {
 	it("Opens a repository successfully", async () => {
 		expect.assertions(8);
 
-		const repository = await Repository.open(process.env.BASE_DIR, env.AVAIL_REPO);
+		const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
 
 		expect(repository).toBeDefined();
 		expect(repository).toBeInstanceOf(Repository);
@@ -31,7 +32,7 @@ describe("Repository", () => {
 	it("Fails to open a nonexistant repository", async () => {
 		expect.assertions(1);
 
-		await expect(Repository.open(process.env.BASE_DIR, env.UNAVAIL_REPO)).rejects.toThrow();
+		await expect(Repository.open(env.BASE_DIR, env.UNAVAIL_REPO)).rejects.toBeInstanceOf(BaseError);
 	});
 
 	it("Opens all repositories", async () => {
@@ -53,7 +54,7 @@ describe("Repository", () => {
 		let repository: Repository;
 
 		beforeAll(async () => {
-			repository = await Repository.open(process.env.BASE_DIR, env.AVAIL_REPO);
+			repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
 		});
 
 		it("Looks up if an object that exists exist", async () => {
