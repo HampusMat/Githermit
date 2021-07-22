@@ -15,7 +15,7 @@ describe("Commit", () => {
 		repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
 	});
 
-	it("Looks up a commit", async () => {
+	it("Should look up a commit", async () => {
 		expect.assertions(8);
 
 		const commit = await Commit.lookup(repository, env.AVAIL_COMMIT);
@@ -26,19 +26,19 @@ describe("Commit", () => {
 		expectCommitProperties(commit);
 	});
 
-	it("Looks up a nonexistant commit and throws", async () => {
+	it("Should look up a nonexistant commit and throw", async () => {
 		expect.assertions(1);
 
 		await expect(Commit.lookup(repository, env.UNAVAIL_COMMIT)).rejects.toThrow();
 	});
 
-	it("Looks up if an commit that exists exist", async () => {
+	it("Should look up if an existent commit exists and respond true", async () => {
 		expect.assertions(1);
 
 		await expect(Commit.lookupExists(repository, env.AVAIL_COMMIT)).resolves.toBeTruthy();
 	});
 
-	it("Looks up if an nonexistant commit exists", async () => {
+	it("Should look up if an nonexistant commit exists and respond false", async () => {
 		expect.assertions(1);
 
 		await expect(Commit.lookupExists(repository, env.UNAVAIL_COMMIT)).resolves.toBeFalsy();
@@ -51,7 +51,7 @@ describe("Commit", () => {
 			commit = await repository.masterCommit();
 		});
 
-		it("Gets the stats", async () => {
+		it("Should get the stats", async () => {
 			expect.assertions(4);
 
 			const stats = await commit.stats();
@@ -63,7 +63,7 @@ describe("Commit", () => {
 			expect(stats).toHaveProperty("files_changed");
 		});
 
-		it("Gets the diff", async () => {
+		it("Should get the diff", async () => {
 			expect.assertions(2);
 
 			const diff = await commit.diff();
@@ -72,7 +72,7 @@ describe("Commit", () => {
 			expect(diff).toBeInstanceOf(Diff);
 		});
 		
-		it("Gets the tree", async () => {
+		it("Should get the tree", async () => {
 			expect.assertions(2);
 
 			const tree = await commit.tree();
