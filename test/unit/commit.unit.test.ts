@@ -6,8 +6,6 @@ import { Tree } from "server/src/git/tree";
 
 const env = process.env as EnvironmentVariables;
 
-jest.setTimeout(10000);
-
 describe("Commit", () => {
 	let repository: Repository;
 
