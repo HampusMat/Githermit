@@ -5,7 +5,7 @@ import { EnvironmentVariables } from "../util";
 const env = process.env as EnvironmentVariables;
 
 describe("Miscellaneous functions", () => {
-	describe("FindAsync", () => {
+	describe("findAsync", () => {
 		const data: Promise<string>[] = [
 			new Promise((resolve) => {
 				resolve("hello!");
