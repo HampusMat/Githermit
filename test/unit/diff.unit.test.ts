@@ -1,7 +1,7 @@
 import { Repository } from "server/src/git/repository";
-import { Diff, PatchHeaderData } from "server/src/git/diff";
+import { Diff } from "server/src/git/diff";
 import { EnvironmentVariables } from "../util";
-import { Patch } from "../../packages/server/src/git/patch";
+import { Patch } from "server/src/git/patch";
 
 const env = process.env as EnvironmentVariables;
 
