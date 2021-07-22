@@ -1,7 +1,7 @@
 import { Diff as NodeGitDiff } from "nodegit";
 import { Patch } from "./patch";
 
-type PatchHeaderData = {
+export type PatchHeaderData = {
 	indexes: number[],
 	lengths: number[],
 	last: number | null
