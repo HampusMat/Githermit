@@ -5,7 +5,7 @@
 	"author": "HampusMat",
 	"private": true,
 	"scripts": {
-		"clean": "rm -rf node_modules git packages/*/node_modules packages/client/dist",
+		"clean": "rm -rf node_modules packages/*/node_modules packages/client/dist",
 		"dev": "concurrently -k --kill-others-on-fail \"cd packages/client && yarn serve\" \"cd packages/server && yarn dev\"",
 		"build": "cd packages/client && yarn build",
 		"start": "ts-node packages/server/src/app.ts",
