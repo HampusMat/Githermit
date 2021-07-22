@@ -1,15 +1,14 @@
 image: node:14-buster
 
 cache:
-	paths:
-		- node_modules/
+    paths:
+        - node_modules/
 
 test:
-	stage: test
-	before_script:
-		- apt-get update -y -qq
-		- DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git libpcre3 libpcre2-posix0 libkrb5-3 libk5crypto3 libcom-err2 libssl1.1 libssl-dev
-	script:
-		- yarn install
-		- yarn test --ci=true
-
+    stage: test
+    before_script:
+        - apt-get update -y -qq
+        - DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git libpcre3 libpcre2-posix0 libkrb5-3 libk5crypto3 libcom-err2 libssl1.1 libssl-dev
+    script:
+        - yarn install
+        - yarn test --ci=true
