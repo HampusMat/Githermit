@@ -42,6 +42,12 @@ export class BlobError extends BaseError {
 	}
 }
 
+export class MiscError extends BaseError {
+	constructor(code: number, message: string) {
+		super(code, "A misc error has occured: " + message);
+	}
+}
+
 type ErrorConstructorType<T> = new (code: number, message: string) => T;
 
 export function createError<E extends BaseError>(ErrorConstructor: ErrorConstructorType<E>, code: number, message: string): E {

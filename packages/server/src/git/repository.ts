@@ -7,7 +7,7 @@ import { Commit } from "./commit";
 import { FastifyReply } from "fastify";
 import { Tag } from "./tag";
 import { Tree } from "./tree";
-import { BranchError, createError, RepositoryError } from "./error";
+import { BaseError, BranchError, createError, RepositoryError } from "./error";
 import { isNodeGitReferenceBranch, isNodeGitReferenceTag, Reference } from "./reference";
 
 function getFullRepositoryName(repo_name: string) {
@@ -110,9 +110,11 @@ export class Repository {
 			}
 		}
 
+		const owner = await getFile(base_dir, getFullRepositoryName(repository), "owner").catch(err => err);
+
 		return new Repository(ng_repository, {
 			description: await getFile(base_dir, getFullRepositoryName(repository), "description"),
-			owner: await getFile(base_dir, getFullRepositoryName(repository), "owner"),
+			owner: owner instanceof BaseError ? null : owner,
 			branch: branch || "master"
 		});
 	}
