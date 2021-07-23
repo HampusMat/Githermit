@@ -33,6 +33,7 @@ export default function buildApp(settings: Settings, dist_dir: string): FastifyI
 	}
 
 	fastify.addContentTypeParser("application/x-git-upload-pack-request", (req, payload, done) => done(null, payload));
+	fastify.addContentTypeParser("application/x-git-receive-pack-request", (req, payload, done) => done(null, payload));
 
 	fastify.register(api, { prefix: "/api/v1", config: { settings: settings } });
 
