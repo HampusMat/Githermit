@@ -1,5 +1,5 @@
 import { findAsync, getDirectory, getFile } from "server/src/git/misc";
-import { BaseError } from "../../packages/server/src/git/error";
+import { BaseError } from "server/src/git/error";
 import { EnvironmentVariables } from "../util";
 
 const env = process.env as EnvironmentVariables;
