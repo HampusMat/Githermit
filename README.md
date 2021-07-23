@@ -28,6 +28,7 @@ Githermit requires no such thing. All the steps to get it set up are in [Usage](
 - [x] Custom favicon support
 - [x] Custom website title support
 - [ ] [Redesign](https://www.figma.com/file/r8P4m4SFTFkPfxkfoRrhtV/Githermit)
+- [ ] Documentation
 
 # Usage
 **Dependencies:**
