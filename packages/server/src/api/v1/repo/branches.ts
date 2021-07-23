@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { Branch } from "../../../git/branch";
-import { Route } from "../../../fastify_types";
+import { Route } from "../../../types/fastify";
 import { BranchSummary as APIBranchSummary, Branch as APIBranch } from "shared_types";
 
 export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, done: (err?: Error) => void): void {

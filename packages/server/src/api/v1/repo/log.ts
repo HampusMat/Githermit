@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { Commit } from "../../../git/commit";
 import { Patch } from "../../../git/patch";
-import { Route } from "../../../fastify_types";
+import { Route } from "../../../types/fastify";
 import { verifySHA } from "../../util";
 import { LogCommit as APILogCommit, Patch as APIPatch, Commit as APICommit } from "shared_types";
 

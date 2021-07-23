@@ -5,7 +5,7 @@
   "author": "HampusMat",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon src/app.ts"
+    "dev": "nodemon src/server.ts"
   },
   "dependencies": {
     "date-fns": "^2.22.1",

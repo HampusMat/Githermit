@@ -1,4 +1,4 @@
-import { CoolFastifyRequest, Route } from "../../../fastify_types";
+import { CoolFastifyRequest, Route } from "../../../types/fastify";
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { Blob } from "../../../git/blob";
 import { Repository } from "../../../git/repository";

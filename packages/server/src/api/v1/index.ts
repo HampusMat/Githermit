@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { Repository } from "../../git/repository";
-import { Route } from "../../fastify_types";
+import { Route } from "../../types/fastify";
 import repo from "./repo";
 import { verifyRepoName } from "../util";
 import { Info as APIInfo, RepositorySummary as APIRepositorySummary, Repository as APIRepository } from "shared_types";
