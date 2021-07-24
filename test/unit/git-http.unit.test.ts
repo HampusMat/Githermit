@@ -119,19 +119,19 @@ describe("Git HTTP backend", () => {
 			const counting_objects = readable_stdout[2].split("###");
 
 			for(const progress of counting_objects.slice(0, -1)) {
-				expect(progress).toMatch(/^Counting\ objects:\s+\d+%\s\(\d+\/\d+\)$/);
+				expect(progress).toMatch(/^Counting\ objects:\s+\d+%\s\(\d+\/\d+\)/);
 			}
 			
-			expect(counting_objects[counting_objects.length - 1]).toMatch(/^Counting\ objects:\s+\d+%\s\(\d+\/\d+\),\sdone\.$/);
+			expect(counting_objects[counting_objects.length - 1]).toMatch(/^Counting\ objects:\s+\d+%\s\(\d+\/\d+\),\sdone\./);
 
 			// Make sure the progress output for compressing objects is fine and dandy
 			const compressing_objects = readable_stdout[3].split("###");
 			
 			for(const progress of compressing_objects.slice(0, -1)) {
-				expect(progress).toMatch(/^Compressing\ objects:\s+\d+%\s\(\d+\/\d+\)$/);
+				expect(progress).toMatch(/^Compressing\ objects:\s+\d+%\s\(\d+\/\d+\)/);
 			}
 			
-			expect(compressing_objects[counting_objects.length - 1]).toMatch(/^Compressing\ objects:\s+\d+%\s\(\d+\/\d+\),\sdone\.$/);
+			expect(compressing_objects[counting_objects.length - 1]).toMatch(/^Compressing\ objects:\s+\d+%\s\(\d+\/\d+\),\sdone\./);
 			
 			//Just to be sure
 			expect(readable_stdout[readable_stdout.length - 1]).toMatch(/^A?0{4}/);
