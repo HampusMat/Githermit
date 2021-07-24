@@ -1,7 +1,5 @@
 import { Commit } from "../git/commit";
 import { Repository } from "../git/repository";
-import { RequestInfo } from "../git/http";
-import { readdir } from "fs";
 
 type VerificationResultType = "SUCCESS" | "NOT_FOUND" | "INVALID" | "ACCESS_DENIED";
 
@@ -44,12 +42,12 @@ export async function verifySHA(repository: Repository, sha: string): Promise<Ve
 	return new VerificationResult("SUCCESS");
 }
 
-export function verifyGitRequest(request_info: RequestInfo): VerificationResult {
-	if((/\.\/|\.\./u).test(request_info.parsed_url.pathname)) {
+export function verifyGitRequest(path_name: string, service: string): VerificationResult {
+	if((/\.\/|\.\./u).test(path_name)) {
 		return new VerificationResult("INVALID", "path");
 	}
 
-	if(request_info.service !== "git-upload-pack") {
+	if(service !== "git-upload-pack") {
 		return new VerificationResult("ACCESS_DENIED");
 	}
 
