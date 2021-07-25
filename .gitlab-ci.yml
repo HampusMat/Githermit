@@ -27,7 +27,8 @@ test:
 eslint:
     stage: test
     before_script:
-      - echo -e "host: localhost\nport: 8080\ndev_port: 8008\ntitle: test" > settings.yml
+      - >
+      echo -e "host: localhost\nport: 8080\ndev_port: 8008\ntitle: test" > settings.yml
     script:
         - yarn eslint packages/server
         - yarn workspace client lint
