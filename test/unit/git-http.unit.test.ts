@@ -65,11 +65,15 @@ describe("Git HTTP backend", () => {
 
 	describe("git-upload-pack", () => {
 		it("Should make a valid response", async () => {
+			expect.hasAssertions();
+
 			await app.listen(port);
 			
 			const head = /^[a-f0-9]+/.exec((await readFile(`${env.BASE_DIR}/${env.AVAIL_REPO}/FETCH_HEAD`)).toString())[0];
 			const data = `0098want ${head} multi_ack_detailed no-done side-band-64k thin-pack ofs-delta deepen-since deepen-not agent=git/2.32.0\n00000009done`;
 
+			// Send a post request to git-upload-pack with curl
+			//
 			// I did it this way because i just couldn't get chunked responses
 			// to work with LightMyRequest or Supertest
 			const res = new Promise((resolve: (value: Record<string, Buffer>) => void, reject: (value: ExecException) => void) => {
