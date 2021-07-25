@@ -79,7 +79,8 @@ describe("Git HTTP backend", () => {
 			const res = new Promise((resolve: (value: Record<string, Buffer>) => void, reject: (value: ExecException) => void) => {
 				const curl_params = [
 					"-X POST",
-					"-s",
+					"-sS",
+					"-f",
 					"-H \"Content-Type: application/x-git-upload-pack-request\"",
 					"-T -"
 				].join(" ");
