@@ -1,7 +1,8 @@
 const yaml = require("js-yaml");
 const fs = require("fs");
+const path = require("path");
 
-const settings = yaml.load(fs.readFileSync(`${__dirname}/../../settings.yml`, "utf8"));
+const settings = yaml.load(fs.readFileSync(path.join(__dirname, "/../../settings.yml"), "utf8"));
 
 module.exports = {
 	devServer: {
