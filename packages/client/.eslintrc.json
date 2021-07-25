@@ -1,0 +1,41 @@
+{
+	"env": {
+		"node": true
+	},
+	"parser": "vue-eslint-parser",
+	"parserOptions": {
+		"parser": "@typescript-eslint/parser"
+	},
+	"extends": [
+		"plugin:vue/vue3-strongly-recommended",
+		"@vue/standard",
+		"@vue/typescript",
+		"base"
+	],
+	"overrides": [
+		{
+			"files": ["*.ts"],
+			"extends": [
+				"plugin:@typescript-eslint/recommended"
+			]
+		}
+	],
+	"rules": {
+		"vue/max-attributes-per-line": [ "warn", {
+			"singleline": {
+				"max": 2,
+				"allowFirstLine": true
+			},
+			"multiline": {
+				"max": 2,
+				"allowFirstLine": false
+			}
+		} ],
+		"vue/html-closing-bracket-newline": [ "error", {
+			"singleline": "never",
+			"multiline": "never"
+		} ],
+		"vue/html-indent": [ "error", "tab" ],
+		"typescript-eslint/no-var-requires": "off"
+	}
+}

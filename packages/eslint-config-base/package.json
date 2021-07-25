@@ -1,0 +1,8 @@
+{
+  "name": "eslint-config-base",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "HampusMat",
+  "license": "MIT",
+  "private": true
+}

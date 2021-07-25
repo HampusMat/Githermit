@@ -1,26 +1,5 @@
-{
-	"root": true,
-	"env": {
-		"commonjs": true,
-		"es2021": true,
-		"node": true
-	},
-	"extends": [
-		"standard",
-		"plugin:@typescript-eslint/recommended",
-		"plugin:vue/vue3-strongly-recommended",
-		"@vue/standard",
-		"@vue/typescript"
-	],
-	"parser": "@typescript-eslint/parser",
-	"parserOptions": {
-		"ecmaVersion": 12
-	},
-	"plugins": [ "@typescript-eslint" ],
-	"ignorePatterns": [
-		"/node_modules"
-	],
-	"rules": {
+module.exports = {
+	rules: {
 		"no-console": "off",
 		"no-debugger": "off",
 		"array-bracket-spacing": [
@@ -37,12 +16,12 @@
 		"arrow-spacing": [
 			"error",
 			{
-				"after": true,
-				"before": true
+				after: true,
+				before: true
 			}
 		],
-		"brace-style": [ "error", "stroustrup", { "allowSingleLine": false } ],
-		"camelcase": "off",
+		"brace-style": [ "error", "stroustrup", { allowSingleLine: false } ],
+		camelcase: "off",
 		"capitalized-comments": [
 			"error",
 			"always"
@@ -50,8 +29,8 @@
 		"comma-spacing": [
 			"error",
 			{
-				"after": true,
-				"before": false
+				after: true,
+				before: false
 			}
 		],
 		"comma-style": [
@@ -63,13 +42,13 @@
 			"error",
 			"never"
 		],
-		"curly": [ "error", "all" ],
+		curly: [ "error", "all" ],
 		"dot-notation": "off",
 		"eol-last": [
 			"error",
 			"never"
 		],
-		"eqeqeq": "error",
+		eqeqeq: "error",
 		"func-names": "off",
 		"func-style": [ "error", "declaration" ],
 		"id-length": "off",
@@ -77,22 +56,22 @@
 			"error",
 			"beside"
 		],
-		"indent": [ "warn", "tab" ],
+		indent: [ "warn", "tab" ],
 		"keyword-spacing": [ "error", {
-			"before": false,
-			"overrides": {
-				"from": { "before": true },
-				"for": { "after": false },
-				"if": { "after": false },
-				"throw": { "after": false },
-				"while": { "after": false }
+			before: false,
+			overrides: {
+				from: { before: true },
+				for: { after: false },
+				if: { after: false },
+				throw: { after: false },
+				while: { after: false }
 			}
 		} ],
 		"linebreak-style": [
 			"error",
 			"unix"
 		],
-		"line-comment-position": ["error", { "position": "above" }],
+		"line-comment-position": [ "error", { position: "above" } ],
 		"max-len": "off",
 		"max-lines": [ "error", 600 ],
 		"max-params": [ "error", 6 ],
@@ -103,14 +82,14 @@
 		"no-else-return": [
 			"error",
 			{
-				"allowElseIf": true
+				allowElseIf: true
 			}
 		],
 		"no-extra-parens": "off",
 		"no-magic-numbers": "off",
 		"no-tabs": "off",
 		"no-ternary": "off",
-		"no-underscore-dangle": [ "error", { "allowAfterThis": true } ],
+		"no-underscore-dangle": [ "error", { allowAfterThis: true } ],
 		"no-var": "error",
 		"object-curly-spacing": [
 			"error",
@@ -124,8 +103,8 @@
 		"prefer-destructuring": "off",
 		"prefer-template": "off",
 		"quote-props": [ "error", "as-needed" ],
-		"quotes": [ "error", "double" ],
-		"semi": [ "error", "always" ],
+		quotes: [ "error", "double" ],
+		semi: [ "error", "always" ],
 		"semi-style": [
 			"error",
 			"last"
@@ -140,7 +119,7 @@
 			"error",
 			"always"
 		],
-		"strict": [
+		strict: [
 			"error",
 			"never"
 		],
@@ -152,24 +131,9 @@
 			"error",
 			"never"
 		],
-		"yoda": [
+		yoda: [
 			"error",
 			"never"
-		],
-		"vue/max-attributes-per-line": [ "warn", {
-			"singleline": {
-				"max": 2,
-				"allowFirstLine": true
-			},
-			"multiline": {
-				"max": 2,
-				"allowFirstLine": false
-			}
-		} ],
-		"vue/html-closing-bracket-newline": [ "error", {
-			"singleline": "never",
-			"multiline": "never"
-		} ],
-		"vue/html-indent": [ "error", "tab" ]
+		]
 	}
-}
+};
