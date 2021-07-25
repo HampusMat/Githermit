@@ -9,11 +9,11 @@ const env = process.env as EnvironmentVariables;
 describe("Commit", () => {
 	let repository: Repository;
 
-	beforeAll(async () => {
+	beforeAll(async() => {
 		repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
 	});
 
-	it("Should look up a commit", async () => {
+	it("Should look up a commit", async() => {
 		expect.assertions(8);
 
 		const commit = await Commit.lookup(repository, env.AVAIL_COMMIT);
@@ -24,19 +24,19 @@ describe("Commit", () => {
 		expectCommitProperties(commit);
 	});
 
-	it("Should look up a nonexistant commit and throw", async () => {
+	it("Should look up a nonexistant commit and throw", async() => {
 		expect.assertions(1);
 
 		await expect(Commit.lookup(repository, env.UNAVAIL_COMMIT)).rejects.toThrow();
 	});
 
-	it("Should look up if an existent commit exists and respond true", async () => {
+	it("Should look up if an existent commit exists and respond true", async() => {
 		expect.assertions(1);
 
 		await expect(Commit.lookupExists(repository, env.AVAIL_COMMIT)).resolves.toBeTruthy();
 	});
 
-	it("Should look up if an nonexistant commit exists and respond false", async () => {
+	it("Should look up if an nonexistant commit exists and respond false", async() => {
 		expect.assertions(1);
 
 		await expect(Commit.lookupExists(repository, env.UNAVAIL_COMMIT)).resolves.toBeFalsy();
@@ -45,11 +45,11 @@ describe("Commit", () => {
 	describe("Methods", () => {
 		let commit: Commit;
 
-		beforeAll(async () => {
+		beforeAll(async() => {
 			commit = await repository.masterCommit();
 		});
 
-		it("Should get the stats", async () => {
+		it("Should get the stats", async() => {
 			expect.assertions(4);
 
 			const stats = await commit.stats();
@@ -61,7 +61,7 @@ describe("Commit", () => {
 			expect(stats).toHaveProperty("files_changed");
 		});
 
-		it("Should get the diff", async () => {
+		it("Should get the diff", async() => {
 			expect.assertions(2);
 
 			const diff = await commit.diff();
@@ -69,8 +69,8 @@ describe("Commit", () => {
 			expect(diff).toBeDefined();
 			expect(diff).toBeInstanceOf(Diff);
 		});
-		
-		it("Should get the tree", async () => {
+
+		it("Should get the tree", async() => {
 			expect.assertions(2);
 
 			const tree = await commit.tree();
@@ -78,5 +78,5 @@ describe("Commit", () => {
 			expect(tree).toBeDefined();
 			expect(tree).toBeInstanceOf(Tree);
 		});
-	});	
+	});
 });

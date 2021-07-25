@@ -8,14 +8,14 @@ const env = process.env as EnvironmentVariables;
 describe("Diff", () => {
 	let diff: Diff;
 
-	beforeAll(async () => {
+	beforeAll(async() => {
 		const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
 
 		diff = await (await repository.masterCommit()).diff();
 	});
 
 	describe("Methods", () => {
-		it("Should get the raw patches", async () => {
+		it("Should get the raw patches", async() => {
 			expect.assertions(2);
 
 			const raw_patches = await diff.rawPatches();
@@ -24,7 +24,7 @@ describe("Diff", () => {
 			expect(typeof raw_patches).toEqual("string");
 		});
 
-		it("Should get the header data", async () => {
+		it("Should get the header data", async() => {
 			expect.assertions(4);
 
 			const patch_header_data = await diff.patchHeaderData();
@@ -36,7 +36,7 @@ describe("Diff", () => {
 			expect(patch_header_data).toHaveProperty("last");
 		});
 
-		it("Should get the patches", async () => {
+		it("Should get the patches", async() => {
 			expect.hasAssertions();
 
 			const patches = await diff.patches();

@@ -9,7 +9,7 @@ config({ path: "test/test.env" });
 
 const env = process.env as EnvironmentVariables;
 
-export default async function init() {
+export default async function(): Promise<void> {
 	const can_access = await access(env.BASE_DIR)
 		.then(() => true)
 		.catch(() => false);

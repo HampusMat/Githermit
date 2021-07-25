@@ -7,7 +7,7 @@ import { EnvironmentVariables } from "../util";
 const env = process.env as EnvironmentVariables;
 
 describe("Tree", () => {
-	it("Should get the tree of a repository", async () => {
+	it("Should get the tree of a repository", async() => {
 		expect.assertions(2);
 
 		const tree = await Tree.ofRepository(await Repository.open(env.BASE_DIR, env.AVAIL_REPO));
@@ -19,13 +19,13 @@ describe("Tree", () => {
 	describe("Methods", () => {
 		let tree: Tree;
 
-		beforeAll(async () => {
+		beforeAll(async() => {
 			tree = await Tree.ofRepository(await Repository.open(env.BASE_DIR, env.AVAIL_REPO));
 		});
 
 		it("Should get the entries", () => {
 			expect.hasAssertions();
-			
+
 			const entries = tree.entries();
 
 			expect(entries).toBeDefined();
@@ -36,7 +36,7 @@ describe("Tree", () => {
 			}
 		});
 
-		it("Should return the entry of a path", async () => {
+		it("Should return the entry of a path", async() => {
 			expect.assertions(2);
 
 			const entry = await tree.find("packages/server");
@@ -45,19 +45,19 @@ describe("Tree", () => {
 			expect(entry).toBeInstanceOf(Tree);
 		});
 
-		it("Should fail to return the entry of a nonexistent path", async () => {
+		it("Should fail to return the entry of a nonexistent path", async() => {
 			expect.assertions(1);
 
 			await expect(tree.find("dependencies/libstd++")).rejects.toBeInstanceOf(BaseError);
 		});
 
-		it("Should find out if an existent path exists and return true", async () => {
+		it("Should find out if an existent path exists and return true", async() => {
 			expect.assertions(1);
 
 			await expect(tree.findExists("packages/shared_types/package.json")).resolves.toBeTruthy();
 		});
 
-		it("Should find out if a nonexistent path exists and return false", async () => {
+		it("Should find out if a nonexistent path exists and return false", async() => {
 			expect.assertions(1);
 
 			await expect(tree.findExists("packages/core/main.js")).resolves.toBeFalsy();

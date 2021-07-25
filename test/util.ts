@@ -11,7 +11,7 @@ export type EnvironmentVariables = {
 	UNAVAIL_COMMIT: string
 }
 
-export function expectCommitProperties(commit: Commit) {
+export function expectCommitProperties(commit: Commit): void {
 	expect(commit).toHaveProperty("id");
 	expect(commit).toHaveProperty("author");
 	expect(commit).toHaveProperty("author.name");

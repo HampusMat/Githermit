@@ -18,7 +18,7 @@ function expectRepositoryProperties(repository: Repository) {
 }
 
 describe("Repository", () => {
-	it("Should open a repository", async () => {
+	it("Should open a repository", async() => {
 		expect.assertions(8);
 
 		const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
@@ -29,13 +29,13 @@ describe("Repository", () => {
 		expectRepositoryProperties(repository);
 	});
 
-	it("Should fail to open a nonexistant repository", async () => {
+	it("Should fail to open a nonexistant repository", async() => {
 		expect.assertions(1);
 
 		await expect(Repository.open(env.BASE_DIR, env.UNAVAIL_REPO)).rejects.toBeInstanceOf(BaseError);
 	});
 
-	it("Should open all repositories", async () => {
+	it("Should open all repositories", async() => {
 		expect.hasAssertions();
 
 		const all_repositories = await Repository.openAll(env.BASE_DIR);
@@ -44,7 +44,7 @@ describe("Repository", () => {
 
 		for(const repository of all_repositories) {
 			expect(repository).toBeDefined();
-			expect(repository).toBeInstanceOf(Repository)
+			expect(repository).toBeInstanceOf(Repository);
 
 			expectRepositoryProperties(repository);
 		}
@@ -53,23 +53,23 @@ describe("Repository", () => {
 	describe("Methods", () => {
 		let repository: Repository;
 
-		beforeAll(async () => {
+		beforeAll(async() => {
 			repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
 		});
 
-		it("Should look up if an existent object exists and respond true", async () => {
+		it("Should look up if an existent object exists and respond true", async() => {
 			expect.assertions(1);
 
 			await expect(repository.lookupExists(env.AVAIL_OBJECT)).resolves.toBeTruthy();
 		});
 
-		it("Should look up if an nonexistant object exists and respond false", async () => {
+		it("Should look up if an nonexistant object exists and respond false", async() => {
 			expect.assertions(1);
 
 			await expect(repository.lookupExists(env.UNAVAIL_OBJECT)).resolves.toBeFalsy();
 		});
 
-		it("Should get the master commit", async () => {
+		it("Should get the master commit", async() => {
 			expect.assertions(8);
 
 			const master_commit = await repository.masterCommit();
@@ -80,7 +80,7 @@ describe("Repository", () => {
 			expectCommitProperties(master_commit);
 		});
 
-		it("Should get the commits", async () => {
+		it("Should get the commits", async() => {
 			expect.hasAssertions();
 
 			const commits = await repository.commits();
@@ -95,7 +95,7 @@ describe("Repository", () => {
 			}
 		});
 
-		it("Should get the tree", async () => {
+		it("Should get the tree", async() => {
 			expect.assertions(2);
 
 			const tree = await repository.tree();
@@ -104,7 +104,7 @@ describe("Repository", () => {
 			expect(tree).toBeInstanceOf(Tree);
 		});
 
-		it("Should get the branches", async () => {
+		it("Should get the branches", async() => {
 			expect.hasAssertions();
 
 			const branches = await repository.branches();
@@ -120,7 +120,7 @@ describe("Repository", () => {
 			}
 		});
 
-		it("Should get the tags", async () => {
+		it("Should get the tags", async() => {
 			expect.hasAssertions();
 
 			const tags = await repository.tags();
