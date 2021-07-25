@@ -1,16 +1,16 @@
-import { CoolFastifyRequest, Route } from "../../../types/fastify";
+import { CoolFastifyRequest, Route } from "../../../../types/fastify";
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { Blob } from "../../../git/blob";
-import { Repository } from "../../../git/repository";
-import { Tag } from "../../../git/tag";
-import { TreeEntry } from "../../../git/tree_entry";
+import { Blob } from "../../../../git/blob";
+import { Repository } from "../../../../git/repository";
+import { Tag } from "../../../../git/tag";
+import { TreeEntry } from "../../../../git/tree_entry";
 import { basename } from "path";
 import branches from "./branches";
 import log from "./log";
 import { verifyRepoName } from "../../util";
 import { Tree as APITree, Tag as APITag, TreeEntry as APITreeEntry } from "shared_types";
-import { BaseError } from "../../../git/error";
-import { Tree } from "../../../git/tree";
+import { BaseError } from "../../../../git/error";
+import { Tree } from "../../../../git/tree";
 
 declare module "fastify" {
 	interface FastifyRequest {
