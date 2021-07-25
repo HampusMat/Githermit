@@ -6,9 +6,9 @@
 	"private": true,
 	"scripts": {
 		"clean": "rm -rf node_modules packages/*/node_modules packages/client/dist",
-		"dev": "concurrently -k --kill-others-on-fail \"cd packages/client && yarn serve\" \"cd packages/server && yarn dev\"",
-		"build": "cd packages/client && yarn build",
-		"start": "ts-node packages/server/src/app.ts",
+		"dev": "concurrently -k --kill-others-on-fail \"yarn workspace client serve\" \"yarn workspace server dev\"",
+		"build": "yarn workspace client build",
+		"start": "yarn workspace server start",
 		"test": "jest --verbose"
 	},
 	"workspaces": [
