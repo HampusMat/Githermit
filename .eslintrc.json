@@ -1,20 +1,30 @@
-module.exports = {
-	env: {
-		commonjs: true,
-		es2021: true,
-		node: true
+{
+	"root": true,
+	"env": {
+		"commonjs": true,
+		"es2021": true,
+		"node": true
 	},
-	extends: [ "standard", "plugin:@typescript-eslint/recommended" ],
-	parser: "@typescript-eslint/parser",
-	parserOptions: {
-		ecmaVersion: 12
+	"extends": [
+		"standard",
+		"plugin:@typescript-eslint/recommended",
+		"plugin:vue/vue3-strongly-recommended",
+		"@vue/standard",
+		"@vue/typescript"
+	],
+	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"ecmaVersion": 12
 	},
-	plugins: [ "@typescript-eslint" ],
-	rules: {
+	"plugins": [ "@typescript-eslint" ],
+	"rules": {
+		"no-console": "off",
+		"no-debugger": "off",
 		"array-bracket-spacing": [
 			"error",
 			"always"
 		],
+		"array-bracket-newline": [ "warn", "consistent" ],
 		"array-element-newline": "off",
 		"arrow-body-style": "off",
 		"arrow-parens": [
@@ -24,12 +34,12 @@ module.exports = {
 		"arrow-spacing": [
 			"error",
 			{
-				after: true,
-				before: true
+				"after": true,
+				"before": true
 			}
 		],
 		"brace-style": [ "error", "stroustrup", { "allowSingleLine": false } ],
-		camelcase: "off",
+		"camelcase": "off",
 		"capitalized-comments": [
 			"error",
 			"always"
@@ -37,25 +47,26 @@ module.exports = {
 		"comma-spacing": [
 			"error",
 			{
-				after: true,
-				before: false
+				"after": true,
+				"before": false
 			}
 		],
 		"comma-style": [
 			"error",
 			"last"
 		],
+		"comma-dangle": [ "error", "never" ],
 		"computed-property-spacing": [
 			"error",
 			"never"
 		],
-		curly: [ "error", "all" ],
+		"curly": [ "error", "all" ],
 		"dot-notation": "off",
 		"eol-last": [
 			"error",
 			"never"
 		],
-		eqeqeq: "error",
+		"eqeqeq": "error",
 		"func-names": "off",
 		"func-style": [ "error", "declaration" ],
 		"id-length": "off",
@@ -63,8 +74,14 @@ module.exports = {
 			"error",
 			"beside"
 		],
-		indent: [ "warn", "tab" ],
-		"keyword-spacing": "off",
+		"indent": [ "warn", "tab" ],
+		"keyword-spacing": [ "error", {
+			"overrides": {
+				"if": { "after": false },
+				"for": { "after": false },
+				"while": { "after": false }
+			}
+		} ],
 		"linebreak-style": [
 			"error",
 			"unix"
@@ -75,11 +92,10 @@ module.exports = {
 		"max-statements": "off",
 		"multiline-comment-style": [ "error", "bare-block" ],
 		"no-await-in-loop": "off",
-		"no-console": "off",
 		"no-else-return": [
 			"error",
 			{
-				allowElseIf: true
+				"allowElseIf": true
 			}
 		],
 		"no-extra-parens": "off",
@@ -87,6 +103,7 @@ module.exports = {
 		"no-tabs": "off",
 		"no-ternary": "off",
 		"no-underscore-dangle": [ "error", { "allowAfterThis": true } ],
+		"no-var": "error",
 		"object-curly-spacing": [
 			"error",
 			"always"
@@ -98,9 +115,9 @@ module.exports = {
 		"prefer-const": "off",
 		"prefer-destructuring": "off",
 		"prefer-template": "off",
-		"quote-props": "off",
-		quotes: [ "error", "double" ],
-		semi: [ "error", "always" ],
+		"quote-props": [ "error", "as-needed" ],
+		"quotes": [ "error", "double" ],
+		"semi": [ "error", "always" ],
 		"semi-style": [
 			"error",
 			"last"
@@ -115,7 +132,7 @@ module.exports = {
 			"error",
 			"always"
 		],
-		strict: [
+		"strict": [
 			"error",
 			"never"
 		],
@@ -127,9 +144,24 @@ module.exports = {
 			"error",
 			"never"
 		],
-		yoda: [
+		"yoda": [
 			"error",
 			"never"
-		]
+		],
+		"vue/max-attributes-per-line": [ "warn", {
+			"singleline": {
+				"max": 2,
+				"allowFirstLine": true
+			},
+			"multiline": {
+				"max": 2,
+				"allowFirstLine": false
+			}
+		} ],
+		"vue/html-closing-bracket-newline": [ "error", {
+			"singleline": "never",
+			"multiline": "never"
+		} ],
+		"vue/html-indent": [ "error", "tab" ]
 	}
-};
+}
