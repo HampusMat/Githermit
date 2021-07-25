@@ -4,11 +4,28 @@ cache:
     paths:
         - node_modules/
 
-test:
-    stage: test
-    before_script:
+stages:
+    - prepare
+    - test
+
+apt:
+    stage: prepare
+    script:
         - apt-get update -y -qq
         - DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git libpcre3 libpcre2-posix0 libkrb5-3 libk5crypto3 libcom-err2 libssl1.1 libssl-dev
+
+yarn-install:
+    stage: prepare
     script:
         - yarn install
+
+test:
+    stage: test
+    script:
         - yarn test --ci=true
+
+eslint:
+    stage: test
+    script:
+        - yarn eslint packages/server
+        - yarn workspace client lint
