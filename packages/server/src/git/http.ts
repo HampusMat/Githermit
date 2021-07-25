@@ -3,7 +3,6 @@ import { Repository } from "./repository";
 import { Route } from "../types/fastify";
 import { join } from "path";
 import { spawn } from "child_process";
-import { verifyGitRequest } from "../api/util";
 
 export interface Request extends FastifyRequest {
 	params: Route["Params"],
@@ -28,16 +27,17 @@ export function connect(repository: Repository, req: Request, reply: FastifyRepl
 
 	const content_type = `application/x-${service}-${is_discovery ? "advertisement" : "result"}`;
 
-	const valid_request = verifyGitRequest(parsed_url.pathname, service);
-	if(valid_request.success === false && valid_request.code) {
+	// Deny any malicious requests
+	if(/\.\/|\.\./u.test(parsed_url.pathname) || service !== "git-upload-pack") {
 		reply.header("Content-Type", content_type);
-		reply.code(valid_request.code).send(valid_request.message);
+		reply.code(403).send("Access denied!");
 		return;
 	}
 
 	reply.raw.writeHead(200, { "Content-Type": content_type });
 
 	const spawn_args = [ "--stateless-rpc", join(repository.base_dir, repository.name.full) ];
+
 	if(is_discovery) {
 		spawn_args.push("--advertise-refs");
 	}
@@ -58,6 +58,8 @@ export function connect(repository: Repository, req: Request, reply: FastifyRepl
 		});
 	}
 
+	git_service.stdout.pipe(reply.raw);
+
 	// Spawn error
 	git_service.on("error", err => {
 		console.log(err);
@@ -69,6 +71,4 @@ export function connect(repository: Repository, req: Request, reply: FastifyRepl
 		console.log(stderr.toString());
 		reply.raw.end();
 	});
-
-	git_service.stdout.pipe(reply.raw);
 }

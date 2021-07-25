@@ -1,7 +1,7 @@
 import { Commit } from "../git/commit";
 import { Repository } from "../git/repository";
 
-type VerificationResultType = "SUCCESS" | "NOT_FOUND" | "INVALID" | "ACCESS_DENIED";
+type VerificationResultType = "SUCCESS" | "NOT_FOUND" | "INVALID";
 
 export class VerificationResult {
 	constructor(result: VerificationResultType, subject?: string) {
@@ -10,8 +10,7 @@ export class VerificationResult {
 		if(result !== "SUCCESS") {
 			const verification_error_types = {
 				NOT_FOUND: { code: 404, message: `${String(subject?.substr(0, 1).toUpperCase()) + subject?.substr(1)} not found!` },
-				INVALID: { code: 403, message: `Invalid ${subject}` },
-				ACCESS_DENIED: { code: 403, message: "Access denied!" }
+				INVALID: { code: 403, message: `Invalid ${subject}` }
 			};
 
 			this.message = verification_error_types[result].message;
@@ -37,18 +36,6 @@ export async function verifySHA(repository: Repository, sha: string): Promise<Ve
 
 	if(!object_exists) {
 		return new VerificationResult("NOT_FOUND", "object");
-	}
-
-	return new VerificationResult("SUCCESS");
-}
-
-export function verifyGitRequest(path_name: string, service: string): VerificationResult {
-	if((/\.\/|\.\./u).test(path_name)) {
-		return new VerificationResult("INVALID", "path");
-	}
-
-	if(service !== "git-upload-pack") {
-		return new VerificationResult("ACCESS_DENIED");
 	}
 
 	return new VerificationResult("SUCCESS");
