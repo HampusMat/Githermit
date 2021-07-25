@@ -32,7 +32,7 @@ export default defineComponent({
 		const has_readme: Ref<boolean> = ref(false);
 		const error: Ref<string | null> = ref(null);
 
-		const fetchProjects = async(repository: string, router: Router, path: string) => {
+		async function fetchProjects(repository: string, router: Router, path: string) {
 			const repository_data = await fetch(`${window.location.protocol}//${window.location.host}/api/v1/repos/${repository}`);
 
 			if(!repository_data.ok) {
@@ -45,7 +45,7 @@ export default defineComponent({
 
 			if(path.split("/").length === 2) {
 				router.replace(`/${repository}/log`);
-			};
+			}
 
 			const data: Repository = (await repository_data.json()).data;
 

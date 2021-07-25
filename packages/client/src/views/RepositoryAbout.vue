@@ -35,8 +35,8 @@ export default defineComponent({
 		const is_loading: Ref<boolean> = ref(true);
 		const fetch_failed: Ref<string> = ref("");
 
-		const fetchReadme = async(repository: string) => {
-			const readme_data: Tree = await fetchData(`repos/${repository}/tree?path=README.md`, fetch_failed, is_loading, "tree");
+		async function fetchReadme(repository: string) {
+			const readme_data = await fetchData(`repos/${repository}/tree?path=README.md`, fetch_failed, is_loading, "tree") as Tree;
 
 			if(readme_data && typeof readme_data.content === "string") {
 				readme.value = readme_data.content;

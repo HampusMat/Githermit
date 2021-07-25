@@ -52,8 +52,8 @@ export default defineComponent({
 		const is_loading: Ref<boolean> = ref(true);
 		const fetch_failed: Ref<string> = ref("");
 
-		const fetchProjects = async() => {
-			const projects_data: RepositorySummary[] = await fetchData("repos", fetch_failed, is_loading, "projects");
+		async function fetchProjects() {
+			const projects_data = await fetchData("repos", fetch_failed, is_loading, "projects") as RepositorySummary[];
 
 			projects_data.reduce((result: RepositorySummary[], project) => {
 				if(typeof project.last_updated === "number") {

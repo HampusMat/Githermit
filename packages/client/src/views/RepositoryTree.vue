@@ -65,23 +65,24 @@ export default defineComponent({
 		const fetch_failed: Ref<string> = ref("");
 		const path: Ref<string | null> = ref(null);
 
-		const fetchTree = async(repository: string) => {
+		async function fetchTree(repository: string) {
 			blob_content.value = null;
 			tree.value = null;
 			path.value = props.pathArr ? props.pathArr.join("/") : null;
 
-			const tree_data: Tree = await fetchData(`repos/${repository}/tree${path.value ? "?path=" + path.value : ""}`, fetch_failed, is_loading, "tree");
+			const tree_data = await fetchData(`repos/${repository}/tree${path.value ? "?path=" + path.value : ""}`, fetch_failed, is_loading, "tree") as Tree;
 
 			if(tree_data) {
 				if(tree_data.type === "tree" && tree_data.content instanceof Array) {
-					let tree_trees = tree_data.content.filter((entry) => entry.type === "tree");
+					let tree_trees = tree_data.content.filter(entry => entry.type === "tree");
 					tree_trees = tree_trees.sort((a, b) => a.name.localeCompare(b.name));
 
-					let tree_blobs = tree_data.content.filter((entry) => entry.type === "blob");
+					let tree_blobs = tree_data.content.filter(entry => entry.type === "blob");
 					tree_blobs = tree_blobs.sort((a, b) => a.name.localeCompare(b.name));
 
 					tree.value = tree_trees.concat(tree_blobs);
-				} else if(typeof tree_data.content === "string") {
+				}
+				else if(typeof tree_data.content === "string") {
 					blob_content.value = tree_data.content;
 				}
 			}

@@ -78,8 +78,8 @@ export default defineComponent({
 		const is_loading: Ref<boolean> = ref(true);
 		const fetch_failed: Ref<string> = ref("");
 
-		const fetchCommit = async(repository: string, commit_id: string) => {
-			const commit_data: Commit = await fetchData(`repos/${repository}/log/${commit_id}`, fetch_failed, is_loading, "commit");
+		async function fetchCommit(repository: string, commit_id: string) {
+			const commit_data = await fetchData(`repos/${repository}/log/${commit_id}`, fetch_failed, is_loading, "commit") as Commit;
 
 			if(commit_data) {
 				const pretty_commit = commit_data as PrettyDateCommit;

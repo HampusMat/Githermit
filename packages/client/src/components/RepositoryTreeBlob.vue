@@ -49,7 +49,7 @@ export default defineComponent({
 		const content_blob: Ref<string> = ref("");
 		const is_markdown: Ref<boolean> = ref(false);
 
-		const initHighlightedContent = async() => {
+		async function initHighlightedContent() {
 			const path_extension = /(?:\.([^.]+))?$/;
 
 			const path_ext = path_extension.exec(props.path);
@@ -64,14 +64,14 @@ export default defineComponent({
 				markdown.innerHTML = marked(props.content);
 
 				const checkboxes = markdown.querySelectorAll("ul > li > input[type=\"checkbox\"]");
-				checkboxes.forEach((checkbox) => {
+				checkboxes.forEach(checkbox => {
 					if(checkbox.parentElement) {
 						checkbox.parentElement.classList.add("checkbox-list");
 					}
 				});
 
 				const codeblocks = markdown.querySelectorAll("code");
-				codeblocks.forEach((codeblock) => {
+				codeblocks.forEach(codeblock => {
 					codeblock.classList.add("markdown-codeblock");
 				});
 
@@ -80,7 +80,7 @@ export default defineComponent({
 				return;
 			}
 
-			const language = hljs_languages.find((lang) => lang.extensions.some((extension) => ext === extension));
+			const language = hljs_languages.find(lang => lang.extensions.some(extension => ext === extension));
 			const highlighted = language ? hljs.highlight(props.content, { language: language.name }) : hljs.highlightAuto(props.content);
 
 			content_lines.value = highlighted.value.split("\n");

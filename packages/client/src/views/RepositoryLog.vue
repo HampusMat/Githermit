@@ -74,8 +74,8 @@ export default defineComponent({
 		const is_loading: Ref<boolean> = ref(true);
 		const fetch_failed: Ref<string> = ref("");
 
-		const fetchLog = async(repository: string) => {
-			const log_data: LogCommit[] = await fetchData(`repos/${repository}/log`, fetch_failed, is_loading, "log");
+		async function fetchLog(repository: string) {
+			const log_data = await fetchData(`repos/${repository}/log`, fetch_failed, is_loading, "log") as LogCommit[];
 			if(log_data) {
 				commits.value = log_data;
 			}

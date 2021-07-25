@@ -17,7 +17,7 @@ export default defineComponent({
 		const title = ref("");
 		const about = ref("");
 
-		const fetchInfo = async() => {
+		async function fetchInfo() {
 			const info: Info = (await (await fetch(`${window.location.protocol}//${window.location.host}/api/v1/info`)).json()).data;
 
 			title.value = info.title;

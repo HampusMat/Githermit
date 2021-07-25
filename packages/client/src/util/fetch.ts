@@ -1,6 +1,6 @@
 import { Ref } from "vue";
 
-export default async function(endpoint: string, fetch_failed: Ref<string | null>, is_loading: Ref<boolean>, data_name: string) {
+export default async function(endpoint: string, fetch_failed: Ref<string | null>, is_loading: Ref<boolean>, data_name: string): Promise<unknown | null> {
 	const fetch_timeout = setTimeout(() => {
 		if(!fetch_failed.value) {
 			fetch_failed.value = `Failed to fetch ${data_name} data.`;
@@ -8,7 +8,7 @@ export default async function(endpoint: string, fetch_failed: Ref<string | null>
 		}
 	}, 5000);
 
-	const data_req = await fetch(`${window.location.protocol}//${window.location.host}/api/v1/${endpoint}`).catch(() => {
+	const res = await fetch(`${window.location.protocol}//${window.location.host}/api/v1/${endpoint}`).catch(() => {
 		if(!fetch_failed.value) {
 			fetch_failed.value = `Failed to fetch ${data_name} data.`;
 			is_loading.value = false;
@@ -17,21 +17,21 @@ export default async function(endpoint: string, fetch_failed: Ref<string | null>
 		return null;
 	});
 
-	if(data_req !== null) {
-		const data = await data_req.json().catch(() => {
+	if(res !== null && res.ok) {
+		const data: Record<string, unknown> | null = await res.json().catch(() => {
 			fetch_failed.value = "Failed to parse server response.";
 		});
 
-		if(data_req.ok) {
+		if(data) {
 			clearTimeout(fetch_timeout);
 			is_loading.value = false;
 			return data.data;
-		} else {
-			fetch_failed.value = `Failed to fetch ${data_name} data.`;
 		}
 	}
+
+	fetch_failed.value = `Failed to fetch ${data_name} data.`;
 
 	clearTimeout(fetch_timeout);
 	is_loading.value = false;
 	return null;
-};
+}

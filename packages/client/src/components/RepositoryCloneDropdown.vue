@@ -107,7 +107,7 @@ export default defineComponent({
 			});
 		}
 
-		const clickOutsideDropdown = (event: Event) => {
+		function clickOutsideDropdown(event: Event) {
 			const target = event.target as HTMLElement;
 
 			if(dropdown_menu && dropdown_menu.contains(target) === false && target !== dropdown_button) {
@@ -122,7 +122,8 @@ export default defineComponent({
 					if(dropdown_menu.classList.contains("show")) {
 						dropdown_menu.classList.remove("show");
 						document.removeEventListener("click", clickOutsideDropdown);
-					} else {
+					}
+					else {
 						dropdown_menu.classList.add("show");
 						document.addEventListener("click", clickOutsideDropdown);
 					}

@@ -26,10 +26,10 @@ export default defineComponent({
 		}
 
 		// Array of hunks without the first chunk headers
-		const all_hunks = props.patch.hunks.map((hunk) => hunk.hunk.split("\n").slice(1).join("\n"));
+		const all_hunks = props.patch.hunks.map(hunk => hunk.hunk.split("\n").slice(1).join("\n"));
 
 		// Check if the patch's file extension matches any predefined language.
-		const language = hljs_languages.find((lang) => lang.extensions.some((extension) => props.patch.to.endsWith(extension)));
+		const language = hljs_languages.find(lang => lang.extensions.some(extension => props.patch.to.endsWith(extension)));
 
 		// Syntax highlight all of the patch's hunks
 		const highlight_result = language
@@ -52,7 +52,7 @@ export default defineComponent({
 			hunk_start = hunk_start + hunk_row_cnt;
 		});
 
-		const all_hunks_raw = all_hunks.map((hunk) => hunk.split("\n"));
+		const all_hunks_raw = all_hunks.map(hunk => hunk.split("\n"));
 
 		return () => h("table", { cellspacing: "0px" }, [
 			h("tbody", [
@@ -71,7 +71,8 @@ export default defineComponent({
 									h("code", all_hunks_raw[hunk_index][line_index])
 								])
 							]);
-						} else if(/^\\ No newline at end of file$/.test(all_hunks_raw[hunk_index][line_index])) {
+						}
+						else if(/^\\ No newline at end of file$/.test(all_hunks_raw[hunk_index][line_index])) {
 							new_offset++;
 							deleted_offset++;
 							return h("tr", { class: "commit-file-no-newline" }, [
@@ -82,56 +83,59 @@ export default defineComponent({
 									h("code", all_hunks_raw[hunk_index][line_index])
 								])
 							]);
-						} else {
-							let first_td: VNode;
-							let second_td: VNode;
-							let third_td: VNode;
-
-							const adjusted_line_index = line_index + 1;
-
-							if(hunk.new_lines.includes(adjusted_line_index)) {
-								first_td = h("td", "");
-								second_td = h("td", { class: "line-highlight-new", "patch-line-col-unsel": Number(hunk.new_start) + line_index - new_offset });
-								third_td = h("td", { class: "line-new", "patch-line-col-unsel": "+" });
-								deleted_offset++;
-							} else if(hunk.deleted_lines.includes(adjusted_line_index)) {
-								first_td = h("td", { "patch-line-col-unsel": Number(hunk.old_start) + line_index - deleted_offset });
-								second_td = h("td", { class: "line-highlight-deleted" });
-								third_td = h("td", { class: "line-deleted", "patch-line-col-unsel": "-" });
-								new_offset++;
-							} else {
-								first_td = h("td", { class: "line-unchanged", "patch-line-col-unsel": Number(hunk.old_start) + line_index - deleted_offset });
-								second_td = h("td", { class: "line-unchanged", "patch-line-col-unsel": Number(hunk.new_start) + line_index - new_offset });
-								third_td = h("td", "");
-							}
-
-							const is_comment_open = line.match(/<span class="hljs-comment">/g);
-							const comment_open_cnt = (is_comment_open !== null) ? is_comment_open.length : 0;
-							const comment_open = (is_comment_open !== null) ? is_comment_open[0] : "";
-
-							const is_comment_close = line.match(/<\/span>/g);
-							const comment_close_cnt = (is_comment_close !== null) ? is_comment_close.length : 0;
-							// Const comment_close = (is_comment_close !== null) ? is_comment_close[0] : "";
-
-							if(comment_open_cnt > comment_close_cnt) {
-								line = line + "</span>";
-								multiline_comments.push(comment_open);
-							} else if(comment_open_cnt < comment_close_cnt && multiline_comments.length !== 0) {
-								line = multiline_comments[multiline_comments.length - 1] + line;
-								multiline_comments.pop();
-							} else if(multiline_comments.length !== 0) {
-								line = multiline_comments[multiline_comments.length - 1] + line + "</span>";
-							}
-
-							return h("tr", [
-								first_td,
-								second_td,
-								third_td,
-								h("td", [
-									h("code", { innerHTML: line })
-								])
-							]);
 						}
+						let first_td: VNode;
+						let second_td: VNode;
+						let third_td: VNode;
+
+						const adjusted_line_index = line_index + 1;
+
+						if(hunk.new_lines.includes(adjusted_line_index)) {
+							first_td = h("td", "");
+							second_td = h("td", { class: "line-highlight-new", "patch-line-col-unsel": Number(hunk.new_start) + line_index - new_offset });
+							third_td = h("td", { class: "line-new", "patch-line-col-unsel": "+" });
+							deleted_offset++;
+						}
+						else if(hunk.deleted_lines.includes(adjusted_line_index)) {
+							first_td = h("td", { "patch-line-col-unsel": Number(hunk.old_start) + line_index - deleted_offset });
+							second_td = h("td", { class: "line-highlight-deleted" });
+							third_td = h("td", { class: "line-deleted", "patch-line-col-unsel": "-" });
+							new_offset++;
+						}
+						else {
+							first_td = h("td", { class: "line-unchanged", "patch-line-col-unsel": Number(hunk.old_start) + line_index - deleted_offset });
+							second_td = h("td", { class: "line-unchanged", "patch-line-col-unsel": Number(hunk.new_start) + line_index - new_offset });
+							third_td = h("td", "");
+						}
+
+						const is_comment_open = line.match(/<span class="hljs-comment">/g);
+						const comment_open_cnt = (is_comment_open !== null) ? is_comment_open.length : 0;
+						const comment_open = (is_comment_open !== null) ? is_comment_open[0] : "";
+
+						const is_comment_close = line.match(/<\/span>/g);
+						const comment_close_cnt = (is_comment_close !== null) ? is_comment_close.length : 0;
+						// Const comment_close = (is_comment_close !== null) ? is_comment_close[0] : "";
+
+						if(comment_open_cnt > comment_close_cnt) {
+							line = line + "</span>";
+							multiline_comments.push(comment_open);
+						}
+						else if(comment_open_cnt < comment_close_cnt && multiline_comments.length !== 0) {
+							line = multiline_comments[multiline_comments.length - 1] + line;
+							multiline_comments.pop();
+						}
+						else if(multiline_comments.length !== 0) {
+							line = multiline_comments[multiline_comments.length - 1] + line + "</span>";
+						}
+
+						return h("tr", [
+							first_td,
+							second_td,
+							third_td,
+							h("td", [
+								h("code", { innerHTML: line })
+							])
+						]);
 					});
 				})
 			])
