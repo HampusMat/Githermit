@@ -17,6 +17,9 @@
 		"ecmaVersion": 12
 	},
 	"plugins": [ "@typescript-eslint" ],
+	"ignorePatterns": [
+		"/node_modules"
+	],
 	"rules": {
 		"no-console": "off",
 		"no-debugger": "off",
@@ -76,9 +79,12 @@
 		],
 		"indent": [ "warn", "tab" ],
 		"keyword-spacing": [ "error", {
+			"before": false,
 			"overrides": {
-				"if": { "after": false },
+				"from": { "before": true },
 				"for": { "after": false },
+				"if": { "after": false },
+				"throw": { "after": false },
 				"while": { "after": false }
 			}
 		} ],
@@ -86,12 +92,14 @@
 			"error",
 			"unix"
 		],
+		"line-comment-position": ["error", { "position": "above" }],
 		"max-len": "off",
 		"max-lines": [ "error", 600 ],
 		"max-params": [ "error", 6 ],
 		"max-statements": "off",
 		"multiline-comment-style": [ "error", "bare-block" ],
 		"no-await-in-loop": "off",
+		"no-control-regex": "off",
 		"no-else-return": [
 			"error",
 			{
