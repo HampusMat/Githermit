@@ -3,6 +3,7 @@ import buildApp from "server/src/app";
 import { EnvironmentVariables } from "../util";
 import { readFile } from "fs-extra";
 import { exec, ExecException } from "child_process";
+import { Response } from "light-my-request";
 
 const env = process.env as EnvironmentVariables;
 
@@ -29,20 +30,29 @@ describe("API", () => {
 			await app.close();
 		});
 
-		describe("GET info/refs", () => {
-			it("Should make a valid response when the service is git-upload-pack", async() => {
-				expect.assertions(7);
+		describe("GET /:repository/info/refs", () => {
+			let res: Response;
 
-				const res = await app.inject({
+			beforeAll(async() => {
+				res = await app.inject({
 					method: "GET",
 					url: `${env.AVAIL_REPO}/info/refs?service=git-upload-pack`
 				});
+			});
+
+			it("Should respond", () => {
+				expect.assertions(4);
 
 				expect(res).toBeDefined();
 				expect(res).toHaveProperty("statusCode");
-				expect(res.statusCode).toEqual(200);
 				expect(res).toHaveProperty("payload");
 				expect(res.payload).toBeDefined();
+			});
+
+			it("Should have a valid response when the service is git-upload-pack", () => {
+				expect.assertions(3);
+
+				expect(res.statusCode).toEqual(200);
 
 				const payload_lines = res.payload.split("\n");
 
@@ -53,21 +63,22 @@ describe("API", () => {
 			it("Should respond with 403 when the service is git-receive-pack", async() => {
 				expect.assertions(3);
 
-				const res = await app.inject({
+				const err_res = await app.inject({
 					method: "GET",
 					url: `${env.AVAIL_REPO}/info/refs?service=git-receive-pack`
 				});
 
-				expect(res).toBeDefined();
-				expect(res).toHaveProperty("statusCode");
-				expect(res.statusCode).toEqual(403);
+				expect(err_res).toBeDefined();
+				expect(err_res).toHaveProperty("statusCode");
+				expect(err_res.statusCode).toEqual(403);
 			});
 		});
 
-		describe("POST git-upload-pack", () => {
-			it("Should make a valid response", async() => {
-				expect.hasAssertions();
+		describe("POST /:repository/git-upload-pack", () => {
+			let stdout: Buffer;
+			let stderr: Buffer;
 
+			beforeAll(async() => {
 				await app.listen(port);
 
 				const head = /^[a-f0-9]+/.exec((await readFile(`${env.BASE_DIR}/${env.AVAIL_REPO}/FETCH_HEAD`)).toString())[0];
@@ -96,13 +107,25 @@ describe("API", () => {
 					});
 				});
 
-				const { stdout, stderr } = await res;
+				({ stdout, stderr } = await res);
+			});
+
+			it("Should respond", () => {
+				expect.assertions(2);
+
+				expect(stdout).toBeInstanceOf(Buffer);
+				expect(stdout.length).toBeGreaterThan(5);
+			});
+
+			it("Should respond without an error", () => {
+				expect.assertions(2);
 
 				expect(stderr).toBeInstanceOf(Buffer);
 				expect(stderr.length).toEqual(0);
+			});
 
-				expect(stdout).toBeInstanceOf(Buffer);
-				expect(stdout.length).toBeGreaterThan(1);
+			it("Should have a valid response", () => {
+				expect.hasAssertions();
 
 				const readable_stdout = stdout.toString().split("\n");
 
@@ -144,7 +167,7 @@ describe("API", () => {
 			});
 		});
 
-		describe("POST git-receive-pack", () => {
+		describe("POST /:repository/git-receive-pack", () => {
 			it("Should respond with 403", async() => {
 				expect.assertions(3);
 
