@@ -3,7 +3,7 @@ import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { Blob } from "../../../../git/blob";
 import { Repository } from "../../../../git/repository";
 import { Tag } from "../../../../git/tag";
-import { TreeEntry } from "../../../../git/tree_entry";
+import { BaseTreeEntry, TreeEntry } from "../../../../git/tree_entry";
 import { basename } from "path";
 import branches from "./branches";
 import log from "./log";
@@ -36,11 +36,11 @@ function addHooks(fastify: FastifyInstance, opts: FastifyPluginOptions): void {
 		}
 	});
 }
-async function treeEntryMap(entry: TreeEntry) {
+async function treeEntryMap(entry: BaseTreeEntry) {
 	const latest_commit = await entry.latestCommit();
 	return <APITreeEntry>{
 		name: basename(entry.path),
-		type: entry.type,
+		type: entry instanceof TreeEntry ? "tree" : "blob",
 		latest_commit: {
 			id: latest_commit.id,
 			message: latest_commit.message,

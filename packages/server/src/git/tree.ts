@@ -1,23 +1,25 @@
-import { Blob } from "./blob";
 import { Tree as NodeGitTree } from "nodegit";
 import { Repository } from "./repository";
-import { TreeEntry } from "./tree_entry";
+import { BaseTreeEntry, createTreeEntry, TreeEntry } from "./tree_entry";
 import { createError, TreeError } from "./error";
 
 export class Tree {
-	private _ng_tree: NodeGitTree;
-	private _owner: Repository;
+	protected _owner: Repository;
+	protected _ng_tree: NodeGitTree;
+
+	public path: string;
 
 	constructor(owner: Repository, tree: NodeGitTree) {
-		this._ng_tree = tree;
 		this._owner = owner;
+		this._ng_tree = tree;
+		this.path = tree.path();
 	}
 
 	public entries(): TreeEntry[] {
 		return this._ng_tree.entries().map(entry => new TreeEntry(this._owner, entry));
 	}
 
-	public async find(path: string): Promise<Blob | Tree> {
+	public async find(path: string): Promise<BaseTreeEntry> {
 		const entry = await this._ng_tree.getEntry(path).catch(err => {
 			if(err.errno === -3) {
 				throw(createError(TreeError, 404, "Path not found"));
@@ -25,7 +27,7 @@ export class Tree {
 			throw(createError(TreeError, 500, "Failed to get tree path"));
 		});
 
-		return entry.isBlob() ? new Blob(entry) : new Tree(this._owner, await entry.getTree());
+		return createTreeEntry(this._owner, entry);
 	}
 
 	public findExists(path: string): Promise<boolean> {

@@ -1,17 +1,29 @@
-import { TreeEntry as NodeGitTreeEntry } from "nodegit";
 import { BlobError, createError } from "./error";
+import { Tree } from "./tree";
+import { BlobTreeEntry } from "./tree_entry";
 
 export class Blob {
-	private _ng_tree_entry: NodeGitTreeEntry;
+	private _tree_entry: BlobTreeEntry;
 
-	constructor(entry: NodeGitTreeEntry) {
-		this._ng_tree_entry = entry;
+	public path;
+
+	constructor(entry: BlobTreeEntry, path: string) {
+		this._tree_entry = entry;
+
+		this.path = path;
 	}
 
 	public async content(): Promise<string> {
-		if(!this._ng_tree_entry.isBlob()) {
+		return this._tree_entry.content();
+	}
+
+	public static async fromPath(tree: Tree, path: string): Promise<Blob> {
+		const entry = await tree.find(path);
+
+		if(!(entry instanceof BlobTreeEntry)) {
 			throw(createError(BlobError, 500, "Not a blob"));
 		}
-		return this._ng_tree_entry.isBlob() ? (await this._ng_tree_entry.getBlob()).toString() : "";
+
+		return new Blob(entry, path);
 	}
 }

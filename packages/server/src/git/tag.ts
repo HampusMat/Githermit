@@ -1,28 +1,22 @@
 import { Object as NodeGitObject, Tag as NodeGitTag } from "nodegit";
 import { Pack, pack } from "tar-stream";
-import { Blob } from "./blob";
 import { Commit } from "./commit";
 import { FastifyReply } from "fastify";
 import { Reference } from "./reference";
 import { Repository } from "./repository";
-import { Tree } from "./tree";
-import { TreeEntry } from "./tree_entry";
+import { BaseTreeEntry, BlobTreeEntry, TreeEntry } from "./tree_entry";
 import { createGzip } from "zlib";
 import { pipeline } from "stream";
 import { createError, TagError } from "./error";
 import { Author } from "../../../shared_types/src";
 
-async function addArchiveEntries(entries: TreeEntry[], repository: string, archive: Pack) {
+async function addArchiveEntries(entries: BaseTreeEntry[], repository: string, archive: Pack) {
 	for(const tree_entry of entries) {
-		const peeled = (await tree_entry.peel());
-
-		if(tree_entry.type === "blob") {
-			if(peeled instanceof Blob) {
-				archive.entry({ name: `${repository}/${tree_entry.path}` }, await peeled.content());
-			}
+		if(tree_entry instanceof BlobTreeEntry) {
+			archive.entry({ name: `${repository}/${tree_entry.path}` }, await tree_entry.content());
 		}
-		else if(peeled instanceof Tree) {
-			await addArchiveEntries(peeled.entries(), repository, archive);
+		else if(tree_entry instanceof TreeEntry) {
+			await addArchiveEntries((await tree_entry.tree()).entries(), repository, archive);
 		}
 	}
 }
