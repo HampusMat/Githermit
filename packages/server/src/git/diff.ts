@@ -43,6 +43,6 @@ export class Diff {
 	}
 
 	public async patches(): Promise<Patch[]> {
-		return (await this._ng_diff.patches()).map(patch => new Patch(this, patch));
+		return (await this._ng_diff.patches()).map((patch, index) => new Patch(this, patch, index));
 	}
 }

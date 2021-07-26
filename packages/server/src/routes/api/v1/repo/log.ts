@@ -21,14 +21,14 @@ async function commitMap(commit: Commit) {
 	};
 }
 
-async function patchMap(patch: Patch, index: number) {
+async function patchMap(patch: Patch) {
 	return <APIPatch>{
 		additions: patch.additions,
 		deletions: patch.deletions,
 		from: patch.from,
 		to: patch.to,
-		too_large: await patch.isTooLarge(index),
-		hunks: await patch.getHunks(index)
+		too_large: await patch.isTooLarge(),
+		hunks: await patch.getHunks()
 	};
 }
 

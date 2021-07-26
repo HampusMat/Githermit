@@ -21,13 +21,23 @@ type PatchBounds = {
 	end: number
 }
 
-function getHunkContent(hunk: string[]) {
-	interface Lines {
+interface HunkLines {
 		new_lines: number[],
 		deleted_lines: number[]
-	}
+}
 
-	const lines = hunk.reduce((result: Lines, line, index) => {
+interface ProcessedHunk extends HunkLines {
+	hunk: string
+}
+
+/**
+ * Prepare a hunk for further usage
+ *
+ * @param hunk - The hunk to process
+ * @returns A processed hunk
+ */
+function sliceAndCountHunk(hunk: string[]): ProcessedHunk {
+	const lines = hunk.reduce((result: HunkLines, line, index) => {
 		if(line.charAt(0) === "+") {
 			hunk[index] = line.slice(1);
 			result.new_lines.push(index);
@@ -42,18 +52,27 @@ function getHunkContent(hunk: string[]) {
 	return { ...lines, hunk: hunk.join("\n") };
 }
 
+/**
+ * A representation of a patch
+ */
 export class Patch {
 	private _ng_patch: NodeGitPatch;
 	private _diff: Diff;
+	private _index: number;
 
 	public from: string;
 	public to: string;
 	public additions: number;
 	public deletions: number;
 
-	constructor(diff: Diff, patch: NodeGitPatch) {
+	/**
+	 * @param diff - The commit diff that contains the patch
+	 * @param patch - An instance of Nodegit patch
+	 */
+	constructor(diff: Diff, patch: NodeGitPatch, index: number) {
 		this._ng_patch = patch;
 		this._diff = diff;
+		this._index = index;
 
 		this.from = patch.oldFile().path();
 		this.to = patch.newFile().path();
@@ -61,25 +80,42 @@ export class Patch {
 		this.deletions = patch.lineStats()["total_deletions"];
 	}
 
-	private async bounds(index: number): Promise<PatchBounds> {
+	/**
+	 * Returns patch's bounds
+	 *
+	 * @remarks
+	 *
+	 * These bounds are in the context of it's whole diff
+	 *
+	 * @returns A patch bounds instance which contains a start & an end property
+	 */
+	private async _bounds(): Promise<PatchBounds> {
 		const raw_patches = (await this._diff.rawPatches()).split("\n");
 		const patch_header_data = await this._diff.patchHeaderData();
 
 		return {
-			start: patch_header_data.indexes[index] + patch_header_data.lengths[index],
-			end: (typeof patch_header_data.indexes[index + 1] === "undefined") ? raw_patches.length - 1 : patch_header_data.indexes[index + 1]
+			start: patch_header_data.indexes[this._index] + patch_header_data.lengths[this._index],
+			end: (typeof patch_header_data.indexes[this._index + 1] === "undefined") ? raw_patches.length - 1 : patch_header_data.indexes[this._index + 1]
 		};
 	}
 
-	private async content(index: number): Promise<string> {
+	/**
+	 * Returns the patch's content
+	 */
+	private async _content(): Promise<string> {
 		const raw_patches = (await this._diff.rawPatches()).split("\n");
-		const bounds = await this.bounds(index);
+		const bounds = await this._bounds();
 
 		return raw_patches.slice(bounds.start, bounds.end).join("\n");
 	}
 
-	public async isTooLarge(index: number): Promise<boolean> {
-		const content = (await this.content(index)).split("\n");
+	/**
+	 * Returns if the patch is too large or not
+	 *
+	 * @returns Whether or not the patch is too large
+	 */
+	public async isTooLarge(): Promise<boolean> {
+		const content = (await this._content()).split("\n");
 		const line_lengths = content.map(line => line.length).reduce((result, length) => result + length);
 
 		if(content.length > 5000 || line_lengths > 5000) {
@@ -89,8 +125,13 @@ export class Patch {
 		return false;
 	}
 
-	public async getHunks(patch_index: number): Promise<Hunk[] | null> {
-		const content = (await this.content(patch_index)).split("\n");
+	/**
+	 * Returns the patch's hunks
+	 *
+	 * @returns An array of hunk instances
+	 */
+	public async getHunks(): Promise<Hunk[] | null> {
+		const content = (await this._content()).split("\n");
 		const hunks = await this._ng_patch.hunks();
 
 		if(hunks.length === 0) {
@@ -108,7 +149,7 @@ export class Patch {
 					new_lines_cnt: prev_hunk.newLines(),
 					old_start: prev_hunk.oldStart(),
 					old_lines_cnt: prev_hunk.oldLines(),
-					...getHunkContent(content.slice(result.prev, hunk_header_index))
+					...sliceAndCountHunk(content.slice(result.prev, hunk_header_index))
 				});
 			}
 
@@ -122,7 +163,7 @@ export class Patch {
 			new_lines_cnt: prev_hunk.newLines(),
 			old_start: prev_hunk.oldStart(),
 			old_lines_cnt: prev_hunk.oldLines(),
-			...getHunkContent(content.slice(<number>hunks_data.prev))
+			...sliceAndCountHunk(content.slice(<number>hunks_data.prev))
 		});
 
 		return hunks_data.hunks;

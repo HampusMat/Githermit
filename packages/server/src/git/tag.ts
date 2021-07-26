@@ -21,7 +21,17 @@ async function addArchiveEntries(entries: BaseTreeEntry[], repository: string, a
 	}
 }
 
+/**
+ * A representation of a tag
+ *
+ * @extends Reference
+ */
 export class Tag extends Reference {
+	/**
+	 * Returns the tag's author
+	 *
+	 * @returns An instance of an author
+	 */
 	public async author(): Promise<Author> {
 		const tagger = (await NodeGitTag.lookup(this._owner.nodegitRepository, this._ng_reference.target())).tagger();
 		return {
@@ -30,11 +40,21 @@ export class Tag extends Reference {
 		};
 	}
 
+	/**
+	 * Returns the tag's creation date
+	 *
+	 * @returns A Unix Epoch timestamp for the tag's date
+	 */
 	public async date(): Promise<number> {
 		return (await NodeGitTag.lookup(this._owner.nodegitRepository, this._ng_reference.target())).tagger().when()
 			.time();
 	}
 
+	/**
+	 * Download the tag's tarball
+	 *
+	 * @param reply - A Fastify reply
+	 */
 	public async downloadTarball(reply: FastifyReply): Promise<void> {
 		const commit = await Commit.lookup(this._owner, (await this._ng_reference.peel(NodeGitObject.TYPE.COMMIT)).id());
 		const tree = await commit.tree();
@@ -64,6 +84,13 @@ export class Tag extends Reference {
 			});
 	}
 
+	/**
+	 * Lookup a tag
+	 *
+	 * @param owner - The repository which the tag is in
+	 * @param tag - The SHA of the tag to look for
+	 * @returns An instance of a tag
+	 */
 	public static async lookup(owner: Repository, tag: string): Promise<Tag> {
 		const reference = await owner.nodegitRepository.getReference(tag).catch(err => {
 			if(err.errno === -3) {

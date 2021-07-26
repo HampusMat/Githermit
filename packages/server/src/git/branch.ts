@@ -4,7 +4,17 @@ import { Repository } from "./repository";
 import { Repository as NodeGitRepository } from "nodegit";
 import { BranchError, createError } from "./error";
 
+/**
+ * A representation of a branch
+ *
+ * @extends Reference
+ */
 export class Branch extends Reference {
+	/**
+	 * Returns the branch's latest commit
+	 *
+	 * @returns A commit summary instance
+	 */
 	public async latestCommit(): Promise<CommitSummary> {
 		const latest_commit = this._owner.nodegitRepository.getBranchCommit(this._ng_reference).catch(() => {
 			throw(createError(BranchError, 500, "Failed to get the latest commit"));
@@ -17,6 +27,13 @@ export class Branch extends Reference {
 		};
 	}
 
+	/**
+	 * Lookup a branch
+	 *
+	 * @param owner - The repository which the branch is in
+	 * @param branch - The SHA of a branch
+	 * @returns An instance of a branch
+	 */
 	public static async lookup(owner: Repository, branch: string): Promise<Branch> {
 		const reference = await owner.nodegitRepository.getBranch(branch).catch(err => {
 			if(err.errno === -3) {
@@ -27,8 +44,15 @@ export class Branch extends Reference {
 		return new Branch(owner, reference);
 	}
 
-	public static async lookupExists(ng_repository: NodeGitRepository, branch: string): Promise<boolean> {
-		return ng_repository.getBranch(branch)
+	/**
+	 * Returns if a branch exists or not
+	 *
+	 * @param owner - The repository which the branch is in
+	 * @param branch - The SHA of a branch
+	 * @returns Whether or not the branch exists
+	 */
+	public static async lookupExists(owner: NodeGitRepository, branch: string): Promise<boolean> {
+		return owner.getBranch(branch)
 			.then(() => true)
 			.catch(() => false);
 	}

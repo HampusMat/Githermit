@@ -50,6 +50,14 @@ export class MiscError extends BaseError {
 
 type ErrorConstructorType<T> = new (code: number, message: string) => T;
 
+/**
+ * An error factory
+ *
+ * @param ErrorConstructor - The constructor for what error to create
+ * @param code - A HTTP code
+ * @param message - A error message
+ * @returns An instance of a error
+ */
 export function createError<E extends BaseError>(ErrorConstructor: ErrorConstructorType<E>, code: number, message: string): E {
 	return new ErrorConstructor(code, message);
 }

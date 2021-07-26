@@ -8,12 +8,25 @@ export interface Request extends FastifyRequest {
 	params: Route["Params"],
 }
 
+/**
+ * Write the first part of a reference discovery reply
+ *
+ * @param service - The git service to write as
+ * @param reply - A Fastify reply
+ */
 function writeRefDiscoveryFirstLine(service: string, reply: FastifyReply) {
 	const s = "# service=" + service + "\n";
 	const n = (4 + s.length).toString(16);
 	reply.raw.write(Buffer.from((Array(4 - n.length + 1).join("0") + n + s) + "0000"));
 }
 
+/**
+ * Connect to the Git HTTP backend
+ *
+ * @param repository - The repository to use
+ * @param req - A Fastify request
+ * @param reply - A Fastify reply
+ */
 export function connect(repository: Repository, req: Request, reply: FastifyReply): void {
 	const parsed_url = new URL(`${req.protocol}://${req.hostname}${req.url.replace(req.params.repo, repository.name.short)}`);
 

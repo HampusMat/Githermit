@@ -11,6 +11,9 @@ export function isNodeGitReferenceTag(ref: NodeGitReference): boolean {
 	return Boolean(ref.isTag());
 }
 
+/**
+ * A representation of a reference
+ */
 export abstract class Reference {
 	protected _ng_reference: NodeGitReference;
 	protected _owner: Repository;
@@ -18,6 +21,10 @@ export abstract class Reference {
 	public id: string;
 	public name: string;
 
+	/**
+	 * @param owner - The repository which the reference is in
+	 * @param reference - An instance of a Nodegit reference
+	 */
 	constructor(owner: Repository, reference: NodeGitReference) {
 		this._ng_reference = reference;
 		this._owner = owner;
