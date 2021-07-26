@@ -42,7 +42,7 @@ describe("Tree", () => {
 			const entry = await tree.find("packages/server");
 
 			expect(entry).toBeDefined();
-			expect(entry).toBeInstanceOf(Tree);
+			expect(entry).toBeInstanceOf(TreeEntry);
 		});
 
 		it("Should fail to return the entry of a nonexistent path", async() => {
