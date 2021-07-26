@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon src/server.ts",
-	"start": "ts-node src/server.ts"
+    "start": "ts-node src/server.ts"
   },
   "dependencies": {
     "date-fns": "^2.22.1",
@@ -31,6 +31,7 @@
     "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-tsdoc": "^0.2.14",
     "nodemon": "^2.0.12",
     "shared_types": "^1.0.0",
     "ts-node": "^10.1.0",
