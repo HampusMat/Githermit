@@ -4,6 +4,7 @@ import { EnvironmentVariables } from "../util";
 import { readFile } from "fs-extra";
 import { exec, ExecException } from "child_process";
 import { Response } from "light-my-request";
+import { Info, Repository, RepositorySummary } from "../../packages/shared_types/src";
 
 const env = process.env as EnvironmentVariables;
 
@@ -11,25 +12,171 @@ const host = "localhost";
 const port = 8080;
 
 describe("API", () => {
+	let app: FastifyInstance;
+
+	beforeAll(() => {
+		app = buildApp({
+			host: host,
+			port: port,
+			dev_port: 0,
+			title: "Bob's cool projects",
+			about: "All of my personal projects. Completely FOSS.",
+			base_dir: env.BASE_DIR,
+			production: false
+		}, "");
+	});
+
+	afterAll(async() => {
+		await app.close();
+	});
+
+	describe("GET /api/v1/info", () => {
+		let res: Response;
+
+		beforeAll(async() => {
+			res = await app.inject({
+				method: "GET",
+				url: "api/v1/info"
+			});
+		});
+
+		it("Should respond", () => {
+			expect.assertions(4);
+
+			expect(res).toBeDefined();
+			expect(res).toHaveProperty("statusCode");
+			expect(res).toHaveProperty("payload");
+			expect(res.payload).toBeDefined();
+		});
+
+		it("Should respond without an error", () => {
+			expect.assertions(5);
+
+			expect(res.statusCode).toEqual(200);
+
+			const json: Record<string, string> = res.json();
+
+			expect(json).toBeDefined();
+			expect(json.error).toBeUndefined();
+			expect(json).toHaveProperty("data");
+			expect(json.data).toBeDefined();
+		});
+
+		it("Should have a valid response", () => {
+			expect.assertions(4);
+
+			const info = res.json().data as Info;
+
+			expect(info).toHaveProperty("title");
+			expect(info.title).toEqual("Bob's cool projects");
+
+			expect(info).toHaveProperty("about");
+			expect(info.about).toEqual("All of my personal projects. Completely FOSS.");
+		});
+	});
+
+	describe("GET /api/v1/repos", () => {
+		let res: Response;
+
+		beforeAll(async() => {
+			res = await app.inject({
+				method: "GET",
+				url: "api/v1/repos"
+			});
+		});
+
+		it("Should respond", () => {
+			expect.assertions(4);
+
+			expect(res).toBeDefined();
+			expect(res).toHaveProperty("statusCode");
+			expect(res).toHaveProperty("payload");
+			expect(res.payload).toBeDefined();
+		});
+
+		it("Should respond without an error", () => {
+			expect.assertions(5);
+
+			expect(res.statusCode).toEqual(200);
+
+			const json: Record<string, string> = res.json();
+
+			expect(json).toBeDefined();
+			expect(json.error).toBeUndefined();
+			expect(json).toHaveProperty("data");
+			expect(json.data).toBeDefined();
+		});
+
+		it("Should have a valid response", () => {
+			expect.hasAssertions();
+
+			const repositories = res.json().data as RepositorySummary[];
+
+			expect(repositories).toBeDefined();
+
+			for(const repository of repositories) {
+				expect(repository).toHaveProperty("name");
+				expect(repository.name).toEqual(env.AVAIL_REPO.slice(0, -4));
+
+				expect(repository).toHaveProperty("description");
+				expect(repository.description).toEqual("Unnamed repository; edit this file 'description' to name the repository.");
+
+				expect(repository).toHaveProperty("last_updated");
+				expect(repository.last_updated).toBeDefined();
+			}
+
+		});
+	});
+
+	describe("GET /api/v1/repos/:repository", () => {
+		let res: Response;
+
+		beforeAll(async() => {
+			res = await app.inject({
+				method: "GET",
+				url: `api/v1/repos/${env.AVAIL_REPO.slice(0, -4)}`
+			});
+		});
+
+		it("Should respond", () => {
+			expect.assertions(4);
+
+			expect(res).toBeDefined();
+			expect(res).toHaveProperty("statusCode");
+			expect(res).toHaveProperty("payload");
+			expect(res.payload).toBeDefined();
+		});
+
+		it("Should respond without an error", () => {
+			expect.assertions(5);
+
+			expect(res.statusCode).toEqual(200);
+
+			const json: Record<string, string> = res.json();
+
+			expect(json).toBeDefined();
+			expect(json.error).toBeUndefined();
+			expect(json).toHaveProperty("data");
+			expect(json.data).toBeDefined();
+		});
+
+		it("Should have a valid response", () => {
+			expect.hasAssertions();
+
+			const repository = res.json().data as Repository;
+
+			expect(repository).toHaveProperty("name");
+			expect(repository.name).toEqual(env.AVAIL_REPO.slice(0, -4));
+
+			expect(repository).toHaveProperty("description");
+			expect(repository.description).toEqual("Unnamed repository; edit this file 'description' to name the repository.");
+
+			expect(repository).toHaveProperty("has_readme");
+			expect(repository.has_readme).toBeDefined();
+		});
+	});
+
 	describe("Git HTTP", () => {
-		let app: FastifyInstance;
-
-		beforeAll(() => {
-			app = buildApp({
-				host: host,
-				port: port,
-				dev_port: 0,
-				title: "",
-				about: "",
-				base_dir: env.BASE_DIR,
-				production: false
-			}, "");
-		});
-
-		afterAll(async() => {
-			await app.close();
-		});
-
 		describe("GET /:repository/info/refs", () => {
 			let res: Response;
 
