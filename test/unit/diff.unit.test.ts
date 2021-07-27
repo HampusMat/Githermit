@@ -14,7 +14,7 @@ describe("Diff", () => {
 		diff = await (await repository.masterCommit()).diff();
 	});
 
-	describe("Methods", () => {
+	describe("Instance methods", () => {
 		it("Should get the raw patches", async() => {
 			expect.assertions(2);
 

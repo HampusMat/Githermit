@@ -6,17 +6,19 @@ import { Blob } from "../../packages/server/src/git/blob";
 const env = process.env as EnvironmentVariables;
 
 describe("Blob", () => {
-	it("Should the get a blob from a path in a tree", async() => {
-		expect.assertions(2);
+	describe("Class methods", () => {
+		it("Should the get a blob from a path in a tree", async() => {
+			expect.assertions(2);
 
-		const tree = await Tree.ofRepository(await Repository.open(env.BASE_DIR, env.AVAIL_REPO));
-		const blob = await Blob.fromPath(tree, "packages/client/src/main.ts");
+			const tree = await Tree.ofRepository(await Repository.open(env.BASE_DIR, env.AVAIL_REPO));
+			const blob = await Blob.fromPath(tree, "packages/client/src/main.ts");
 
-		expect(blob).toBeDefined();
-		expect(blob).toBeInstanceOf(Blob);
+			expect(blob).toBeDefined();
+			expect(blob).toBeInstanceOf(Blob);
+		});
 	});
 
-	describe("Methods", () => {
+	describe("Instance methods", () => {
 		let blob: Blob;
 
 		beforeAll(async() => {

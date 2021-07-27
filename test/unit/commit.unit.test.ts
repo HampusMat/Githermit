@@ -13,36 +13,38 @@ describe("Commit", () => {
 		repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
 	});
 
-	it("Should look up a commit", async() => {
-		expect.assertions(8);
+	describe("Class methods", () => {
+		it("Should look up a commit", async() => {
+			expect.assertions(8);
 
-		const commit = await Commit.lookup(repository, env.AVAIL_COMMIT);
+			const commit = await Commit.lookup(repository, env.AVAIL_COMMIT);
 
-		expect(commit).toBeDefined();
-		expect(commit).toBeInstanceOf(Commit);
+			expect(commit).toBeDefined();
+			expect(commit).toBeInstanceOf(Commit);
 
-		expectCommitProperties(commit);
+			expectCommitProperties(commit);
+		});
+
+		it("Should look up a nonexistant commit and throw", async() => {
+			expect.assertions(1);
+
+			await expect(Commit.lookup(repository, env.UNAVAIL_COMMIT)).rejects.toThrow();
+		});
+
+		it("Should look up if an existent commit exists and respond true", async() => {
+			expect.assertions(1);
+
+			await expect(Commit.lookupExists(repository, env.AVAIL_COMMIT)).resolves.toBeTruthy();
+		});
+
+		it("Should look up if an nonexistant commit exists and respond false", async() => {
+			expect.assertions(1);
+
+			await expect(Commit.lookupExists(repository, env.UNAVAIL_COMMIT)).resolves.toBeFalsy();
+		});
 	});
 
-	it("Should look up a nonexistant commit and throw", async() => {
-		expect.assertions(1);
-
-		await expect(Commit.lookup(repository, env.UNAVAIL_COMMIT)).rejects.toThrow();
-	});
-
-	it("Should look up if an existent commit exists and respond true", async() => {
-		expect.assertions(1);
-
-		await expect(Commit.lookupExists(repository, env.AVAIL_COMMIT)).resolves.toBeTruthy();
-	});
-
-	it("Should look up if an nonexistant commit exists and respond false", async() => {
-		expect.assertions(1);
-
-		await expect(Commit.lookupExists(repository, env.UNAVAIL_COMMIT)).resolves.toBeFalsy();
-	});
-
-	describe("Methods", () => {
+	describe("Instance methods", () => {
 		let commit: Commit;
 
 		beforeAll(async() => {

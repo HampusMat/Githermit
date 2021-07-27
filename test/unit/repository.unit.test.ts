@@ -18,45 +18,47 @@ function expectRepositoryProperties(repository: Repository) {
 }
 
 describe("Repository", () => {
-	it("Should open a repository", async() => {
-		expect.assertions(8);
+	describe("Class methods", () => {
+		it("Should open a repository", async() => {
+			expect.assertions(8);
 
-		const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+			const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
 
-		expect(repository).toBeDefined();
-		expect(repository).toBeInstanceOf(Repository);
-
-		expectRepositoryProperties(repository);
-	});
-
-	it("Should fail to open a nonexistant repository", async() => {
-		expect.assertions(1);
-
-		await expect(Repository.open(env.BASE_DIR, env.UNAVAIL_REPO)).rejects.toBeInstanceOf(BaseError);
-	});
-
-	it("Should fail to open a repository with a nonexistant branch", async() => {
-		expect.assertions(1);
-
-		await expect(Repository.open(env.BASE_DIR, env.AVAIL_REPO, "wubbalubbadubdub")).rejects.toBeInstanceOf(BaseError);
-	});
-
-	it("Should open all repositories", async() => {
-		expect.hasAssertions();
-
-		const all_repositories = await Repository.openAll(env.BASE_DIR);
-
-		expect(all_repositories).toBeDefined();
-
-		for(const repository of all_repositories) {
 			expect(repository).toBeDefined();
 			expect(repository).toBeInstanceOf(Repository);
 
 			expectRepositoryProperties(repository);
-		}
+		});
+
+		it("Should fail to open a nonexistant repository", async() => {
+			expect.assertions(1);
+
+			await expect(Repository.open(env.BASE_DIR, env.UNAVAIL_REPO)).rejects.toBeInstanceOf(BaseError);
+		});
+
+		it("Should fail to open a repository with a nonexistant branch", async() => {
+			expect.assertions(1);
+
+			await expect(Repository.open(env.BASE_DIR, env.AVAIL_REPO, "wubbalubbadubdub")).rejects.toBeInstanceOf(BaseError);
+		});
+
+		it("Should open all repositories", async() => {
+			expect.hasAssertions();
+
+			const all_repositories = await Repository.openAll(env.BASE_DIR);
+
+			expect(all_repositories).toBeDefined();
+
+			for(const repository of all_repositories) {
+				expect(repository).toBeDefined();
+				expect(repository).toBeInstanceOf(Repository);
+
+				expectRepositoryProperties(repository);
+			}
+		});
 	});
 
-	describe("Methods", () => {
+	describe("Instance methods", () => {
 		let repository: Repository;
 
 		beforeAll(async() => {

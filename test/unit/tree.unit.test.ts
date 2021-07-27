@@ -7,16 +7,18 @@ import { EnvironmentVariables } from "../util";
 const env = process.env as EnvironmentVariables;
 
 describe("Tree", () => {
-	it("Should get the tree of a repository", async() => {
-		expect.assertions(2);
+	describe("Class methods", () => {
+		it("Should get the tree of a repository", async() => {
+			expect.assertions(2);
 
-		const tree = await Tree.ofRepository(await Repository.open(env.BASE_DIR, env.AVAIL_REPO));
+			const tree = await Tree.ofRepository(await Repository.open(env.BASE_DIR, env.AVAIL_REPO));
 
-		expect(tree).toBeDefined();
-		expect(tree).toBeInstanceOf(Tree);
+			expect(tree).toBeDefined();
+			expect(tree).toBeInstanceOf(Tree);
+		});
 	});
 
-	describe("Methods", () => {
+	describe("Instance methods", () => {
 		let tree: Tree;
 
 		beforeAll(async() => {
