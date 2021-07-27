@@ -32,7 +32,7 @@ function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 				data: await Promise.all(repos.map(async repository => {
 					return <APIRepositorySummary>{
 						name: repository.name.short,
-						description: repository.description,
+						description: await repository.description(),
 						last_updated: (await repository.masterCommit()).date
 					};
 				}))
@@ -49,7 +49,7 @@ function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 				return;
 			}
 
-			const repository = await Repository.open(opts.config.settings.base_dir, req.params.repo).catch(err => err);
+			const repository: Repository | BaseError = await Repository.open(opts.config.settings.base_dir, req.params.repo).catch(err => err);
 
 			if(repository instanceof BaseError) {
 				reply.code(repository.code).send({ error: repository.message });
@@ -58,7 +58,7 @@ function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 
 			const data: APIRepository = {
 				name: repository.name.short,
-				description: repository.description,
+				description: await repository.description(),
 				has_readme: await (await repository.tree()).findExists("README.md")
 			};
 
