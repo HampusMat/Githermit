@@ -16,7 +16,7 @@ export class Branch extends Reference {
 	 * @returns A commit summary instance
 	 */
 	public async latestCommit(): Promise<CommitSummary> {
-		const latest_commit = this._owner.nodegitRepository.getBranchCommit(this._ng_reference).catch(() => {
+		const latest_commit = this._owner.ng_repository.getBranchCommit(this._ng_reference).catch(() => {
 			throw(createError(BranchError, 500, "Failed to get the latest commit"));
 		});
 
@@ -35,7 +35,7 @@ export class Branch extends Reference {
 	 * @returns An instance of a branch
 	 */
 	public static async lookup(owner: Repository, branch: string): Promise<Branch> {
-		const reference = await owner.nodegitRepository.getBranch(branch).catch(err => {
+		const reference = await owner.ng_repository.getBranch(branch).catch(err => {
 			if(err.errno === -3) {
 				throw(createError(BranchError, 404, "Branch not found!"));
 			}

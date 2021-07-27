@@ -4,14 +4,15 @@ import { Repository } from "./repository";
 import { dirname } from "path";
 import { findAsync } from "./misc";
 import { Tree } from "./tree";
+import { Blob } from "./blob";
 
 /**
  * The core structure of a tree entry
  */
 export abstract class BaseTreeEntry {
-	protected _ng_tree_entry: NodeGitTreeEntry;
 	protected _owner: Repository;
 
+	public ng_tree_entry: NodeGitTreeEntry;
 	public path: string;
 
 	/**
@@ -19,7 +20,7 @@ export abstract class BaseTreeEntry {
 	 * @param entry - An instance of a Nodegit tree entry
 	 */
 	constructor(owner: Repository, entry: NodeGitTreeEntry) {
-		this._ng_tree_entry = entry;
+		this.ng_tree_entry = entry;
 		this._owner = owner;
 
 		this.path = entry.path();
@@ -54,7 +55,7 @@ export class TreeEntry extends BaseTreeEntry {
 	 * @returns An instance of a tree
 	 */
 	public async tree(): Promise<Tree> {
-		return new Tree(this._owner, await this._ng_tree_entry.getTree());
+		return new Tree(this._owner, await this.ng_tree_entry.getTree());
 	}
 }
 
@@ -63,10 +64,12 @@ export class TreeEntry extends BaseTreeEntry {
  */
 export class BlobTreeEntry extends BaseTreeEntry {
 	/**
-	 * Returns the blob's content
+	 * Returns the blob of the blob tree entry
+	 *
+	 * @returns An instance of a blob
 	 */
-	public async content(): Promise<string> {
-		return (await this._ng_tree_entry.getBlob()).toString();
+	public async blob(): Promise<Blob> {
+		return new Blob(this);
 	}
 }
 

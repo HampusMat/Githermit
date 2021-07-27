@@ -12,19 +12,18 @@ export class Blob {
 
 	/**
 	 * @param entry - A tree entry that's a blob
-	 * @param path - A path
 	 */
-	constructor(entry: BlobTreeEntry, path: string) {
+	constructor(entry: BlobTreeEntry) {
 		this._tree_entry = entry;
 
-		this.path = path;
+		this.path = entry.path;
 	}
 
 	/**
 	 * Returns the blob's content
 	 */
 	public async content(): Promise<string> {
-		return this._tree_entry.content();
+		return (await this._tree_entry.ng_tree_entry.getBlob()).content.toString();
 	}
 
 	/**
@@ -41,6 +40,6 @@ export class Blob {
 			throw(createError(BlobError, 500, "Not a blob"));
 		}
 
-		return new Blob(entry, path);
+		return new Blob(entry);
 	}
 }

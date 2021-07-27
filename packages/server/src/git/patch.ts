@@ -22,8 +22,8 @@ type PatchBounds = {
 }
 
 interface HunkLines {
-		new_lines: number[],
-		deleted_lines: number[]
+	new_lines: number[],
+	deleted_lines: number[]
 }
 
 interface ProcessedHunk extends HunkLines {

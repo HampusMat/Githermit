@@ -8,7 +8,6 @@ import { FastifyReply } from "fastify";
 import { Tag } from "./tag";
 import { Tree } from "./tree";
 import { BranchError, createError, RepositoryError } from "./error";
-import { isNodeGitReferenceBranch, isNodeGitReferenceTag, Reference } from "./reference";
 
 /**
  * Returns the full name of a git repository
@@ -25,8 +24,8 @@ type RepositoryName = {
 	full: string,
 }
 
-// This fucking shit isn't in the Nodegit documentation.
-interface WeirdNodeGitError extends Error {
+// I have no idea what this sort of error is from
+interface WeirdError extends Error {
 	errno: number;
 	errorFunction: string;
 }
@@ -35,9 +34,9 @@ interface WeirdNodeGitError extends Error {
  * A representation of an bare git repository
  */
 export class Repository {
-	private _ng_repository: NodeGitRepository;
-
 	private _branch: string;
+
+	public ng_repository: NodeGitRepository;
 
 	public name: RepositoryName;
 	public base_dir: string;
@@ -47,7 +46,7 @@ export class Repository {
 	 * @param branch - The branch to use
 	 */
 	constructor(repository: NodeGitRepository, branch: string) {
-		this._ng_repository = repository;
+		this.ng_repository = repository;
 		this.name = {
 			short: basename(repository.path()).slice(0, -4),
 			full: basename(repository.path())
@@ -86,7 +85,7 @@ export class Repository {
 	 * @returns An array of commit instances
 	 */
 	public async commits(): Promise<Commit[]> {
-		const walker = NodeGitRevwalk.create(this._ng_repository);
+		const walker = NodeGitRevwalk.create(this.ng_repository);
 		walker.pushHead();
 
 		return Promise.all((await walker.getCommitsUntil(() => true)).map(commit => new Commit(this, commit)));
@@ -108,7 +107,7 @@ export class Repository {
 	 * @returns Whether or not it exists
 	 */
 	public lookupExists(id: string): Promise<boolean> {
-		return NodeGitObject.lookup(this._ng_repository, NodeGitOid.fromString(id), NodeGitObject.TYPE.ANY)
+		return NodeGitObject.lookup(this.ng_repository, NodeGitOid.fromString(id), NodeGitObject.TYPE.ANY)
 			.then(() => true)
 			.catch(() => false);
 	}
@@ -118,8 +117,9 @@ export class Repository {
 	 *
 	 * @returns An array of branch instances
 	 */
-	public branches(): Promise<Branch[]> {
-		return Reference.all(this, Branch, isNodeGitReferenceBranch);
+	public async branches(): Promise<Branch[]> {
+		const references = await this.ng_repository.getReferences();
+		return references.filter(ref => ref.isBranch()).map(ref => new Branch(this, ref));
 	}
 
 	/**
@@ -128,7 +128,8 @@ export class Repository {
 	 * @returns An array of tag instances
 	 */
 	public async tags(): Promise<Tag[]> {
-		return Reference.all(this, Tag, isNodeGitReferenceTag);
+		const references = await this.ng_repository.getReferences();
+		return references.filter(ref => ref.isTag()).map(ref => new Tag(this, ref));
 	}
 
 	/**
@@ -150,10 +151,6 @@ export class Repository {
 		connect(this, req, reply);
 	}
 
-	public get nodegitRepository(): NodeGitRepository {
-		return this._ng_repository;
-	}
-
 	/**
 	 * Opens a bare git repository
 	 *
@@ -163,7 +160,7 @@ export class Repository {
 	 * @returns An instance of a git repository
 	 */
 	public static async open(base_dir: string, repository: string, branch?: string): Promise<Repository> {
-		let ng_repository = await NodeGitRepository.openBare(`${base_dir}/${getFullRepositoryName(repository)}`).catch((err: WeirdNodeGitError) => {
+		let ng_repository = await NodeGitRepository.openBare(`${base_dir}/${getFullRepositoryName(repository)}`).catch((err: WeirdError) => {
 			if(err.errno === -3) {
 				throw(createError(RepositoryError, 404, "Repository not found"));
 			}

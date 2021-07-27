@@ -4,19 +4,27 @@ import { Commit } from "./commit";
 import { FastifyReply } from "fastify";
 import { Reference } from "./reference";
 import { Repository } from "./repository";
-import { BaseTreeEntry, BlobTreeEntry, TreeEntry } from "./tree_entry";
+import { BlobTreeEntry, TreeEntry } from "./tree_entry";
 import { createGzip } from "zlib";
 import { pipeline } from "stream";
 import { createError, TagError } from "./error";
 import { Author } from "../../../shared_types/src";
+import { Tree } from "./tree";
 
-async function addArchiveEntries(entries: BaseTreeEntry[], repository: string, archive: Pack) {
-	for(const tree_entry of entries) {
+/**
+ * Recursively go through a repository and add it's content to a archive
+ *
+ * @param tree - A tree to add archive entries from
+ * @param repository - The repository which the tree is in
+ * @param archive - A tar archive pack
+ */
+async function addArchiveEntries(tree: Tree, repository: string, archive: Pack) {
+	for(const tree_entry of tree.entries()) {
 		if(tree_entry instanceof BlobTreeEntry) {
-			archive.entry({ name: `${repository}/${tree_entry.path}` }, await tree_entry.content());
+			archive.entry({ name: `${repository}/${tree_entry.path}` }, (await (await tree_entry.blob()).content()));
 		}
 		else if(tree_entry instanceof TreeEntry) {
-			await addArchiveEntries((await tree_entry.tree()).entries(), repository, archive);
+			await addArchiveEntries((await tree_entry.tree()), repository, archive);
 		}
 	}
 }
@@ -33,7 +41,7 @@ export class Tag extends Reference {
 	 * @returns An instance of an author
 	 */
 	public async author(): Promise<Author> {
-		const tagger = (await NodeGitTag.lookup(this._owner.nodegitRepository, this._ng_reference.target())).tagger();
+		const tagger = (await NodeGitTag.lookup(this._owner.ng_repository, this._ng_reference.target())).tagger();
 		return {
 			name: tagger.name(),
 			email: tagger.email()
@@ -46,7 +54,7 @@ export class Tag extends Reference {
 	 * @returns A Unix Epoch timestamp for the tag's date
 	 */
 	public async date(): Promise<number> {
-		return (await NodeGitTag.lookup(this._owner.nodegitRepository, this._ng_reference.target())).tagger().when()
+		return (await NodeGitTag.lookup(this._owner.ng_repository, this._ng_reference.target())).tagger().when()
 			.time();
 	}
 
@@ -74,7 +82,7 @@ export class Tag extends Reference {
 		gzip.on("error", () => reply.raw.end());
 		archive.on("error", () => reply.raw.end());
 
-		addArchiveEntries(tree.entries(), this._owner.name.short, archive)
+		addArchiveEntries(tree, this._owner.name.short, archive)
 			.then(() => {
 				archive.finalize();
 			})
@@ -92,7 +100,7 @@ export class Tag extends Reference {
 	 * @returns An instance of a tag
 	 */
 	public static async lookup(owner: Repository, tag: string): Promise<Tag> {
-		const reference = await owner.nodegitRepository.getReference(tag).catch(err => {
+		const reference = await owner.ng_repository.getReference(tag).catch(err => {
 			if(err.errno === -3) {
 				throw(createError(TagError, 404, "Tag not found"));
 			}

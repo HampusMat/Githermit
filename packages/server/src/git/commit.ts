@@ -86,7 +86,7 @@ export class Commit {
 	 * @returns An instance of a commit
 	 */
 	public static async lookup(repository: Repository, id: string | NodeGitOid): Promise<Commit> {
-		const commit = await NodeGitCommit.lookup(repository.nodegitRepository, id instanceof NodeGitOid ? id : NodeGitOid.fromString(id));
+		const commit = await NodeGitCommit.lookup(repository.ng_repository, id instanceof NodeGitOid ? id : NodeGitOid.fromString(id));
 		return new Commit(repository, commit);
 	}
 
@@ -98,7 +98,7 @@ export class Commit {
 	 * @returns Whether or not the commit exists
 	 */
 	public static lookupExists(repository: Repository, id: string): Promise<boolean> {
-		return NodeGitCommit.lookup(repository.nodegitRepository, NodeGitOid.fromString(id))
+		return NodeGitCommit.lookup(repository.ng_repository, NodeGitOid.fromString(id))
 			.then(() => true)
 			.catch(() => false);
 	}
@@ -110,6 +110,6 @@ export class Commit {
 	 * @returns An instance of a commit
 	 */
 	public static async masterCommit(owner: Repository): Promise<Commit> {
-		return new Commit(owner, await owner.nodegitRepository.getMasterCommit());
+		return new Commit(owner, await owner.ng_repository.getMasterCommit());
 	}
 }
