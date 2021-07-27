@@ -1,10 +1,8 @@
-import { access, mkdir, remove } from "fs-extra";
-import { promisify } from "util";
-import { exec } from "child_process";
+import { access, mkdir, remove, writeFile } from "fs-extra";
 import { config } from "dotenv";
 import { EnvironmentVariables } from "./util";
+import { Clone } from "nodegit";
 
-const promiseExec = promisify(exec);
 config({ path: "test/test.env" });
 
 const env = process.env as EnvironmentVariables;
@@ -20,15 +18,14 @@ export default async function(): Promise<void> {
 
 	await mkdir(env.BASE_DIR);
 
-	const git_clone = await promiseExec(`git clone -q --bare ${env.AVAIL_REPO_URL} ${env.BASE_DIR}/${env.AVAIL_REPO}`);
+	const repository = await Clone.clone(env.AVAIL_REPO_URL, `${env.BASE_DIR}/${env.AVAIL_REPO}`, { bare: 1 });
 
-	if(git_clone.stderr) {
-		throw(git_clone.stderr);
-	}
+	const config = await repository.config();
+	await config.setString("user.name", "BobDylan");
+	await config.setString("user.email", "bob@example.com");
 
-	const git_fetch = await promiseExec(`git -C ${env.BASE_DIR}/${env.AVAIL_REPO} fetch -q --all`);
+	await repository.fetchAll();
+	await repository.createTag((await repository.getMasterCommit()).id(), "1.2", "Fixed stuff");
 
-	if(git_fetch.stderr) {
-		throw(git_fetch.stderr);
-	}
+	await writeFile(`${env.BASE_DIR}/${env.AVAIL_REPO}/owner`, "Bob");
 }

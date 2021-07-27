@@ -35,6 +35,12 @@ describe("Repository", () => {
 		await expect(Repository.open(env.BASE_DIR, env.UNAVAIL_REPO)).rejects.toBeInstanceOf(BaseError);
 	});
 
+	it("Should fail to open a repository with a nonexistant branch", async() => {
+		expect.assertions(1);
+
+		await expect(Repository.open(env.BASE_DIR, env.AVAIL_REPO, "wubbalubbadubdub")).rejects.toBeInstanceOf(BaseError);
+	});
+
 	it("Should open all repositories", async() => {
 		expect.hasAssertions();
 
@@ -55,6 +61,33 @@ describe("Repository", () => {
 
 		beforeAll(async() => {
 			repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+		});
+
+		it("Should get the description", async() => {
+			expect.assertions(2);
+
+			const description = await repository.description();
+
+			expect(description).toBeDefined();
+			expect(description.length).toBeGreaterThan(1);
+		});
+
+		it("Should get the owner", async() => {
+			expect.assertions(2);
+
+			const owner = await repository.owner();
+
+			expect(owner).toBeDefined();
+			expect(owner).toEqual("Bob");
+		});
+
+		it("Should get the branch", async() => {
+			expect.assertions(2);
+
+			const branch = await repository.branch();
+
+			expect(branch).toBeDefined();
+			expect(branch).toBeInstanceOf(Branch);
 		});
 
 		it("Should look up if an existent object exists and respond true", async() => {
