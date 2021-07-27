@@ -1,4 +1,5 @@
 import { Diff as NodeGitDiff } from "nodegit";
+import { createError, DiffError } from "./error";
 import { Patch } from "./patch";
 
 type PatchHeaderData = {
@@ -11,20 +12,20 @@ type PatchHeaderData = {
  * A representation of a diff
  */
 export class Diff {
-	private _ng_diff: NodeGitDiff;
+	public ng_diff: NodeGitDiff;
 
 	/**
 	 * @param diff A Nodegit diff
 	 */
 	constructor(diff: NodeGitDiff) {
-		this._ng_diff = diff;
+		this.ng_diff = diff;
 	}
 
 	/**
 	 * Returns all of the diff's patches in a raw format
 	 */
 	public async rawPatches(): Promise<string> {
-		return String(await this._ng_diff.toBuf(1));
+		return String(await this.ng_diff.toBuf(1));
 	}
 
 	/**
@@ -34,7 +35,7 @@ export class Diff {
 	 */
 	public async patchHeaderData(): Promise<Omit<PatchHeaderData, "last">> {
 		const raw_patches = (await this.rawPatches()).split("\n");
-		const patch_headers = String(await this._ng_diff.toBuf(2)).split("\n");
+		const patch_headers = String(await this.ng_diff.toBuf(2)).split("\n");
 
 		return patch_headers.reduce((result, line, index) => {
 			// The start of a patch header
@@ -62,6 +63,21 @@ export class Diff {
 	 * @returns An array of patch instances
 	 */
 	public async patches(): Promise<Patch[]> {
-		return (await this._ng_diff.patches()).map((patch, index) => new Patch(this, patch, index));
+		return (await this.ng_diff.patches()).map((patch, index) => new Patch(this, patch, index));
+	}
+
+	/**
+	 * Returns a patch from the diff
+	 *
+	 * @returns An instance of a patch
+	 */
+	public async patch(index: number): Promise<Patch> {
+		const patch = (await this.ng_diff.patches())[index];
+
+		if(!patch) {
+			throw(createError(DiffError, 500, "Patch not found"));
+		}
+
+		return new Patch(this, (await this.ng_diff.patches())[index], index);
 	}
 }

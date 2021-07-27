@@ -48,6 +48,12 @@ export class MiscError extends BaseError {
 	}
 }
 
+export class DiffError extends BaseError {
+	constructor(code: number, message: string) {
+		super(code, "A diff error has occured: " + message);
+	}
+}
+
 type ErrorConstructorType<T> = new (code: number, message: string) => T;
 
 /**

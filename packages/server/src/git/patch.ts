@@ -168,4 +168,25 @@ export class Patch {
 
 		return hunks_data.hunks;
 	}
+
+	/**
+	 * Returns a patch from a diff
+	 *
+	 * @param diff - The diff which the patch is in
+	 * @param index - The index of a patch
+	 * @returns An instance of a patch
+	 */
+	public static async fromDiff(diff: Diff, index: number): Promise<Patch> {
+		return diff.patch(index);
+	}
+
+	/**
+	 * Returns all of the patches from a diff
+	 *
+	 * @param diff - A diff
+	 * @returns An array of patch instances
+	 */
+	public static async allFromDiff(diff: Diff): Promise<Patch[]> {
+		return diff.patches();
+	}
 }

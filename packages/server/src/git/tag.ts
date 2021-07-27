@@ -96,7 +96,7 @@ export class Tag extends Reference {
 	 * Lookup a tag
 	 *
 	 * @param owner - The repository which the tag is in
-	 * @param tag - The SHA of the tag to look for
+	 * @param tag - The name of the tag to look for
 	 * @returns An instance of a tag
 	 */
 	public static async lookup(owner: Repository, tag: string): Promise<Tag> {

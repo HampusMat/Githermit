@@ -31,7 +31,7 @@ export class Branch extends Reference {
 	 * Lookup a branch
 	 *
 	 * @param owner - The repository which the branch is in
-	 * @param branch - The SHA of a branch
+	 * @param branch - The name of a branch
 	 * @returns An instance of a branch
 	 */
 	public static async lookup(owner: Repository, branch: string): Promise<Branch> {
@@ -48,7 +48,7 @@ export class Branch extends Reference {
 	 * Returns if a branch exists or not
 	 *
 	 * @param owner - The repository which the branch is in
-	 * @param branch - The SHA of a branch
+	 * @param branch - The name of a branch
 	 * @returns Whether or not the branch exists
 	 */
 	public static async lookupExists(owner: NodeGitRepository, branch: string): Promise<boolean> {
