@@ -1,33 +1,13 @@
 import { Object as NodeGitObject, Tag as NodeGitTag } from "nodegit";
-import { Pack, pack } from "tar-stream";
 import { Commit } from "./commit";
 import { FastifyReply } from "fastify";
 import { Reference } from "./reference";
 import { Repository } from "./repository";
-import { BlobTreeEntry, TreeEntry } from "./tree_entry";
 import { createGzip } from "zlib";
 import { pipeline } from "stream";
 import { createError, TagError } from "./error";
 import { Author } from "../../../shared_types/src";
-import { Tree } from "./tree";
-
-/**
- * Recursively go through a repository and add it's content to a archive
- *
- * @param tree - A tree to add archive entries from
- * @param repository - The repository which the tree is in
- * @param archive - A tar archive pack
- */
-async function addArchiveEntries(tree: Tree, repository: string, archive: Pack) {
-	for(const tree_entry of tree.entries()) {
-		if(tree_entry instanceof BlobTreeEntry) {
-			archive.entry({ name: `${repository}/${tree_entry.path}` }, (await (await tree_entry.blob()).content()));
-		}
-		else if(tree_entry instanceof TreeEntry) {
-			await addArchiveEntries((await tree_entry.tree()), repository, archive);
-		}
-	}
-}
+import { promisify } from "util";
 
 /**
  * A representation of a tag
@@ -67,29 +47,35 @@ export class Tag extends Reference {
 		const commit = await Commit.lookup(this._owner, (await this._ng_reference.peel(NodeGitObject.TYPE.COMMIT)).id());
 		const tree = await commit.tree();
 
-		const archive = pack();
-		const gzip = createGzip();
-
 		reply.raw.writeHead(200, {
 			"Content-Encoding": "gzip",
 			"Content-Type": "application/gzip",
 			"Content-Disposition": `attachment; filename="${this._owner.name.short}-${this._owner.name.short}.tar.gz"`
 		});
 
-		pipeline(archive, gzip, reply.raw, () => reply.raw.end());
+		const archive = await tree.createArchive().catch((err: Error) => err);
 
-		gzip.on("close", () => reply.raw.end());
-		gzip.on("error", () => reply.raw.end());
-		archive.on("error", () => reply.raw.end());
+		if(archive instanceof Error) {
+			console.log(archive);
+			reply.raw.end();
+			return;
+		}
 
-		addArchiveEntries(tree, this._owner.name.short, archive)
-			.then(() => {
-				archive.finalize();
-			})
-			.catch(() => {
-				archive.finalize();
-				reply.raw.end();
-			});
+		const gzip = createGzip();
+
+		promisify(pipeline)(archive, gzip, reply.raw);
+
+		// Gzip error
+		gzip.on("error", err => {
+			console.log(err);
+			reply.raw.end();
+		});
+
+		// Tar error
+		archive.on("error", err => {
+			console.log(err);
+			reply.raw.end();
+		});
 	}
 
 	/**

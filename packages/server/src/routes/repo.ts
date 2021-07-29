@@ -62,14 +62,14 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/refs/tags/:tag",
 		handler: async(req, reply) => {
-			const repository: Repository | BaseError = await Repository.open(opts.settings.base_dir, req.params.repo).catch(err => err);
+			const repository = await Repository.open(opts.config.settings.base_dir, req.params.repo).catch((err: BaseError) => err);
 
 			if(repository instanceof BaseError) {
 				reply.code(repository.code).send(repository.message);
 				return;
 			}
 
-			const tag = await Tag.lookup(repository, req.params.tag).catch(err => err);
+			const tag = await Tag.lookup(repository, req.params.tag).catch((err: BaseError) => err);
 
 			if(tag instanceof BaseError) {
 				reply.code(tag.code).send(tag.message);

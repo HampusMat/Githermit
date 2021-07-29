@@ -23,7 +23,7 @@ export class Blob {
 	 * Returns the blob's content
 	 */
 	public async content(): Promise<string> {
-		return (await this._tree_entry.ng_tree_entry.getBlob()).content.toString();
+		return (await this._tree_entry.ng_tree_entry.getBlob()).content().toString();
 	}
 
 	/**

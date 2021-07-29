@@ -1,7 +1,8 @@
 import { Tree as NodeGitTree } from "nodegit";
 import { Repository } from "./repository";
-import { BaseTreeEntry, createTreeEntry, TreeEntry } from "./tree_entry";
+import { BaseTreeEntry, BlobTreeEntry, createTreeEntry, TreeEntry } from "./tree_entry";
 import { createError, TreeError } from "./error";
+import { pack, Pack } from "tar-stream";
 
 /**
  * A representation of a git tree
@@ -27,8 +28,8 @@ export class Tree {
 	 *
 	 * @returns An array of tree entry instances
 	 */
-	public entries(): TreeEntry[] {
-		return this._ng_tree.entries().map(entry => new TreeEntry(this._owner, entry));
+	public entries(): BaseTreeEntry[] {
+		return this._ng_tree.entries().map(entry => createTreeEntry(this._owner, entry));
 	}
 
 	/**
@@ -40,7 +41,7 @@ export class Tree {
 	public async find(path: string): Promise<BaseTreeEntry> {
 		const entry = await this._ng_tree.getEntry(path).catch(err => {
 			if(err.errno === -3) {
-				throw(createError(TreeError, 404, "Path not found"));
+				throw(createError(TreeError, 404, `Path '${path}' not found`));
 			}
 			throw(createError(TreeError, 500, "Failed to get tree path"));
 		});
@@ -58,6 +59,33 @@ export class Tree {
 		return this._ng_tree.getEntry(path)
 			.then(() => true)
 			.catch(() => false);
+	}
+
+	/**
+	 * Returns an archive made from the tree
+	 *
+	 * @returns An instance of a tar pack
+	 */
+	async createArchive(): Promise<Pack> {
+		const archive = pack();
+		const repository = this._owner.name.short;
+
+		async function addEntries(tree: Tree) {
+			for(const tree_entry of tree.entries()) {
+				if(tree_entry instanceof BlobTreeEntry) {
+					archive.entry({ name: `${repository}/${tree_entry.path}` }, (await (await tree_entry.blob()).content()));
+				}
+				else if(tree_entry instanceof TreeEntry) {
+					await addEntries(await tree_entry.tree());
+				}
+			}
+		}
+
+		await addEntries(this);
+
+		archive.finalize();
+
+		return archive;
 	}
 
 	/**
