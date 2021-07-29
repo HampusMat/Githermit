@@ -1,8 +1,9 @@
 import { Repository } from "server/src/git/repository";
 import { Tree } from "server/src/git/tree";
-import { TreeEntry } from "server/src/git/tree_entry";
+import { BaseTreeEntry, BlobTreeEntry, TreeEntry } from "server/src/git/tree_entry";
 import { BaseError } from "server/src/git/error";
 import { EnvironmentVariables } from "../util";
+import { extract, Headers } from "tar-stream";
 
 const env = process.env as EnvironmentVariables;
 
@@ -34,7 +35,7 @@ describe("Tree", () => {
 
 			for(const entry of entries) {
 				expect(entry).toBeDefined();
-				expect(entry).toBeInstanceOf(TreeEntry);
+				expect(entry).toBeInstanceOf(BaseTreeEntry);
 			}
 		});
 
@@ -63,6 +64,61 @@ describe("Tree", () => {
 			expect.assertions(1);
 
 			await expect(tree.findExists("packages/core/main.js")).resolves.toBeFalsy();
+		});
+
+		it("Should create an archive", async() => {
+			const archive = await tree.createArchive();
+
+			expect(archive).toBeDefined();
+
+			const extract_archive = extract();
+
+			archive.pipe(extract_archive);
+
+			type Entry = {
+				header: Headers,
+				content: Buffer[]
+			};
+
+			// Extract the archive entries to an array of entries
+			const entries = await new Promise((resolve: (value: Entry[]) => void) => {
+				const entries = [];
+
+				extract_archive.on("finish", () => {
+					resolve(entries);
+				});
+
+				extract_archive.on("entry", (header, stream, next) => {
+					const content: Buffer[] = [];
+
+					stream.on("data", (chunk: Buffer) => {
+						content.push(chunk);
+					});
+
+					stream.on("end", async() => {
+						entries.push({ header, content });
+						next();
+					});
+
+					stream.resume();
+				});
+			});
+
+			expect(entries).toBeDefined();
+			expect(entries.length).toBeGreaterThan(1);
+
+			for(const entry of entries) {
+				expect(entry).toBeDefined();
+				expect(entry.content).toBeDefined();
+
+				const content = entry.content.join().toString();
+
+				// Get the file content directly
+				const tree_entry = await tree.find(entry.header.name.split("/").slice(1).join("/")) as BlobTreeEntry;
+				const file_content = await (await tree_entry.blob()).content();
+
+				expect(content).toEqual(file_content);
+			}
 		});
 	});
 });
