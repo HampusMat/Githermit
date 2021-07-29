@@ -265,7 +265,15 @@ describe("API", () => {
 			beforeAll(async() => {
 				const body = new Readable({ read: () => null });
 
-				const head = /^[a-f0-9]+/.exec((await readFile(`${env.BASE_DIR}/${env.AVAIL_REPO}/FETCH_HEAD`)).toString())[0];
+				let head = (await readFile(`${env.BASE_DIR}/${env.AVAIL_REPO}/FETCH_HEAD`)).toString();
+
+				const find_head = /^[a-f0-9]+/.exec(head);
+
+				if(!find_head) {
+					throw(new Error("Failed to get repository head!"));
+				}
+
+				head = find_head[0];
 
 				body.push(`0098want ${head} multi_ack_detailed no-done side-band-64k thin-pack ofs-delta deepen-since deepen-not agent=git/2.32.0\n00000009done\n`);
 				body.push(null);

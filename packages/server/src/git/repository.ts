@@ -183,11 +183,11 @@ export class Repository {
 	 * @param base_dir - The directory that contains the repositories
 	 * @returns An array of repository instances
 	 */
-	public static async openAll(base_dir: string): Promise<Repository[] | null> {
+	public static async openAll(base_dir: string): Promise<Repository[]> {
 		const dir_content = await getDirectory(base_dir);
 
 		if(dir_content.length === 0) {
-			return null;
+			return [];
 		}
 
 		const repositories = dir_content.filter(dir_entry => dir_entry.endsWith(".git"));

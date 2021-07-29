@@ -130,12 +130,12 @@ export class Patch {
 	 *
 	 * @returns An array of hunk instances
 	 */
-	public async getHunks(): Promise<Hunk[] | null> {
+	public async getHunks(): Promise<Hunk[]> {
 		const content = (await this._content()).split("\n");
 		const hunks = await this._ng_patch.hunks();
 
 		if(hunks.length === 0) {
-			return null;
+			return [];
 		}
 
 		const hunks_data = hunks.reduce((result: Hunks, hunk, hunk_index) => {

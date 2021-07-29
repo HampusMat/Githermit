@@ -82,7 +82,7 @@ describe("Tree", () => {
 
 			// Extract the archive entries to an array of entries
 			const entries = await new Promise((resolve: (value: Entry[]) => void) => {
-				const entries = [];
+				const entries: Entry[] = [];
 
 				extract_archive.on("finish", () => {
 					resolve(entries);

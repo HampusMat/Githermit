@@ -89,7 +89,7 @@ describe("Patch", () => {
 			}
 		});
 
-		it("Should get the hunks of an empty patch and respond with null", async() => {
+		it("Should get the hunks of an empty patch and respond with an ampty array", async() => {
 			expect.assertions(2);
 
 			const other_commit = await Commit.lookup(repository, "ef256e9e40b5fd0cc741c509e611808cc66bafad");
@@ -98,7 +98,7 @@ describe("Patch", () => {
 			const hunks = await other_patch.getHunks();
 
 			expect(hunks).toBeDefined();
-			expect(hunks).toBeNull();
+			expect(hunks).toHaveLength(0);
 		});
 	});
 });

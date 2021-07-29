@@ -3,6 +3,7 @@ import { Repository } from "./repository";
 import { Route } from "../types/fastify";
 import { join } from "path";
 import { spawn } from "child_process";
+import { URL } from "url";
 
 export interface Request extends FastifyRequest {
 	params: Route["Params"],
