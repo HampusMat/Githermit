@@ -1,5 +1,5 @@
 import { Commit as NodeGitCommit, Oid as NodeGitOid } from "nodegit";
-import { Author } from "../../../shared_types/src";
+import { Author } from "api";
 import { Diff } from "./diff";
 import { Repository } from "./repository";
 import { Tree } from "./tree";

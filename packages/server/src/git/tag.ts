@@ -6,7 +6,7 @@ import { Repository } from "./repository";
 import { createGzip } from "zlib";
 import { pipeline } from "stream";
 import { createError, TagError } from "./error";
-import { Author } from "../../../shared_types/src";
+import { Author } from "../../../api/src";
 import { promisify } from "util";
 
 /**
