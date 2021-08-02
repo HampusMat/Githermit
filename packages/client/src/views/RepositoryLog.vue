@@ -53,7 +53,7 @@ import { defineComponent, Ref, ref } from "vue";
 import { format } from "date-fns";
 import fetchData from "../util/fetch";
 import { getParam } from "../util/util";
-import { LogCommit } from "shared_types";
+import { LogCommit } from "api";
 
 import Loading from "vue-loading-overlay";
 import BaseErrorMessage from "../components/BaseErrorMessage.vue";

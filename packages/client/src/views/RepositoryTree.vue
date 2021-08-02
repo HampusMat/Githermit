@@ -28,7 +28,7 @@
 import { defineComponent, Ref, ref } from "vue";
 import fetchData from "../util/fetch";
 import { getParam } from "../util/util";
-import { Tree, TreeEntry } from "shared_types";
+import { Tree, TreeEntry } from "api";
 
 import BaseBreadcrumb from "../components/BaseBreadcrumb.vue";
 import RepositoryTreeBlob from "../components/RepositoryTreeBlob.vue";

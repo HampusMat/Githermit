@@ -53,7 +53,7 @@
 import { defineComponent, Ref, ref } from "vue";
 import { format } from "date-fns";
 import fetchData from "../util/fetch";
-import { Commit } from "shared_types";
+import { Commit } from "api";
 
 import BaseBreadcrumb from "../components/BaseBreadcrumb.vue";
 import CommitPatch from "../components/CommitPatch.vue";

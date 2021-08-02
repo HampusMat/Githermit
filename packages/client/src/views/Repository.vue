@@ -14,7 +14,7 @@
 <script lang="ts">
 import { defineComponent, Ref, ref } from "vue";
 import { Router } from "vue-router";
-import { Repository } from "shared_types";
+import { Repository } from "api";
 import { getParam } from "../util/util";
 
 import RepositoryHeader from "../components/RepositoryHeader.vue";

@@ -2,7 +2,7 @@
 import { defineComponent, h, PropType, VNode } from "vue";
 import hljs from "highlight.js";
 import hljs_languages from "../util/hljs-languages";
-import { Patch } from "shared_types";
+import { Patch } from "api";
 
 export default defineComponent({
 	name: "CommitPatch",

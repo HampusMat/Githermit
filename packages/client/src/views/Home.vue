@@ -31,7 +31,7 @@
 import { defineComponent, Ref, ref } from "vue";
 import fetchData from "../util/fetch";
 import { formatDistance } from "date-fns";
-import { RepositorySummary } from "shared_types";
+import { RepositorySummary } from "api";
 
 import HomeHeader from "../components/HomeHeader.vue";
 import HomeProjectsHeader from "../components/HomeProjectsHeader.vue";

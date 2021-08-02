@@ -3,7 +3,7 @@ import { Commit } from "../../../../git/commit";
 import { Patch } from "../../../../git/patch";
 import { Route } from "../../../../types/fastify";
 import { verifySHA } from "../../util";
-import { LogCommit as APILogCommit, Patch as APIPatch, Commit as APICommit } from "shared_types";
+import { LogCommit as APILogCommit, Patch as APIPatch, Commit as APICommit } from "api";
 
 async function commitMap(commit: Commit) {
 	const stats = await commit.stats();

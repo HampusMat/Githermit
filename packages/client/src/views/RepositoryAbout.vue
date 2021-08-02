@@ -16,7 +16,7 @@
 <script lang="ts">
 import { defineComponent, Ref, ref } from "vue";
 import fetchData from "../util/fetch";
-import { Tree } from "shared_types";
+import { Tree } from "api";
 import { getParam } from "../util/util";
 
 import RepositoryTreeBlob from "../components/RepositoryTreeBlob.vue";

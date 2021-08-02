@@ -33,7 +33,7 @@
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-tsdoc": "^0.2.14",
     "nodemon": "^2.0.12",
-    "shared_types": "^1.0.0",
+    "api": "^1.0.0",
     "ts-node": "^10.1.0",
     "typescript": "^4.3.2"
   }

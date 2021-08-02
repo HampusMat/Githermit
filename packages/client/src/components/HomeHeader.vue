@@ -9,7 +9,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
-import { Info } from "shared_types";
+import { Info } from "api";
 
 export default defineComponent({
 	name: "HomeHeader",

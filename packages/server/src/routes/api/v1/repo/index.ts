@@ -8,7 +8,7 @@ import { basename } from "path";
 import branches from "./branches";
 import log from "./log";
 import { verifyRepoName } from "../../util";
-import { Tree as APITree, Tag as APITag, TreeEntry as APITreeEntry } from "shared_types";
+import { Tree as APITree, Tag as APITag, TreeEntry as APITreeEntry } from "api";
 import { BaseError } from "../../../../git/error";
 import { Tree } from "../../../../git/tree";
 
