@@ -57,7 +57,7 @@ describe("Tree", () => {
 		it("Should find out if an existent path exists and return true", async() => {
 			expect.assertions(1);
 
-			await expect(tree.findExists("packages/shared_types/package.json")).resolves.toBeTruthy();
+			await expect(tree.findExists("packages/api/package.json")).resolves.toBeTruthy();
 		});
 
 		it("Should find out if a nonexistent path exists and return false", async() => {
