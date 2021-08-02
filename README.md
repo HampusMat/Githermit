@@ -30,44 +30,10 @@ Githermit requires no such thing. All the steps to get it set up are in [Usage](
 - [ ] [Redesign](https://www.figma.com/file/r8P4m4SFTFkPfxkfoRrhtV/Githermit)
 - [ ] Documentation
 
-# Usage
-**Dependencies:**
-- Git (obviously)
-- Nodejs v14.16.0
-- libpcre
-- libpcreposix
-- libkrb5
-- libk5crypto
-- libcom_err
-- libssl-dev
+# Installation
+You can find a guide on how to install Githermit in [the documentation](/documentation/installation.md)
 
-**Install all the Javascript dependencies**
+# Contributing
+Any contribution or support is very welcome.
 
-`$ yarn install`
-
-Build & bundle the frontend
-
-`$ yarn build`
-
-Create a file called `settings.yml` with following content
-```
-host: (Host address)
-port: (Port)
-dev_port: (Port for development server)
-production: (Set this to true unless you're doing changes to Githermit)
-title: (Title of your Githermit instance)
-about: (Short description of your Githermit instance)
-base_dir: (Directory where all of your bare Git repositories are located)
-```
-
-You can now run it with
-`$ yarn start`
-
-# Development
-You're highly encouraged to [create a merge request](https://gitlab.com/HampusMat/githermit/-/merge_requests/new) if you're willing to contribute.
-
-You can run the following command to easily get started with contributing
-
-`$ yarn dev`
-
-This will run an instance of Githermit with live-updating backend & frontend.
+Find more info [here](/documentation/installation.md)
