@@ -5,6 +5,7 @@
 	"author": "HampusMat",
 	"private": true,
 	"scripts": {
+		"postinstall": "patch-package",
 		"clean": "rm -rf node_modules packages/*/node_modules packages/client/dist",
 		"dev": "concurrently -k --kill-others-on-fail \"yarn workspace client serve\" \"yarn workspace server dev\"",
 		"doc": "yarn typedoc",
@@ -24,6 +25,7 @@
 		"eslint": "^7.31.0",
 		"fs-extra": "^10.0.0",
 		"jest": "^27.0.6",
+		"patch-package": "^6.4.7",
 		"ts-jest": "^27.0.3",
 		"typedoc": "^0.21.5",
 		"typedoc-plugin-pages": "^1.1.0",

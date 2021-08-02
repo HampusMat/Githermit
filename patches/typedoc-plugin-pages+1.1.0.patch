@@ -1,0 +1,13 @@
+diff --git a/node_modules/typedoc-plugin-pages/dist/plugin/index.js b/node_modules/typedoc-plugin-pages/dist/plugin/index.js
+index 854b9f1..5cab6fd 100644
+--- a/node_modules/typedoc-plugin-pages/dist/plugin/index.js
++++ b/node_modules/typedoc-plugin-pages/dist/plugin/index.js
+@@ -6,7 +6,7 @@
+ const constants_1 = require("./constants");
+ const declaration_1 = require("typedoc/dist/lib/utils/options/declaration");
+ const plugin_1 = require("./plugin");
+-module.exports = (PluginHost) => {
++module.exports.load = (PluginHost) => {
+     const app = PluginHost.owner;
+     // Register options
+     app.options.addDeclaration({
