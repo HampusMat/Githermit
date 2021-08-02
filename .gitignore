@@ -3,6 +3,7 @@ node_modules
 dist
 settings.yml
 /coverage
+/docs
 
 # local env files
 .env.local

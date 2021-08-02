@@ -1,0 +1,11 @@
+{
+	"entryPoints": [
+		"packages/server/src/git/index.ts",
+		"packages/api/src/index.d.ts"
+	],
+	"hideGenerator": true,
+	"out": "docs",
+	"tsconfig": "packages/server/tsconfig.json",
+	"theme": "node_modules/typedoc-theme-slick-dark/bin/default",
+	"highlightTheme": "dark-plus"
+}
