@@ -17,11 +17,11 @@
 				"pages": [
 					{
 						"title": "Installation",
-						"source": "documentation/installation.md"
+						"source": "docs_src/installation.md"
 					},
 					{
 						"title": "Hacking",
-						"source": "documentation/hacking.md"
+						"source": "docs_src/hacking.md"
 					}
 				]
 			},
@@ -30,15 +30,15 @@
 				"pages": [
 					{
 						"title": "Introduction",
-						"source": "documentation/API/introduction.md"
+						"source": "docs_src/API/introduction.md"
 					},
 					{
 						"title": "v1",
-						"source": "documentation/API/v1/v1.md",
+						"source": "docs_src/API/v1/v1.md",
 						"children": [
 							{
 								"title": "Repos",
-								"source":"documentation/API/v1/repos.md"
+								"source":"docs_src/API/v1/repos.md"
 							}
 						]
 					}
