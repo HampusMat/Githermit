@@ -10546,10 +10546,10 @@ typedoc-plugin-pages@^1.1.0:
     compare-versions "^3.6.0"
     typedoc-default-themes "^0.10.1"
 
-typedoc-theme-slick-dark@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/typedoc-theme-slick-dark/-/typedoc-theme-slick-dark-1.0.2.tgz#dada20958adafb351b8859737b5c900a4383f33c"
-  integrity sha512-Vo6EYbPpOJtG/WmkThnnqrj+hBOyx3S6nU5mdLL9uVCrpIHfGRBgHyTveJBzzETGRLuyEf8potjHtlyBF1FkRw==
+typedoc-theme-slick-dark@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/typedoc-theme-slick-dark/-/typedoc-theme-slick-dark-1.0.4.tgz#88aaa38f36cb220385c53901ce9e9541d4d5ba3b"
+  integrity sha512-lE0VjTi3nu0HTNRJTAmUmGB7ih3QSgaPpciBRtfj5XZRb2lii7REeFhmogXhXQd4Ou4vbgs+4PL77O8apmDnFw==
 
 typedoc@^0.21.5:
   version "0.21.5"

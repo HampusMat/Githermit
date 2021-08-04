@@ -7,7 +7,7 @@
 	"hideGenerator": true,
 	"out": "docs",
 	"tsconfig": "packages/server/tsconfig.json",
-	"theme": "../typedoc-theme-slick-dark/bin/default",
+	"theme": "node_modules/typedoc-theme-slick-dark/bin/default",
 	"highlightTheme": "dark-plus",
 	"pages": {
 		"reflectionNavigationTitle": "Development",
@@ -22,6 +22,25 @@
 					{
 						"title": "Hacking",
 						"source": "documentation/hacking.md"
+					}
+				]
+			},
+			{
+				"title": "API",
+				"pages": [
+					{
+						"title": "Introduction",
+						"source": "documentation/API/introduction.md"
+					},
+					{
+						"title": "v1",
+						"source": "documentation/API/v1/v1.md",
+						"children": [
+							{
+								"title": "Repos",
+								"source":"documentation/API/v1/repos.md"
+							}
+						]
 					}
 				]
 			}
