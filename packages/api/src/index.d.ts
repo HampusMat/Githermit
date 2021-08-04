@@ -10,3 +10,4 @@ export { Branch, BranchSummary } from "./branch";
 export { Author } from "./misc";
 export { Tag } from "./tag";
 export { Info } from "./info";
+export { Error } from "./error";
