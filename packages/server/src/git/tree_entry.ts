@@ -1,10 +1,11 @@
 import { Commit } from "./commit";
-import { TreeEntry as NodeGitTreeEntry } from "nodegit";
+import { Revwalk as NodeGitRevwalk, TreeEntry as NodeGitTreeEntry } from "nodegit";
 import { Repository } from "./repository";
 import { dirname } from "path";
 import { findAsync } from "./misc";
 import { Tree } from "./tree";
 import { Blob } from "./blob";
+import { createError, TreeError } from "./error";
 
 /**
  * The core structure of a tree entry
@@ -32,16 +33,25 @@ export abstract class BaseTreeEntry {
 	 * @returns An instance of a commit
 	 */
 	public async latestCommit(): Promise<Commit> {
-		const commits = await this._owner.commits();
+		const rev_walk = NodeGitRevwalk.create(this._owner.ng_repository);
+		rev_walk.pushRef(`refs/heads/${(await this._owner.branch()).name}`);
 
-		return findAsync(commits, async commit => {
-			const diff = await commit.diff();
-			const patches = await diff.patches();
+		const commits = await rev_walk.getCommitsUntil(() => true);
+
+		const latest_commit = await findAsync(commits, async commit => {
+			const diff = await commit.getDiff();
+			const patches = await diff[0].patches();
 
 			return Boolean(this instanceof TreeEntry
-				? patches.find(patch => patch.to === this.path)
-				: patches.find(patch => dirname(patch.to).startsWith(this.path)));
+				? patches.find(patch => dirname(patch.newFile().path()).startsWith(this.path))
+				: patches.find(patch => patch.newFile().path() === this.path));
 		});
+
+		if(!latest_commit) {
+			throw(createError(TreeError, 500, `Failed to get the latest commit of tree entry '${this.path}'!`));
+		}
+
+		return new Commit(this._owner, latest_commit);
 	}
 }
 

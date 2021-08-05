@@ -7,7 +7,7 @@ import { Commit } from "./commit";
 import { FastifyReply } from "fastify";
 import { Tag } from "./tag";
 import { Tree } from "./tree";
-import { BranchError, createError, RepositoryError } from "./error";
+import { createError, RepositoryError } from "./error";
 
 /**
  * Returns the full name of a git repository
@@ -86,7 +86,8 @@ export class Repository {
 	 */
 	public async commits(): Promise<Commit[]> {
 		const walker = NodeGitRevwalk.create(this.ng_repository);
-		walker.pushHead();
+
+		walker.pushRef(`refs/heads/${this._branch}`);
 
 		return Promise.all((await walker.getCommitsUntil(() => true)).map(commit => new Commit(this, commit)));
 	}
@@ -170,7 +171,7 @@ export class Repository {
 
 		if(branch) {
 			if(!await Branch.lookupExists(ng_repository, branch)) {
-				throw(createError(BranchError, 404, "Branch not found!"));
+				throw(createError(RepositoryError, 404, "Branch not found!"));
 			}
 		}
 

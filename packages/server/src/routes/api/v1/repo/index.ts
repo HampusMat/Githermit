@@ -1,16 +1,14 @@
 import { CoolFastifyRequest, Route } from "../../../../types/fastify";
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { Blob } from "../../../../git/blob";
 import { Repository } from "../../../../git/repository";
 import { Tag } from "../../../../git/tag";
-import { BaseTreeEntry, TreeEntry } from "../../../../git/tree_entry";
+import { BaseTreeEntry, BlobTreeEntry, TreeEntry } from "../../../../git/tree_entry";
 import { basename } from "path";
 import branches from "./branches";
 import log from "./log";
 import { verifyRepoName } from "../../util";
 import { Tree as APITree, Tag as APITag, TreeEntry as APITreeEntry } from "api";
 import { BaseError } from "../../../../git/error";
-import { Tree } from "../../../../git/tree";
 
 declare module "fastify" {
 	interface FastifyRequest {
@@ -68,28 +66,30 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/tree",
 		handler: async(req, reply) => {
-			const tree: Tree | BaseError = await req.repository.tree().catch(err => err);
+			const tree = await req.repository.tree().catch((err: BaseError) => err);
 
 			if(tree instanceof BaseError) {
 				reply.code(tree.code).send({ error: tree.message });
 				return;
 			}
 
-			const tree_path = (Object.keys(req.query).length !== 0 && req.query.path) ? req.query.path : null;
+			const tree_path = (Object.keys(req.query).length !== 0 && req.query.path)
+				? req.query.path
+				: null;
 
 			let data: APITree;
 
 			if(tree_path) {
-				const tree_path_entry: Tree | Blob | BaseError = await tree.find(tree_path).catch(err => err);
+				const tree_path_entry = await tree.find(tree_path).catch((err: BaseError) => err);
 
 				if(tree_path_entry instanceof BaseError) {
 					reply.code(tree_path_entry.code).send({ error: tree_path_entry.message });
 					return;
 				}
 
-				data = tree_path_entry instanceof Blob
-					? { type: "blob", content: await tree_path_entry.content() }
-					: { type: "tree", content: await Promise.all(tree_path_entry.entries().map(treeEntryMap)) };
+				data = tree_path_entry instanceof BlobTreeEntry
+					? { type: "blob", content: await (await tree_path_entry.blob()).content() }
+					: { type: "tree", content: await Promise.all((await (tree_path_entry as TreeEntry).tree()).entries().map(treeEntryMap)) };
 			}
 			else {
 				data = { type: "tree", content: await Promise.all(tree.entries().map(treeEntryMap)) };
