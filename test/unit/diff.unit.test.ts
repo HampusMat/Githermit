@@ -11,7 +11,7 @@ describe("Diff", () => {
 	beforeAll(async() => {
 		const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
 
-		diff = await (await repository.masterCommit()).diff();
+		diff = await (await repository.head()).diff();
 	});
 
 	describe("Instance methods", () => {

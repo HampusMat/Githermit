@@ -45,10 +45,11 @@ Retrieves a repository tree.
 
 **Parameters:**<br>
 
-| Name | Location | Description      | Required | Schema |
-|------|----------|------------------|----------|--------|
-| repo | path     | The repository   | true     | string |
-| path | query    | Path in the tree | false    | string |
+| Name   | Location | Description      | Required | Schema |
+|--------|----------|------------------|----------|--------|
+| repo   | path     | The repository   | true     | string |
+| path   | query    | Path in the tree | false    | string |
+| branch | query    | A branch         | false    | string |
 
 **Response:**<br>
 

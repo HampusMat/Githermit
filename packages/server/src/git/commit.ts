@@ -104,12 +104,12 @@ export class Commit {
 	}
 
 	/**
-	 * Returns the master commit of a repository
+	 * Returns the most recent commit of the repository's branch
 	 *
 	 * @param owner - A repository
 	 * @returns An instance of a commit
 	 */
-	public static async masterCommit(owner: Repository): Promise<Commit> {
-		return new Commit(owner, await owner.ng_repository.getMasterCommit());
+	public static async branchCommit(owner: Repository): Promise<Commit> {
+		return new Commit(owner, await owner.ng_repository.getBranchCommit(owner.branch_name));
 	}
 }

@@ -3,6 +3,7 @@ import { Repository } from "./repository";
 import { BaseTreeEntry, BlobTreeEntry, createTreeEntry, TreeEntry } from "./tree_entry";
 import { createError, TreeError } from "./error";
 import { pack, Pack } from "tar-stream";
+import { Commit } from "./commit";
 
 /**
  * A representation of a git tree
@@ -91,16 +92,11 @@ export class Tree {
 	/**
 	 * Returns the tree of a repository
 	 *
-	 * @remarks
-	 *
-	 * Assumes that you want to use the master branch.
-	 * This will be fixed in the future.
-	 *
 	 * @param owner The repository which the tree is in
 	 * @returns An instance of a tree
 	 */
 	public static async ofRepository(owner: Repository): Promise<Tree> {
-		const master_commit = await owner.masterCommit();
-		return master_commit.tree();
+		const commit = await Commit.branchCommit(owner);
+		return commit.tree();
 	}
 }

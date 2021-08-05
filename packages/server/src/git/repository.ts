@@ -34,12 +34,11 @@ interface WeirdError extends Error {
  * A representation of an bare git repository
  */
 export class Repository {
-	private _branch: string;
-
 	public ng_repository: NodeGitRepository;
 
 	public name: RepositoryName;
 	public base_dir: string;
+	public branch_name: string;
 
 	/**
 	 * @param repository - An instance of a Nodegit repository
@@ -53,7 +52,7 @@ export class Repository {
 		};
 		this.base_dir = dirname(repository.path());
 
-		this._branch = branch;
+		this.branch_name = branch;
 	}
 
 	/**
@@ -76,7 +75,7 @@ export class Repository {
 	 * @returns An instance of a branch
 	 */
 	public branch(): Promise<Branch> {
-		return Branch.lookup(this, this._branch);
+		return Branch.lookup(this, this.branch_name);
 	}
 
 	/**
@@ -87,9 +86,18 @@ export class Repository {
 	public async commits(): Promise<Commit[]> {
 		const walker = NodeGitRevwalk.create(this.ng_repository);
 
-		walker.pushRef(`refs/heads/${this._branch}`);
+		walker.pushRef(`refs/heads/${this.branch_name}`);
 
 		return Promise.all((await walker.getCommitsUntil(() => true)).map(commit => new Commit(this, commit)));
+	}
+
+	/**
+	 * Returns the repository's head commit
+	 *
+	 * @returns An instance of a commit
+	 */
+	public async head(): Promise<Commit> {
+		return Commit.branchCommit(this);
 	}
 
 	/**
@@ -131,15 +139,6 @@ export class Repository {
 	public async tags(): Promise<Tag[]> {
 		const references = await this.ng_repository.getReferences();
 		return references.filter(ref => ref.isTag()).map(ref => new Tag(this, ref));
-	}
-
-	/**
-	 * Returns the repository's master commit
-	 *
-	 * @returns An instance of a commit
-	 */
-	public async masterCommit(): Promise<Commit> {
-		return Commit.masterCommit(this);
 	}
 
 	/**

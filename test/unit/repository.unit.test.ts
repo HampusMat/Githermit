@@ -104,10 +104,10 @@ describe("Repository", () => {
 			await expect(repository.lookupExists(env.UNAVAIL_OBJECT)).resolves.toBeFalsy();
 		});
 
-		it("Should get the master commit", async() => {
+		it("Should get the head commit", async() => {
 			expect.assertions(8);
 
-			const master_commit = await repository.masterCommit();
+			const master_commit = await repository.head();
 
 			expect(master_commit).toBeDefined();
 			expect(master_commit).toBeInstanceOf(Commit);

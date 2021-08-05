@@ -34,7 +34,7 @@ export abstract class BaseTreeEntry {
 	 */
 	public async latestCommit(): Promise<Commit> {
 		const rev_walk = NodeGitRevwalk.create(this._owner.ng_repository);
-		rev_walk.pushRef(`refs/heads/${(await this._owner.branch()).name}`);
+		rev_walk.pushRef(`refs/heads/${this._owner.branch_name}`);
 
 		const commits = await rev_walk.getCommitsUntil(() => true);
 

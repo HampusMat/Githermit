@@ -33,7 +33,7 @@ function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 					return <APIRepositorySummary>{
 						name: repository.name.short,
 						description: await repository.description(),
-						last_updated: (await repository.masterCommit()).date
+						last_updated: (await repository.head()).date
 					};
 				}))
 			});
