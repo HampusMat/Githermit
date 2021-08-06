@@ -36,22 +36,12 @@ export abstract class BaseTreeEntry {
 		const rev_walk = NodeGitRevwalk.create(this._owner.ng_repository);
 		rev_walk.pushRef(`refs/heads/${this._owner.branch_name}`);
 
-		const commits = await rev_walk.getCommitsUntil(() => true);
+		const commit_cnt = (await rev_walk.getCommitsUntil(() => true)).length;
 
-		const latest_commit = await findAsync(commits, async commit => {
-			const diff = await commit.getDiff();
-			const patches = await diff[0].patches();
+		rev_walk.pushRef(`refs/heads/${this._owner.branch_name}`);
+		const file_hist = await rev_walk.fileHistoryWalk(this.path, commit_cnt);
 
-			return Boolean(this instanceof TreeEntry
-				? patches.find(patch => dirname(patch.newFile().path()).startsWith(this.path))
-				: patches.find(patch => patch.newFile().path() === this.path));
-		});
-
-		if(!latest_commit) {
-			throw(createError(TreeError, 500, `Failed to get the latest commit of tree entry '${this.path}'!`));
-		}
-
-		return new Commit(this._owner, latest_commit);
+		return new Commit(this._owner, file_hist[0].commit);
 	}
 }
 
