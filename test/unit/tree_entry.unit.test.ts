@@ -26,6 +26,34 @@ describe("Tree entry", () => {
 				expect(latest_commit).toBeDefined();
 				expect(latest_commit).toBeInstanceOf(Commit);
 			});
+
+			it("Should get whole commit history", async() => {
+				expect.hasAssertions();
+
+				const history = await tree_entry.history();
+
+				expect(history).toBeDefined();
+				expect(history.length).toBeGreaterThanOrEqual(1);
+
+				for(const hist_entry of history) {
+					expect(hist_entry).toBeDefined();
+					expect(hist_entry).toBeInstanceOf(Commit);
+				}
+			});
+
+			it("Should get 5 entries of the commit history", async() => {
+				expect.hasAssertions();
+
+				const history = await tree_entry.history(5);
+
+				expect(history).toBeDefined();
+				expect(history).toHaveLength(5);
+
+				for(const hist_entry of history) {
+					expect(hist_entry).toBeDefined();
+					expect(hist_entry).toBeInstanceOf(Commit);
+				}
+			});
 		});
 
 	});

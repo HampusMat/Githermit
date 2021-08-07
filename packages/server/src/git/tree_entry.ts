@@ -1,11 +1,8 @@
 import { Commit } from "./commit";
 import { Revwalk as NodeGitRevwalk, TreeEntry as NodeGitTreeEntry } from "nodegit";
 import { Repository } from "./repository";
-import { dirname } from "path";
-import { findAsync } from "./misc";
 import { Tree } from "./tree";
 import { Blob } from "./blob";
-import { createError, TreeError } from "./error";
 
 /**
  * The core structure of a tree entry
@@ -42,6 +39,27 @@ export abstract class BaseTreeEntry {
 		const file_hist = await rev_walk.fileHistoryWalk(this.path, commit_cnt);
 
 		return new Commit(this._owner, file_hist[0].commit);
+	}
+
+	/**
+	 * Returns the tree entry's commit history
+	 *
+	 * @returns An array of commit instances
+	 */
+	public async history(count?: number): Promise<Commit[]> {
+		const rev_walk = NodeGitRevwalk.create(this._owner.ng_repository);
+		rev_walk.pushRef(`refs/heads/${this._owner.branch_name}`);
+
+		const commit_cnt = (await rev_walk.getCommitsUntil(() => true)).length;
+
+		rev_walk.pushRef(`refs/heads/${this._owner.branch_name}`);
+		const file_hist = await rev_walk.fileHistoryWalk(this.path, commit_cnt);
+
+		const commit_history = file_hist.map(hist_entry => new Commit(this._owner, hist_entry.commit));
+
+		return count
+			? commit_history.slice(0, count)
+			: commit_history;
 	}
 }
 
