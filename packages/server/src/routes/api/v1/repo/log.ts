@@ -3,23 +3,8 @@ import { Commit } from "../../../../git/commit";
 import { Patch } from "../../../../git/patch";
 import { Route } from "../../../../types/fastify";
 import { verifySHA } from "../../util";
-import { LogCommit as APILogCommit, Patch as APIPatch, Commit as APICommit } from "api";
-
-async function commitMap(commit: Commit) {
-	const stats = await commit.stats();
-	return <APILogCommit>{
-		id: commit.id,
-		author: {
-			name: commit.author.name,
-			email: commit.author.email
-		},
-		message: commit.message,
-		date: commit.date,
-		insertions: stats.insertions,
-		deletions: stats.deletions,
-		files_changed: stats.files_changed
-	};
-}
+import { Patch as APIPatch, Commit as APICommit } from "api";
+import { commitMap } from "./map";
 
 async function patchMap(patch: Patch) {
 	return <APIPatch>{

@@ -1,5 +1,5 @@
 import { Commit } from "./commit";
-import { Revwalk as NodeGitRevwalk, TreeEntry as NodeGitTreeEntry } from "nodegit";
+import { Revwalk as NodeGitRevwalk, TreeEntry as NodeGitTreeEntry, Commit as NodeGitCommit } from "nodegit";
 import { Repository } from "./repository";
 import { Tree } from "./tree";
 import { Blob } from "./blob";
@@ -55,7 +55,7 @@ export abstract class BaseTreeEntry {
 		rev_walk.pushRef(`refs/heads/${this._owner.branch_name}`);
 		const file_hist = await rev_walk.fileHistoryWalk(this.path, commit_cnt);
 
-		const commit_history = file_hist.map(hist_entry => new Commit(this._owner, hist_entry.commit));
+		const commit_history = await Promise.all(file_hist.map(async hist_entry => new Commit(this._owner, await NodeGitCommit.lookup(this._owner.ng_repository, hist_entry.commit))));
 
 		return count
 			? commit_history.slice(0, count)

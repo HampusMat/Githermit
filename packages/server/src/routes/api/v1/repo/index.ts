@@ -9,6 +9,7 @@ import log from "./log";
 import { verifyRepoName } from "../../util";
 import { Tree as APITree, Tag as APITag, TreeEntry as APITreeEntry } from "api";
 import { BaseError } from "../../../../git/error";
+import { commitMap } from "./map";
 
 declare module "fastify" {
 	interface FastifyRequest {
@@ -96,6 +97,37 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 			}
 
 			reply.send({ data: data });
+		}
+	});
+
+	fastify.route<Route>({
+		method: "GET",
+		url: "/tree/history",
+		handler: async(req, reply) => {
+			const tree = await req.repository.tree().catch((err: BaseError) => err);
+
+			if(tree instanceof BaseError) {
+				reply.code(tree.code).send({ error: tree.message });
+				return;
+			}
+
+			if(Object.keys(req.query).length === 0) {
+				reply.code(400).send({ error: "Missing query parameter 'path'!" });
+				return;
+			}
+
+			const tree_path = req.query.path;
+
+			const tree_entry = await tree.find(tree_path).catch((err: BaseError) => err);
+
+			if(tree_entry instanceof BaseError) {
+				reply.code(tree_entry.code).send({ error: tree_entry.message });
+				return;
+			}
+
+			const history = await tree_entry.history();
+
+			reply.send({ data: await Promise.all(history.map(commitMap)) });
 		}
 	});
 

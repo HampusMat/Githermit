@@ -41,7 +41,7 @@ Retrieves a repository.
 **Method:** GET
 
 **Description:**<br>
-Retrieves a repository tree.
+Retrieves a repository's tree.
 
 **Parameters:**<br>
 
@@ -56,6 +56,29 @@ Retrieves a repository tree.
 | Code    | Description | Schema                                |
 |---------|-------------|---------------------------------------|
 | 200     | A tree      | [Tree](/docs/modules/api.html#Tree)   |
+| 400-599 | An error    | [Error](/docs/modules/api.html#Error) |
+
+<br>
+
+## /repos/:repo/tree/history
+**Method:** GET
+
+**Description:**<br>
+Retrieves a tree entry's commit history.
+
+**Parameters:**<br>
+
+| Name   | Location | Description      | Required | Schema |
+|--------|----------|------------------|----------|--------|
+| repo   | path     | The repository   | true     | string |
+| path   | query    | Path in the tree | true     | string |
+| branch | query    | A branch         | false    | string |
+
+**Response:**<br>
+
+| Code    | Description                     | Schema                                |
+|---------|---------------------------------|---------------------------------------|
+| 200     | The tree entry's commit history | [\[Commit\]](/docs/modules/api.html#Commit)   |
 | 400-599 | An error    | [Error](/docs/modules/api.html#Error) |
 
 <br>
