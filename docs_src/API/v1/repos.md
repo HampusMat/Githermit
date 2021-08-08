@@ -68,11 +68,12 @@ Retrieves a tree entry's commit history.
 
 **Parameters:**<br>
 
-| Name   | Location | Description      | Required | Schema |
-|--------|----------|------------------|----------|--------|
-| repo   | path     | The repository   | true     | string |
-| path   | query    | Path in the tree | true     | string |
-| branch | query    | A branch         | false    | string |
+| Name   | Location | Description       | Required | Schema |
+|--------|----------|-------------------|----------|--------|
+| repo   | path     | The repository    | true     | string |
+| path   | query    | Path in the tree  | true     | string |
+| branch | query    | A branch          | false    | string |
+| count  | query    | Number of commits | false    | number |
 
 **Response:**<br>
 

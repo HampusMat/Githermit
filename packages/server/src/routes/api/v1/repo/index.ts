@@ -125,7 +125,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 				return;
 			}
 
-			const history = await tree_entry.history();
+			const history = await tree_entry.history(Number(req.query.count));
 
 			reply.send({ data: await Promise.all(history.map(commitMap)) });
 		}
