@@ -6,10 +6,10 @@ Githermit is a Git web interface with the purpose of being a way to show off you
 For the sake of modernism.
 Projects like [cgit](https://git.zx2c4.com/cgit/), [Gitweb](https://repo.or.cz/git.git/tree/HEAD:/gitweb) & [Stagit](https://codemadness.org/stagit.html) are written in decades-old programming languages that no one in their right mind would even bother to learn nowadays.
 
-The goal of Githermit is to be an alternative to the aforementioned projects that is easier to maintain, customize & use.
+The goal of Githermit is to be an alternative to the aforementioned projects that is more maintainable, extensible, customizable & usable.
 
 It's also because i hate the idea of the web server being seperate. I don't want to have to set up Nginx or Apache or whatever for just hosting a Git web interface.
-Githermit requires no such thing. All the steps to get it set up are in [Usage](#Usage). Nothing more, nothing less.
+Githermit requires no such thing. All the steps to get it set up are in [Usage](#Installation). Nothing more, nothing less.
 
 # What is Githermit Not?
 - An alternative to services such as Gitlab and Github.
@@ -28,12 +28,19 @@ Githermit requires no such thing. All the steps to get it set up are in [Usage](
 - [x] Custom favicon support
 - [x] Custom website title support
 - [ ] [Redesign](https://www.figma.com/file/r8P4m4SFTFkPfxkfoRrhtV/Githermit)
-- [ ] Documentation
+- [x] Documentation
+- [ ] GPG support
 
 # Installation
-You can find a guide on how to install Githermit in [the documentation](/documentation/installation.md)
+You can find installation instructions in [the documentation](/docs_src/installation.md)
 
 # Contributing
 Any contribution or support is very welcome.
 
-Find more info [here](/documentation/installation.md)
+## Hacking
+You can find information about development in [the documentation](/docs_src/hacking.md)
+
+## Donating
+Monero: `49nv1PMFiamBhiiNkzP66H7zmogDEWsDaaUxDdQN2Ne5g7mErYy1upRRgPeVwPYB1r9YArktDiJSFdKUnRF1zf5fECoJRss`
+
+Bitcoin: `bc1q5hxt9fz4sq7haju8gug8dm4v6422mzcfsnhyfe`
