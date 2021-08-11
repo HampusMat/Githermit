@@ -18,9 +18,13 @@ export type Patch = {
 	too_large: boolean,
 	hunks: Hunk[]
 }
+export interface CommitAuthor extends Author {
+	fingerprint: string | null
+}
 export interface Commit {
 	message: string,
-	author: Author,
+	author: CommitAuthor,
+	isSigned: boolean,
 	date: number,
 	insertions: number,
 	deletions: number,
@@ -30,10 +34,8 @@ export interface Commit {
 
 export type LogCommit = {
 	id: string,
-	author: {
-		name: string,
-		email: string
-	},
+	author: CommitAuthor,
+	isSigned: boolean,
 	message: string,
 	date: number,
 	insertions: number,

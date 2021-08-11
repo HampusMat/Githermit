@@ -6,9 +6,11 @@ export async function commitMap(commit: Commit): Promise<LogCommit> {
 	return <LogCommit>{
 		id: commit.id,
 		author: {
-			name: commit.author.name,
-			email: commit.author.email
+			name: commit.author().name,
+			email: commit.author().email,
+			fingerprint: await commit.author().fingerprint().catch(() => null)
 		},
+		isSigned: await commit.isSigned(),
 		message: commit.message,
 		date: commit.date,
 		insertions: stats.insertions,

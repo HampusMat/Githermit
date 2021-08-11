@@ -29,7 +29,7 @@ Githermit requires no such thing. All the steps to get it set up are in [Usage](
 - [x] Custom website title support
 - [ ] [Redesign](https://www.figma.com/file/r8P4m4SFTFkPfxkfoRrhtV/Githermit)
 - [x] Documentation
-- [ ] GPG support
+- [x] GPG support
 
 # Installation
 You can find installation instructions in [the documentation](/docs_src/installation.md)

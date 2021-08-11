@@ -46,9 +46,11 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 			const data: APICommit = {
 				message: commit.message,
 				author: {
-					name: commit.author.name,
-					email: commit.author.email
+					name: commit.author().name,
+					email: commit.author().email,
+					fingerprint: await commit.author().fingerprint().catch(() => null)
 				},
+				isSigned: await commit.isSigned(),
 				date: commit.date,
 				insertions: stats.insertions,
 				deletions: stats.deletions,

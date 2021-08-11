@@ -10,6 +10,7 @@ For example:
 Githermit also requires NodeJS. You can find a comprehensive guide on how to install it in [the NodeJS documentation](https://nodejs.dev/download/package-manager/).
 
 And then there's a couple of packages that may or may not already be installed on your system.
+- gpg
 - libpcre
 - libpcreposix
 - libkrb5

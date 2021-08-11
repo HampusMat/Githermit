@@ -80,5 +80,45 @@ describe("Commit", () => {
 			expect(tree).toBeDefined();
 			expect(tree).toBeInstanceOf(Tree);
 		});
+
+		it("Should get if it's signed and respond true", async() => {
+			expect.assertions(2);
+
+			const is_signed = await commit.isSigned();
+
+			expect(is_signed).toBeDefined();
+			expect(is_signed).toBeTruthy();
+		});
+
+		it("Should get if a unsigned commit is signed and respond false", async() => {
+			expect.assertions(2);
+
+			const other_commit = await Commit.lookup(repository, "7578c24113ba71d7435a94c649566e4e39e0e88c");
+
+			const is_signed = await other_commit.isSigned();
+
+			expect(is_signed).toBeDefined();
+			expect(is_signed).toBeFalsy();
+		});
+
+		it("Should get the author", async() => {
+			expect.assertions(7);
+
+			const author = await commit.author();
+
+			expect(author).toBeDefined();
+
+			expect(author).toHaveProperty("name");
+			expect(author.name).toBeDefined();
+
+			expect(author).toHaveProperty("email");
+			expect(author.email).toBeDefined();
+
+			expect(author).toHaveProperty("fingerprint");
+
+			const fingerprint = await author.fingerprint();
+
+			expect(fingerprint).toBeDefined();
+		});
 	});
 });

@@ -3,6 +3,13 @@ import { Author } from "api";
 import { Diff } from "./diff";
 import { Repository } from "./repository";
 import { Tree } from "./tree";
+import { createMessage, readKey, readSignature, verify } from "openpgp";
+import { promisify } from "util";
+import { exec } from "child_process";
+import { findAsync } from "./misc";
+import { CommitError, createError } from "./error";
+
+const pExec = promisify(exec);
 
 export type CommitSummary = {
 	id: string,
@@ -17,6 +24,89 @@ type DiffStats = {
 }
 
 /**
+ * A author of a commit
+ */
+export class CommitAuthor implements Author {
+	private _ng_commit: NodeGitCommit;
+
+	constructor(ng_commit: NodeGitCommit) {
+		this._ng_commit = ng_commit;
+	}
+
+	public get name(): string {
+		return this._ng_commit.author().name();
+	}
+
+	public get email(): string {
+		return this._ng_commit.author().email();
+	}
+
+	/**
+	 * Returns the public key fingerprint of the commit's signer.
+	 */
+	public async fingerprint(): Promise<string> {
+		const basic_signature = await this._ng_commit.getSignature().catch(() => {
+			throw(createError(CommitError, 500, "Commit isn't signed!"));
+		});
+
+		const message = await createMessage({ text: basic_signature.signedData });
+
+		const pub_keys_list = await pExec("gpg --list-public-keys");
+
+		if(pub_keys_list.stderr) {
+			throw(createError(CommitError, 500, "Failed to get public keys from gpg!"));
+		}
+
+		const pub_keys = pub_keys_list.stdout
+			.split("\n")
+			.slice(2, -1)
+			.join("\n")
+			.split(/^\n/gm);
+
+		// Find a public key that matches the signature
+		const pub_key = await findAsync(pub_keys, async key => {
+			// Make sure the UID is the same as the commit author
+			const uid = key
+				.split("\n")[2]
+				.replace(/^uid\s*\[.*\]\s/, "");
+
+			if(uid !== `${this.name} <${this.email}>`) {
+				return false;
+			}
+
+			// Get the public key as an armored key
+			const fingerprint = key.split("\n")[1].replace(/^\s*/, "");
+			const key_export = await pExec(`gpg --armor --export ${fingerprint}`);
+
+			if(key_export.stderr) {
+				throw(createError(CommitError, 500, "Failed to export a public key from gpg!"));
+			}
+
+			const signature = await readSignature({ armoredSignature: basic_signature.signature });
+
+			const verification = await verify({
+				message: message,
+				verificationKeys: await readKey({ armoredKey: key_export.stdout }),
+				expectSigned: true,
+				signature: signature
+			})
+				.then(result => result.signatures[0].verified)
+				.catch(() => Promise.resolve(false));
+
+			return verification;
+		});
+
+		if(!pub_key) {
+			throw(createError(CommitError, 500, "Failed to find a public key matching the commit signature!"));
+		}
+
+		return pub_key
+			.split("\n")[1]
+			.replace(/^\s*/, "");
+	}
+}
+
+/**
  * A representation of a commit
  */
 export class Commit {
@@ -24,7 +114,6 @@ export class Commit {
 	private _owner: Repository;
 
 	public id: string;
-	public author: Author;
 	public date: number;
 	public message: string;
 
@@ -35,14 +124,18 @@ export class Commit {
 	constructor(owner: Repository, commit: NodeGitCommit) {
 		this._ng_commit = commit;
 		this._owner = owner;
-
 		this.id = commit.sha();
-		this.author = {
-			name: commit.author().name(),
-			email: commit.author().email()
-		};
 		this.date = commit.time();
 		this.message = commit.message();
+	}
+
+	/**
+	 * Returns the commit's author
+	 *
+	 * @returns An instance of a commit author
+	 */
+	public author(): CommitAuthor {
+		return new CommitAuthor(this._ng_commit);
 	}
 
 	/**
@@ -76,6 +169,15 @@ export class Commit {
 	 */
 	public async tree(): Promise<Tree> {
 		return new Tree(this._owner, await this._ng_commit.getTree());
+	}
+
+	/**
+	 * Returns whether or not the commit is signed
+	 */
+	public isSigned(): Promise<boolean> {
+		return this._ng_commit.getSignature()
+			.then(() => true)
+			.catch(() => false);
 	}
 
 	/**

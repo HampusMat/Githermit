@@ -54,6 +54,12 @@ export class DiffError extends BaseError {
 	}
 }
 
+export class CommitError extends BaseError {
+	constructor(code: number, message: string) {
+		super(code, "A commit error has occured: " + message);
+	}
+}
+
 type ErrorConstructorType<T> = new (code: number, message: string) => T;
 
 /**

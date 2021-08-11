@@ -1,4 +1,4 @@
-export type Author = {
+export interface Author {
 	name: string,
-	email: string
+	email: string,
 }
