@@ -48,7 +48,7 @@ describe("Commit", () => {
 		let commit: Commit;
 
 		beforeAll(async() => {
-			commit = await repository.head();
+			commit = await Commit.lookup(repository, "8feb65c5467cc3ad48270183113a121c4a9f86ca");
 		});
 
 		it("Should get the stats", async() => {

@@ -21,6 +21,8 @@ yarn-install:
 
 test:
     stage: test
+    before_script:
+        - gpg --keyserver keys.openpgp.org --receive-keys 9C0309603A7DA7CE3F1B2CE7B7D6FB9B7AFDF0DE
     script:
         - yarn test --ci=true
 
