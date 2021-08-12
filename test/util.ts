@@ -1,7 +1,7 @@
 import { Commit, CommitAuthor } from "server/src/git/commit";
 
 export type EnvironmentVariables = {
-	BASE_DIR: string,
+	GIT_DIR: string,
 	AVAIL_REPO: string,
 	AVAIL_REPO_URL: string,
 	UNAVAIL_REPO: string,

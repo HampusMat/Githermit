@@ -9,7 +9,7 @@ describe("Branch", () => {
 		it("Should lookup a branch", async() => {
 			expect.assertions(2);
 
-			const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+			const repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 			const branch = await Branch.lookup(repository, "master");
 
 			expect(branch).toBeDefined();
@@ -19,7 +19,7 @@ describe("Branch", () => {
 		it("Should lookup if an existent branch exists and respond true", async() => {
 			expect.assertions(2);
 
-			const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+			const repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 			const branch_exists = await Branch.lookupExists(repository.ng_repository, "master");
 
 			expect(branch_exists).toBeDefined();
@@ -29,7 +29,7 @@ describe("Branch", () => {
 		it("Should lookup if an nonexistent branch exists and respond false", async() => {
 			expect.assertions(2);
 
-			const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+			const repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 			const branch_exists = await Branch.lookupExists(repository.ng_repository, "wubbalubbadubdub");
 
 			expect(branch_exists).toBeDefined();
@@ -41,7 +41,7 @@ describe("Branch", () => {
 		let branch: Branch;
 
 		beforeAll(async() => {
-			const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+			const repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 
 			branch = await Branch.lookup(repository, "master");
 		});

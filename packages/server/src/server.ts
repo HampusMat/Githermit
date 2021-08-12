@@ -1,53 +1,35 @@
 import { readFileSync, readdirSync } from "fs";
 import { join } from "path";
-import { load } from "js-yaml";
 import { exit } from "process";
 import { Settings } from "./types";
 import buildApp from "./app";
 
-const settings = load(readFileSync(join(__dirname, "/../../../settings.yml"), "utf8")) as Settings;
+const settings = JSON.parse(readFileSync(join(__dirname, "/../../../settings.json"), "utf-8")) as Settings;
+
 const settings_keys = Object.keys(settings);
 
-const mandatory_settings = [ "host", "port", "dev_port", "title", "about", "base_dir", "production" ];
+const mandatory_settings = [ "host", "port", "title", "about", "git_dir" ];
 
-// Make sure that all the required settings are present
+// Get missing mandatory settings
 const settings_not_included = mandatory_settings.filter(x => !settings_keys.includes(x));
+
+// Error out and exit if there's any missing settings
 if(settings_not_included.length !== 0) {
-	console.log(`Error: settings.yml is missing ${(settings_not_included.length > 1) ? "keys" : "key"}:`);
+	console.log(`Error: settings file is missing ${(settings_not_included.length > 1) ? "keys" : "key"}:`);
 	console.log(settings_not_included.join(", "));
 	exit(1);
 }
 
-// Make sure that there's not an excessive amount of settings
-const mandatory_not_included = settings_keys.filter(x => !mandatory_settings.includes(x));
-if(mandatory_not_included.length !== 0) {
-	console.log(`Error: settings.yml includes ${(mandatory_not_included.length > 1) ? "pointless keys" : "a pointless key"}:`);
-	console.log(mandatory_not_included.join(", "));
-	exit(1);
-}
-
-// Make sure that the base directory specified in the settings actually exists
+// Make sure that the git directory specified in the settings actually exists
 try {
-	readdirSync(settings.base_dir);
+	readdirSync(settings.git_dir);
 }
 catch {
-	console.error(`Error: Tried opening the base directory. No such directory: ${settings.base_dir}`);
+	console.error(`Error: Git directory ${settings.git_dir} doesn't exist!`);
 	exit(1);
 }
 
-const dist_dir = join(__dirname, "/../../client/dist");
-
-if(settings.production) {
-	try {
-		readdirSync(dist_dir);
-	}
-	catch {
-		console.error("Error: Tried opening the dist directory but it doesn't exist.\nDid you accidentally turn on the production setting?");
-		exit(1);
-	}
-}
-
-const app = buildApp(settings, dist_dir);
+const app = buildApp(settings);
 
 app.listen(settings.port, settings.host, (err: Error, addr: string) => {
 	if(err) {
@@ -55,5 +37,5 @@ app.listen(settings.port, settings.host, (err: Error, addr: string) => {
 		exit(1);
 	}
 
-	console.log(`App is running on ${addr}`);
+	console.log(`Githermit is running on ${addr}`);
 });

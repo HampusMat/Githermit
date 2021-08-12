@@ -28,15 +28,15 @@ And finally, build the project.
 
 `$ yarn build`
 
-The final step is to create a file called `settings.yml` with the following content.
+The final step is to create a file called `settings.json` with the following content.
 ```
-host: (Host address)
-port: (Port)
-dev_port: (Port for development server)
-production: (Set this to true unless you're doing changes to Githermit)
-title: (Title of your Githermit instance)
-about: (Short description of your Githermit instance)
-base_dir: (Directory where all of your bare Git repositories are located)
+{
+	"host": "(Host address)",
+	"port": (Port),
+	"title": "(Title of your Githermit instance)",
+	"about": "(Short description of your Githermit instance)",
+	"git_dir: "(Directory where all of your bare Git repositories are located)"
+}
 ```
 
 ## Starting

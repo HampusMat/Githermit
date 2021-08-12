@@ -8,17 +8,17 @@ config({ path: "test/test.env" });
 const env = process.env as EnvironmentVariables;
 
 export default async function(): Promise<void> {
-	const can_access = await access(env.BASE_DIR)
+	const can_access = await access(env.GIT_DIR)
 		.then(() => true)
 		.catch(() => false);
 
 	if(can_access) {
-		await remove(env.BASE_DIR);
+		await remove(env.GIT_DIR);
 	}
 
-	await mkdir(env.BASE_DIR);
+	await mkdir(env.GIT_DIR);
 
-	const repository = await Clone.clone(env.AVAIL_REPO_URL, `${env.BASE_DIR}/${env.AVAIL_REPO}`, { bare: 1 });
+	const repository = await Clone.clone(env.AVAIL_REPO_URL, `${env.GIT_DIR}/${env.AVAIL_REPO}`, { bare: 1 });
 
 	const config = await repository.config();
 	await config.setString("user.name", "BobDylan");
@@ -27,5 +27,5 @@ export default async function(): Promise<void> {
 	await repository.fetchAll();
 	await repository.createTag((await repository.getMasterCommit()).id(), "1.2", "Fixed stuff");
 
-	await writeFile(`${env.BASE_DIR}/${env.AVAIL_REPO}/owner`, "Bob");
+	await writeFile(`${env.GIT_DIR}/${env.AVAIL_REPO}/owner`, "Bob");
 }

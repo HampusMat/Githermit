@@ -10,7 +10,7 @@ describe("Patch", () => {
 		it("Should get a patch from a diff", async() => {
 			expect.assertions(2);
 
-			const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+			const repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 			const commit = await Commit.lookup(repository, "d856031c58e26992f3e0a481084a190a50b0bcf7");
 
 			const patch = await Patch.fromDiff(await commit.diff(), 1);
@@ -22,7 +22,7 @@ describe("Patch", () => {
 		it("Should get all patches from a diff", async() => {
 			expect.hasAssertions();
 
-			const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+			const repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 			const commit = await Commit.lookup(repository, "7b3292af22a0496007e974b65cd2e34521c9c429");
 
 			const patches = await Patch.allFromDiff(await commit.diff());
@@ -42,7 +42,7 @@ describe("Patch", () => {
 		let patch: Patch;
 
 		beforeAll(async() => {
-			repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+			repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 			const commit = await Commit.lookup(repository, "7b3292af22a0496007e974b65cd2e34521c9c429");
 
 			patch = await Patch.fromDiff(await commit.diff(), 4);

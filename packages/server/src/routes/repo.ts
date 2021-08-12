@@ -35,7 +35,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 				return;
 			}
 
-			const repository = await Repository.open(opts.config.settings.base_dir, req.params.repo);
+			const repository = await Repository.open(opts.config.settings.git_dir, req.params.repo);
 			repository.HTTPconnect(req, reply);
 		}
 	});
@@ -44,7 +44,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "POST",
 		url: "/git-upload-pack",
 		handler: async(req, reply) => {
-			const repository = await Repository.open(opts.config.settings.base_dir, req.params.repo);
+			const repository = await Repository.open(opts.config.settings.git_dir, req.params.repo);
 			repository.HTTPconnect(req, reply);
 		}
 	});
@@ -62,7 +62,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/refs/tags/:tag",
 		handler: async(req, reply) => {
-			const repository = await Repository.open(opts.config.settings.base_dir, req.params.repo).catch((err: BaseError) => err);
+			const repository = await Repository.open(opts.config.settings.git_dir, req.params.repo).catch((err: BaseError) => err);
 
 			if(repository instanceof BaseError) {
 				reply.code(repository.code).send(repository.message);

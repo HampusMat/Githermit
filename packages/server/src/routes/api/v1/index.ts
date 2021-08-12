@@ -21,7 +21,7 @@ function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/repos",
 		handler: async(req, reply) => {
-			const repos = await Repository.openAll(opts.config.settings.base_dir);
+			const repos = await Repository.openAll(opts.config.settings.git_dir);
 
 			if(!repos) {
 				reply.send({ data: [] });
@@ -49,7 +49,7 @@ function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 				return;
 			}
 
-			const repository: Repository | BaseError = await Repository.open(opts.config.settings.base_dir, req.params.repo).catch(err => err);
+			const repository: Repository | BaseError = await Repository.open(opts.config.settings.git_dir, req.params.repo).catch(err => err);
 
 			if(repository instanceof BaseError) {
 				reply.code(repository.code).send({ error: repository.message });

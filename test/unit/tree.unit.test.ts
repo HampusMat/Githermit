@@ -12,7 +12,7 @@ describe("Tree", () => {
 		it("Should get the tree of a repository", async() => {
 			expect.assertions(2);
 
-			const tree = await Tree.ofRepository(await Repository.open(env.BASE_DIR, env.AVAIL_REPO));
+			const tree = await Tree.ofRepository(await Repository.open(env.GIT_DIR, env.AVAIL_REPO));
 
 			expect(tree).toBeDefined();
 			expect(tree).toBeInstanceOf(Tree);
@@ -23,7 +23,7 @@ describe("Tree", () => {
 		let tree: Tree;
 
 		beforeAll(async() => {
-			tree = await Tree.ofRepository(await Repository.open(env.BASE_DIR, env.AVAIL_REPO));
+			tree = await Tree.ofRepository(await Repository.open(env.GIT_DIR, env.AVAIL_REPO));
 		});
 
 		it("Should get the entries", () => {

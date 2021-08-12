@@ -9,7 +9,7 @@ describe("Diff", () => {
 	let diff: Diff;
 
 	beforeAll(async() => {
-		const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+		const repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 
 		diff = await (await repository.head()).diff();
 	});

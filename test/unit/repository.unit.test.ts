@@ -9,7 +9,7 @@ import { BaseError } from "server/src/git/error";
 const env = process.env as EnvironmentVariables;
 
 function expectRepositoryProperties(repository: Repository) {
-	expect(repository).toHaveProperty("base_dir");
+	expect(repository).toHaveProperty("git_dir");
 	expect(repository).toHaveProperty("description");
 	expect(repository).toHaveProperty("name");
 	expect(repository).toHaveProperty("name.full");
@@ -22,7 +22,7 @@ describe("Repository", () => {
 		it("Should open a repository", async() => {
 			expect.assertions(8);
 
-			const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+			const repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 
 			expect(repository).toBeDefined();
 			expect(repository).toBeInstanceOf(Repository);
@@ -33,19 +33,19 @@ describe("Repository", () => {
 		it("Should fail to open a nonexistant repository", async() => {
 			expect.assertions(1);
 
-			await expect(Repository.open(env.BASE_DIR, env.UNAVAIL_REPO)).rejects.toBeInstanceOf(BaseError);
+			await expect(Repository.open(env.GIT_DIR, env.UNAVAIL_REPO)).rejects.toBeInstanceOf(BaseError);
 		});
 
 		it("Should fail to open a repository with a nonexistant branch", async() => {
 			expect.assertions(1);
 
-			await expect(Repository.open(env.BASE_DIR, env.AVAIL_REPO, "wubbalubbadubdub")).rejects.toBeInstanceOf(BaseError);
+			await expect(Repository.open(env.GIT_DIR, env.AVAIL_REPO, "wubbalubbadubdub")).rejects.toBeInstanceOf(BaseError);
 		});
 
 		it("Should open all repositories", async() => {
 			expect.hasAssertions();
 
-			const all_repositories = await Repository.openAll(env.BASE_DIR);
+			const all_repositories = await Repository.openAll(env.GIT_DIR);
 
 			expect(all_repositories).toBeDefined();
 
@@ -62,7 +62,7 @@ describe("Repository", () => {
 		let repository: Repository;
 
 		beforeAll(async() => {
-			repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+			repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 		});
 
 		it("Should get the description", async() => {

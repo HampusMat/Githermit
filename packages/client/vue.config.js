@@ -1,13 +1,12 @@
-const yaml = require("js-yaml");
 const fs = require("fs");
 const path = require("path");
 
-const settings = yaml.load(fs.readFileSync(path.join(__dirname, "/../../settings.yml"), "utf8"));
+const settings = JSON.parse(fs.readFileSync(path.join(__dirname, "/../../settings.json"), "utf-8"));
 
 module.exports = {
 	devServer: {
 		host: settings.host,
-		port: settings.dev_port,
+		port: settings.dev.port,
 		proxy: {
 			"^/api": {
 				target: `http://${settings.host}:${settings.port}`,

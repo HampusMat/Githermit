@@ -14,6 +14,14 @@ This package contains interfaces and types shared by the server and client packa
 ### Eslint-config-base
 This package contains a base Eslint configuration for the server and client packages. Aswell as for the test environment.
 
+## Important notes
+You may want to add the following to your settings.json
+```
+"dev": {
+	"port": (Port for the Vue.js development server)
+}
+```
+
 ## Development utilities
 You can use the following command to run a live-updating instance of Githermit.
 

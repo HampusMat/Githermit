@@ -50,7 +50,7 @@ export function connect(repository: Repository, req: Request, reply: FastifyRepl
 
 	reply.raw.writeHead(200, { "Content-Type": content_type });
 
-	const spawn_args = [ "--stateless-rpc", join(repository.base_dir, repository.name.full) ];
+	const spawn_args = [ "--stateless-rpc", join(repository.git_dir, repository.name.full) ];
 
 	if(is_discovery) {
 		spawn_args.push("--advertise-refs");

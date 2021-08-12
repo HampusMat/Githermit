@@ -3,8 +3,11 @@ import { fastify as fastifyFactory, FastifyInstance } from "fastify";
 import fastifyStatic from "fastify-static";
 import { Settings } from "./types";
 import repo from "./routes/repo";
+import { join } from "path";
+import { readdirSync } from "fs";
+import { exit } from "process";
 
-export default function buildApp(settings: Settings, dist_dir: string): FastifyInstance {
+export default function buildApp(settings: Settings): FastifyInstance {
 	const fastify = fastifyFactory();
 
 	fastify.setErrorHandler((err, req, reply) => {
@@ -16,7 +19,17 @@ export default function buildApp(settings: Settings, dist_dir: string): FastifyI
 		reply.code(404).send("Page not found!");
 	});
 
-	if(settings.production) {
+	if(!settings.dev) {
+		const dist_dir = join(__dirname, "/../../client/dist");
+
+		try {
+			readdirSync(dist_dir);
+		}
+		catch {
+			console.error("Error: Client dist directory doesn't exist!");
+			exit(1);
+		}
+
 		fastify.register(fastifyStatic, { root: dist_dir });
 
 		fastify.route({

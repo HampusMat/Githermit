@@ -44,7 +44,7 @@ describe("Miscellaneous functions", () => {
 		it("Should return the content of a file in a bare git repository", async() => {
 			expect.assertions(2);
 
-			const content = await getFile(env.BASE_DIR, env.AVAIL_REPO, "description");
+			const content = await getFile(env.GIT_DIR, env.AVAIL_REPO, "description");
 
 			expect(content).toBeDefined();
 			expect(content).toEqual("Unnamed repository; edit this file 'description' to name the repository.");
@@ -53,7 +53,7 @@ describe("Miscellaneous functions", () => {
 		it("Should fail to return the content of a nonexistent file in a bare repository", async() => {
 			expect.assertions(1);
 
-			await expect(getFile(env.BASE_DIR, env.AVAIL_REPO, "myselfasteem")).rejects.toBeInstanceOf(BaseError);
+			await expect(getFile(env.GIT_DIR, env.AVAIL_REPO, "myselfasteem")).rejects.toBeInstanceOf(BaseError);
 		});
 	});
 
@@ -61,7 +61,7 @@ describe("Miscellaneous functions", () => {
 		it("Should return the content of a directory", async() => {
 			expect.assertions(3);
 
-			const dir = await getDirectory(`${env.BASE_DIR}/${env.AVAIL_REPO}/refs`);
+			const dir = await getDirectory(`${env.GIT_DIR}/${env.AVAIL_REPO}/refs`);
 
 			expect(dir).toBeDefined();
 			expect(dir).toContain("heads");
@@ -71,7 +71,7 @@ describe("Miscellaneous functions", () => {
 		it("Should fail to return the content of a nonexistent directory", async() => {
 			expect.assertions(1);
 
-			await expect(getDirectory(`${env.BASE_DIR}/${env.AVAIL_REPO}/something`)).rejects.toBeInstanceOf(BaseError);
+			await expect(getDirectory(`${env.GIT_DIR}/${env.AVAIL_REPO}/something`)).rejects.toBeInstanceOf(BaseError);
 		});
 	});
 });

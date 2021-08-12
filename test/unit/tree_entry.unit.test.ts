@@ -13,7 +13,7 @@ describe("Tree entry", () => {
 			let tree_entry: BaseTreeEntry;
 
 			beforeAll(async() => {
-				const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+				const repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 				const tree = await repository.tree();
 				tree_entry = tree.entries()[0];
 			});
@@ -63,7 +63,7 @@ describe("Tree entry", () => {
 			let tree_entry: BaseTreeEntry;
 
 			beforeAll(async() => {
-				const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+				const repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 				const tree = await repository.tree();
 				const entry = tree.entries().find(entry => entry.path === "test");
 				if(!entry) {
@@ -91,7 +91,7 @@ describe("Tree entry", () => {
 			let tree_entry: BaseTreeEntry;
 
 			beforeAll(async() => {
-				const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+				const repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 				const tree = await repository.tree();
 				tree_entry = tree.entries()[0];
 			});

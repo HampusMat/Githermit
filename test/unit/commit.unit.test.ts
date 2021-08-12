@@ -10,7 +10,7 @@ describe("Commit", () => {
 	let repository: Repository;
 
 	beforeAll(async() => {
-		repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+		repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 	});
 
 	describe("Class methods", () => {

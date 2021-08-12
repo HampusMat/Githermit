@@ -17,13 +17,13 @@ export async function findAsync<T>(arr: T[], callback: (t: T) => Promise<boolean
 /**
  * Returns the content of a file inside a repository
  *
- * @param base_dir - The directory which the repository is in
+ * @param git_dir - The directory which the repository is in
  * @param repository - The directory of a bare repository
  * @param file - The path of a file
  */
-export function getFile(base_dir: string, repository: string, file: string): Promise<string> {
+export function getFile(git_dir: string, repository: string, file: string): Promise<string> {
 	return new Promise((resolve, reject) => {
-		readFile(`${base_dir}/${repository}/${file}`, (err, content) => {
+		readFile(`${git_dir}/${repository}/${file}`, (err, content) => {
 			if(err) {
 				reject(createError(MiscError, 500, "Failed to open repository file " + file));
 				return;

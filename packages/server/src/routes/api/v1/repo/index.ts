@@ -19,7 +19,7 @@ declare module "fastify" {
 
 function addHooks(fastify: FastifyInstance, opts: FastifyPluginOptions): void {
 	fastify.addHook("preHandler", async(req: CoolFastifyRequest, reply) => {
-		const repository = await Repository.open(opts.config.settings.base_dir, req.params.repo, req.query.branch).catch((err: BaseError) => err);
+		const repository = await Repository.open(opts.config.settings.git_dir, req.params.repo, req.query.branch).catch((err: BaseError) => err);
 
 		if(repository instanceof BaseError) {
 			reply.code(repository.code).send({ error: repository.message });

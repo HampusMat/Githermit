@@ -19,12 +19,13 @@ describe("API", () => {
 		app = buildApp({
 			host: host,
 			port: port,
-			dev_port: 0,
 			title: "Bob's cool projects",
 			about: "All of my personal projects. Completely FOSS.",
-			base_dir: env.BASE_DIR,
-			production: false
-		}, "");
+			git_dir: env.GIT_DIR,
+			dev: {
+				port: 0
+			}
+		});
 
 		await app.listen(port);
 
@@ -265,7 +266,7 @@ describe("API", () => {
 			beforeAll(async() => {
 				const body = new Readable({ read: () => null });
 
-				let head = (await readFile(`${env.BASE_DIR}/${env.AVAIL_REPO}/FETCH_HEAD`)).toString();
+				let head = (await readFile(`${env.GIT_DIR}/${env.AVAIL_REPO}/FETCH_HEAD`)).toString();
 
 				const find_head = /^[a-f0-9]+/.exec(head);
 

@@ -9,7 +9,7 @@ describe("Tag", () => {
 		it("Should lookup a tag", async() => {
 			expect.assertions(2);
 
-			const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+			const repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 
 			const tag = await Tag.lookup(repository, "1.2");
 
@@ -22,7 +22,7 @@ describe("Tag", () => {
 		let tag: Tag;
 
 		beforeAll(async() => {
-			const repository = await Repository.open(env.BASE_DIR, env.AVAIL_REPO);
+			const repository = await Repository.open(env.GIT_DIR, env.AVAIL_REPO);
 			tag = await Tag.lookup(repository, "1.2");
 		});
 

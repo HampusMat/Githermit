@@ -37,7 +37,7 @@ export class Repository {
 	public ng_repository: NodeGitRepository;
 
 	public name: RepositoryName;
-	public base_dir: string;
+	public git_dir: string;
 	public branch_name: string;
 
 	/**
@@ -50,7 +50,7 @@ export class Repository {
 			short: basename(repository.path()).slice(0, -4),
 			full: basename(repository.path())
 		};
-		this.base_dir = dirname(repository.path());
+		this.git_dir = dirname(repository.path());
 
 		this.branch_name = branch;
 	}
@@ -59,14 +59,14 @@ export class Repository {
 	 * Returns the repository's description
 	 */
 	public description(): Promise<string> {
-		return getFile(this.base_dir, this.name.full, "description");
+		return getFile(this.git_dir, this.name.full, "description");
 	}
 
 	/**
 	 * Returns the repository's owner
 	 */
 	public owner(): Promise<string> {
-		return getFile(this.base_dir, this.name.full, "owner");
+		return getFile(this.git_dir, this.name.full, "owner");
 	}
 
 	/**
@@ -154,13 +154,13 @@ export class Repository {
 	/**
 	 * Opens a bare git repository
 	 *
-	 * @param base_dir - The directory that contains the repository
+	 * @param git_dir - The directory that contains the repository
 	 * @param repository - The directory of a bare repository
 	 * @param branch - A branch to use
 	 * @returns An instance of a git repository
 	 */
-	public static async open(base_dir: string, repository: string, branch?: string): Promise<Repository> {
-		let ng_repository = await NodeGitRepository.openBare(`${base_dir}/${getFullRepositoryName(repository)}`).catch((err: WeirdError) => {
+	public static async open(git_dir: string, repository: string, branch?: string): Promise<Repository> {
+		let ng_repository = await NodeGitRepository.openBare(`${git_dir}/${getFullRepositoryName(repository)}`).catch((err: WeirdError) => {
 			if(err.errno === -3) {
 				throw(createError(RepositoryError, 404, "Repository not found"));
 			}
@@ -180,11 +180,11 @@ export class Repository {
 	/**
 	 * Opens all of the git repositories inside a directory
 	 *
-	 * @param base_dir - The directory that contains the repositories
+	 * @param git_dir - The directory that contains the repositories
 	 * @returns An array of repository instances
 	 */
-	public static async openAll(base_dir: string): Promise<Repository[]> {
-		const dir_content = await getDirectory(base_dir);
+	public static async openAll(git_dir: string): Promise<Repository[]> {
+		const dir_content = await getDirectory(git_dir);
 
 		if(dir_content.length === 0) {
 			return [];
@@ -192,6 +192,6 @@ export class Repository {
 
 		const repositories = dir_content.filter(dir_entry => dir_entry.endsWith(".git"));
 
-		return Promise.all(repositories.map(repository => this.open(base_dir, repository)));
+		return Promise.all(repositories.map(repository => this.open(git_dir, repository)));
 	}
 }
