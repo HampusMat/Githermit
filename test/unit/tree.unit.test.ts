@@ -1,7 +1,7 @@
 import { Repository } from "server/src/git/repository";
 import { Tree } from "server/src/git/tree";
 import { BaseTreeEntry, BlobTreeEntry, TreeEntry } from "server/src/git/tree_entry";
-import { BaseError } from "server/src/git/error";
+import { ServerError } from "server/src/git/error";
 import { EnvironmentVariables } from "../util";
 import { extract, Headers } from "tar-stream";
 
@@ -51,7 +51,7 @@ describe("Tree", () => {
 		it("Should fail to return the entry of a nonexistent path", async() => {
 			expect.assertions(1);
 
-			await expect(tree.find("dependencies/libstd++")).rejects.toBeInstanceOf(BaseError);
+			await expect(tree.find("dependencies/libstd++")).rejects.toBeInstanceOf(ServerError);
 		});
 
 		it("Should find out if an existent path exists and return true", async() => {

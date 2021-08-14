@@ -7,7 +7,7 @@ import { Commit } from "./commit";
 import { FastifyReply } from "fastify";
 import { Tag } from "./tag";
 import { Tree } from "./tree";
-import { createError, RepositoryError } from "./error";
+import { createError, ErrorWhere, NotFoundError, UnknownError } from "./error";
 
 /**
  * Returns the full name of a git repository
@@ -162,15 +162,15 @@ export class Repository {
 	public static async open(git_dir: string, repository: string, branch?: string): Promise<Repository> {
 		let ng_repository = await NodeGitRepository.openBare(`${git_dir}/${getFullRepositoryName(repository)}`).catch((err: WeirdError) => {
 			if(err.errno === -3) {
-				throw(createError(RepositoryError, 404, "Repository not found"));
+				throw(createError(ErrorWhere.Repository, NotFoundError, "repository"));
 			}
 
-			throw(createError(RepositoryError, 500, "Unknown error"));
+			throw(createError(ErrorWhere.Repository, UnknownError));
 		});
 
 		if(branch) {
 			if(!await Branch.lookupExists(ng_repository, branch)) {
-				throw(createError(RepositoryError, 404, "Branch not found!"));
+				throw(createError(ErrorWhere.Repository, NotFoundError, "branch"));
 			}
 		}
 

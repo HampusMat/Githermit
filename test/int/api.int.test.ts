@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import buildApp from "server/src/app";
 import { EnvironmentVariables } from "../util";
 import { readFile } from "fs-extra";
-import { Info, Repository, RepositorySummary } from "../../packages/api/src";
+import { Info, Repository, RepositorySummary } from "api/src";
 import axios, { AxiosResponse } from "axios";
 import { Unzip } from "zlib";
 import { Readable } from "stream";

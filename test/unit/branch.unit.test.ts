@@ -1,5 +1,5 @@
-import { Branch } from "../../packages/server/src/git/branch";
-import { Repository } from "../../packages/server/src/git/repository";
+import { Branch } from "server/src/git/branch";
+import { Repository } from "server/src/git/repository";
 import { EnvironmentVariables } from "../util";
 
 const env = process.env as EnvironmentVariables;

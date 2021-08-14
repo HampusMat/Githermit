@@ -1,5 +1,5 @@
 import { Diff as NodeGitDiff } from "nodegit";
-import { createError, DiffError } from "./error";
+import { createError, ErrorWhere, NotFoundError } from "./error";
 import { Patch } from "./patch";
 
 type PatchHeaderData = {
@@ -75,7 +75,7 @@ export class Diff {
 		const patch = (await this.ng_diff.patches())[index];
 
 		if(!patch) {
-			throw(createError(DiffError, 500, "Patch not found"));
+			throw(createError(ErrorWhere.Diff, NotFoundError, "Patch"));
 		}
 
 		return new Patch(this, (await this.ng_diff.patches())[index], index);

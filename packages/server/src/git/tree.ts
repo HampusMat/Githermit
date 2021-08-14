@@ -1,7 +1,7 @@
 import { Tree as NodeGitTree } from "nodegit";
 import { Repository } from "./repository";
 import { BaseTreeEntry, BlobTreeEntry, createTreeEntry, TreeEntry } from "./tree_entry";
-import { createError, TreeError } from "./error";
+import { createError, ErrorWhere, FailedError, NotFoundError } from "./error";
 import { pack, Pack } from "tar-stream";
 import { Commit } from "./commit";
 
@@ -42,9 +42,9 @@ export class Tree {
 	public async find(path: string): Promise<BaseTreeEntry> {
 		const entry = await this._ng_tree.getEntry(path).catch(err => {
 			if(err.errno === -3) {
-				throw(createError(TreeError, 404, `Path '${path}' not found`));
+				throw(createError(ErrorWhere.Tree, NotFoundError, `Path '${path}'`));
 			}
-			throw(createError(TreeError, 500, "Failed to get tree path"));
+			throw(createError(ErrorWhere.Tree, FailedError, "get tree path"));
 		});
 
 		return createTreeEntry(this._owner, entry);

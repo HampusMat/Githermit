@@ -1,6 +1,6 @@
-import { Commit } from "../../packages/server/src/git/commit";
-import { Patch } from "../../packages/server/src/git/patch";
-import { Repository } from "../../packages/server/src/git/repository";
+import { Commit } from "server/src/git/commit";
+import { Patch } from "server/src/git/patch";
+import { Repository } from "server/src/git/repository";
 import { EnvironmentVariables } from "../util";
 
 const env = process.env as EnvironmentVariables;

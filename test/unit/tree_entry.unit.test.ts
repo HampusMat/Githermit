@@ -3,7 +3,7 @@ import { Repository } from "server/src/git/repository";
 import { EnvironmentVariables } from "../util";
 import { Commit } from "server/src/git/commit";
 import { Tree } from "server/src/git/tree";
-import { Blob } from "../../packages/server/src/git/blob";
+import { Blob } from "server/src/git/blob";
 
 const env = process.env as EnvironmentVariables;
 

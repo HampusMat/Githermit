@@ -1,5 +1,5 @@
 import { readFile, readdir } from "fs";
-import { createError, MiscError } from "./error";
+import { createError, ErrorWhere, FailedError } from "./error";
 
 /**
  * Asynchronously find an item in an array that matches the requirements set by the callback
@@ -25,7 +25,7 @@ export function getFile(git_dir: string, repository: string, file: string): Prom
 	return new Promise((resolve, reject) => {
 		readFile(`${git_dir}/${repository}/${file}`, (err, content) => {
 			if(err) {
-				reject(createError(MiscError, 500, "Failed to open repository file " + file));
+				reject(createError(ErrorWhere.Misc, FailedError, `open repository file '${file}'`));
 				return;
 			}
 
@@ -44,7 +44,7 @@ export function getDirectory(directory: string): Promise<string[]> {
 	return new Promise<string[]>((resolve, reject) => {
 		readdir(directory, (err, dir_content) => {
 			if(err) {
-				reject(createError(MiscError, 500, "Failed to open directory " + directory));
+				reject(createError(ErrorWhere.Misc, FailedError, `open directory '${directory}'`));
 				return;
 			}
 

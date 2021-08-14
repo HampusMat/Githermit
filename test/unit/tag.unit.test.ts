@@ -1,5 +1,5 @@
-import { Repository } from "../../packages/server/src/git/repository";
-import { Tag } from "../../packages/server/src/git/tag";
+import { Repository } from "server/src/git/repository";
+import { Tag } from "server/src/git/tag";
 import { EnvironmentVariables } from "../util";
 
 const env = process.env as EnvironmentVariables;

@@ -4,7 +4,7 @@ import { Tree } from "server/src/git/tree";
 import { Branch } from "server/src/git/branch";
 import { Tag } from "server/src/git/tag";
 import { EnvironmentVariables, expectCommitProperties } from "../util";
-import { BaseError } from "server/src/git/error";
+import { ServerError } from "server/src/git/error";
 
 const env = process.env as EnvironmentVariables;
 
@@ -33,13 +33,13 @@ describe("Repository", () => {
 		it("Should fail to open a nonexistant repository", async() => {
 			expect.assertions(1);
 
-			await expect(Repository.open(env.GIT_DIR, env.UNAVAIL_REPO)).rejects.toBeInstanceOf(BaseError);
+			await expect(Repository.open(env.GIT_DIR, env.UNAVAIL_REPO)).rejects.toBeInstanceOf(ServerError);
 		});
 
 		it("Should fail to open a repository with a nonexistant branch", async() => {
 			expect.assertions(1);
 
-			await expect(Repository.open(env.GIT_DIR, env.AVAIL_REPO, "wubbalubbadubdub")).rejects.toBeInstanceOf(BaseError);
+			await expect(Repository.open(env.GIT_DIR, env.AVAIL_REPO, "wubbalubbadubdub")).rejects.toBeInstanceOf(ServerError);
 		});
 
 		it("Should open all repositories", async() => {

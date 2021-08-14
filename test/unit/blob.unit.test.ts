@@ -1,7 +1,7 @@
-import { Repository } from "../../packages/server/src/git/repository";
-import { Tree } from "../../packages/server/src/git/tree";
+import { Repository } from "server/src/git/repository";
+import { Tree } from "server/src/git/tree";
 import { EnvironmentVariables } from "../util";
-import { Blob } from "../../packages/server/src/git/blob";
+import { Blob } from "server/src/git/blob";
 
 const env = process.env as EnvironmentVariables;
 

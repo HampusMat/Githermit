@@ -4,7 +4,7 @@ import { Route } from "../../../types/fastify";
 import repo from "./repo";
 import { verifyRepoName } from "../util";
 import { Info as APIInfo, RepositorySummary as APIRepositorySummary, Repository as APIRepository } from "api";
-import { BaseError } from "../../../git/error";
+import { ServerError } from "../../../git/error";
 
 function setHandlers(fastify: FastifyInstance): void {
 	fastify.setErrorHandler((err, req, reply) => {
@@ -49,9 +49,9 @@ function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 				return;
 			}
 
-			const repository: Repository | BaseError = await Repository.open(opts.config.settings.git_dir, req.params.repo).catch(err => err);
+			const repository = await Repository.open(opts.config.settings.git_dir, req.params.repo).catch((err: ServerError) => err);
 
-			if(repository instanceof BaseError) {
+			if(repository instanceof ServerError) {
 				reply.code(repository.code).send({ error: repository.message });
 				return;
 			}

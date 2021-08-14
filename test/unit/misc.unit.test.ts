@@ -1,5 +1,5 @@
 import { findAsync, getDirectory, getFile } from "server/src/git/misc";
-import { BaseError } from "server/src/git/error";
+import { ServerError } from "server/src/git/error";
 import { EnvironmentVariables } from "../util";
 
 const env = process.env as EnvironmentVariables;
@@ -53,7 +53,7 @@ describe("Miscellaneous functions", () => {
 		it("Should fail to return the content of a nonexistent file in a bare repository", async() => {
 			expect.assertions(1);
 
-			await expect(getFile(env.GIT_DIR, env.AVAIL_REPO, "myselfasteem")).rejects.toBeInstanceOf(BaseError);
+			await expect(getFile(env.GIT_DIR, env.AVAIL_REPO, "myselfasteem")).rejects.toBeInstanceOf(ServerError);
 		});
 	});
 
@@ -71,7 +71,7 @@ describe("Miscellaneous functions", () => {
 		it("Should fail to return the content of a nonexistent directory", async() => {
 			expect.assertions(1);
 
-			await expect(getDirectory(`${env.GIT_DIR}/${env.AVAIL_REPO}/something`)).rejects.toBeInstanceOf(BaseError);
+			await expect(getDirectory(`${env.GIT_DIR}/${env.AVAIL_REPO}/something`)).rejects.toBeInstanceOf(ServerError);
 		});
 	});
 });

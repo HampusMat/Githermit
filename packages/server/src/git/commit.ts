@@ -7,7 +7,7 @@ import { createMessage, readKey, readSignature, verify } from "openpgp";
 import { promisify } from "util";
 import { exec } from "child_process";
 import { findAsync } from "./misc";
-import { CommitError, createError } from "./error";
+import { ErrorWhere, createError, CommitNotSignedError, FailedError } from "./error";
 
 const pExec = promisify(exec);
 
@@ -46,7 +46,7 @@ export class CommitAuthor implements Author {
 	 */
 	public async fingerprint(): Promise<string> {
 		const basic_signature = await this._ng_commit.getSignature().catch(() => {
-			throw(createError(CommitError, 500, "Commit isn't signed!"));
+			throw(createError(ErrorWhere.Commit, CommitNotSignedError));
 		});
 
 		const message = await createMessage({ text: basic_signature.signedData });
@@ -54,7 +54,7 @@ export class CommitAuthor implements Author {
 		const pub_keys_list = await pExec("gpg --list-public-keys");
 
 		if(pub_keys_list.stderr) {
-			throw(createError(CommitError, 500, "Failed to get public keys from gpg!"));
+			throw(createError(ErrorWhere.Commit, FailedError, "get public keys from gpg!"));
 		}
 
 		const pub_keys = pub_keys_list.stdout
@@ -79,7 +79,7 @@ export class CommitAuthor implements Author {
 			const key_export = await pExec(`gpg --armor --export ${fingerprint}`);
 
 			if(key_export.stderr) {
-				throw(createError(CommitError, 500, "Failed to export a public key from gpg!"));
+				throw(createError(ErrorWhere.Commit, FailedError, "export a public key from gpg!"));
 			}
 
 			const signature = await readSignature({ armoredSignature: basic_signature.signature });
@@ -97,7 +97,7 @@ export class CommitAuthor implements Author {
 		});
 
 		if(!pub_key) {
-			throw(createError(CommitError, 500, "Failed to find a public key matching the commit signature!"));
+			throw(createError(ErrorWhere.Commit, FailedError, "find a public key matching the commit signature!"));
 		}
 
 		return pub_key

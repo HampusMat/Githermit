@@ -8,7 +8,7 @@ import branches from "./branches";
 import log from "./log";
 import { verifyRepoName } from "../../util";
 import { Tree as APITree, Tag as APITag, TreeEntry as APITreeEntry } from "api";
-import { BaseError } from "../../../../git/error";
+import { ServerError } from "../../../../git/error";
 import { commitMap } from "./map";
 
 declare module "fastify" {
@@ -19,9 +19,9 @@ declare module "fastify" {
 
 function addHooks(fastify: FastifyInstance, opts: FastifyPluginOptions): void {
 	fastify.addHook("preHandler", async(req: CoolFastifyRequest, reply) => {
-		const repository = await Repository.open(opts.config.settings.git_dir, req.params.repo, req.query.branch).catch((err: BaseError) => err);
+		const repository = await Repository.open(opts.config.settings.git_dir, req.params.repo, req.query.branch).catch((err: ServerError) => err);
 
-		if(repository instanceof BaseError) {
+		if(repository instanceof ServerError) {
 			reply.code(repository.code).send({ error: repository.message });
 			return;
 		}
@@ -67,9 +67,9 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/tree",
 		handler: async(req, reply) => {
-			const tree = await req.repository.tree().catch((err: BaseError) => err);
+			const tree = await req.repository.tree().catch((err: ServerError) => err);
 
-			if(tree instanceof BaseError) {
+			if(tree instanceof ServerError) {
 				reply.code(tree.code).send({ error: tree.message });
 				return;
 			}
@@ -81,9 +81,9 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 			let data: APITree;
 
 			if(tree_path) {
-				const tree_path_entry = await tree.find(tree_path).catch((err: BaseError) => err);
+				const tree_path_entry = await tree.find(tree_path).catch((err: ServerError) => err);
 
-				if(tree_path_entry instanceof BaseError) {
+				if(tree_path_entry instanceof ServerError) {
 					reply.code(tree_path_entry.code).send({ error: tree_path_entry.message });
 					return;
 				}
@@ -104,9 +104,9 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/tree/history",
 		handler: async(req, reply) => {
-			const tree = await req.repository.tree().catch((err: BaseError) => err);
+			const tree = await req.repository.tree().catch((err: ServerError) => err);
 
-			if(tree instanceof BaseError) {
+			if(tree instanceof ServerError) {
 				reply.code(tree.code).send({ error: tree.message });
 				return;
 			}
@@ -118,9 +118,9 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 
 			const tree_path = req.query.path;
 
-			const tree_entry = await tree.find(tree_path).catch((err: BaseError) => err);
+			const tree_entry = await tree.find(tree_path).catch((err: ServerError) => err);
 
-			if(tree_entry instanceof BaseError) {
+			if(tree_entry instanceof ServerError) {
 				reply.code(tree_entry.code).send({ error: tree_entry.message });
 				return;
 			}

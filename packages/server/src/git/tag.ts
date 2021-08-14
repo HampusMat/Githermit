@@ -5,7 +5,7 @@ import { Reference } from "./reference";
 import { Repository } from "./repository";
 import { createGzip } from "zlib";
 import { pipeline } from "stream";
-import { createError, TagError } from "./error";
+import { createError, ErrorWhere, FailedError, NotFoundError } from "./error";
 import { Author } from "../../../api/src";
 import { promisify } from "util";
 
@@ -88,10 +88,10 @@ export class Tag extends Reference {
 	public static async lookup(owner: Repository, tag: string): Promise<Tag> {
 		const reference = await owner.ng_repository.getReference(tag).catch(err => {
 			if(err.errno === -3) {
-				throw(createError(TagError, 404, "Tag not found"));
+				throw(createError(ErrorWhere.Tag, NotFoundError, "Tag"));
 			}
 
-			throw(createError(TagError, 404, "Failed to get tag"));
+			throw(createError(ErrorWhere.Tag, FailedError, "get tag"));
 		});
 
 		return new Tag(owner, reference);

@@ -3,7 +3,7 @@ import { CoolFastifyRequest, Route } from "../types/fastify";
 import { Tag } from "../git/tag";
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { verifyRepoName } from "../routes/api/util";
-import { BaseError } from "../git/error";
+import { ServerError } from "../git/error";
 
 export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, done: (err?: Error) => void): void {
 	fastify.addHook("onRequest", async(req: CoolFastifyRequest, reply) => {
@@ -62,16 +62,16 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		method: "GET",
 		url: "/refs/tags/:tag",
 		handler: async(req, reply) => {
-			const repository = await Repository.open(opts.config.settings.git_dir, req.params.repo).catch((err: BaseError) => err);
+			const repository = await Repository.open(opts.config.settings.git_dir, req.params.repo).catch((err: ServerError) => err);
 
-			if(repository instanceof BaseError) {
+			if(repository instanceof ServerError) {
 				reply.code(repository.code).send(repository.message);
 				return;
 			}
 
-			const tag = await Tag.lookup(repository, req.params.tag).catch((err: BaseError) => err);
+			const tag = await Tag.lookup(repository, req.params.tag).catch((err: ServerError) => err);
 
-			if(tag instanceof BaseError) {
+			if(tag instanceof ServerError) {
 				reply.code(tag.code).send(tag.message);
 				return;
 			}

@@ -1,4 +1,4 @@
-import { BlobError, createError } from "./error";
+import { createError, ErrorWhere, IsNotError } from "./error";
 import { Tree } from "./tree";
 import { BlobTreeEntry } from "./tree_entry";
 
@@ -37,7 +37,7 @@ export class Blob {
 		const entry = await tree.find(path);
 
 		if(!(entry instanceof BlobTreeEntry)) {
-			throw(createError(BlobError, 500, "Not a blob"));
+			throw(createError(ErrorWhere.Blob, IsNotError, "tree entry", "a blob"));
 		}
 
 		return new Blob(entry);

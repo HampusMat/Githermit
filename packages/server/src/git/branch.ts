@@ -2,7 +2,7 @@ import { CommitSummary } from "./commit";
 import { Reference } from "./reference";
 import { Repository } from "./repository";
 import { Repository as NodeGitRepository } from "nodegit";
-import { BranchError, createError } from "./error";
+import { createError, ErrorWhere, FailedError, NotFoundError, UnknownError } from "./error";
 
 /**
  * A representation of a branch
@@ -17,7 +17,7 @@ export class Branch extends Reference {
 	 */
 	public async latestCommit(): Promise<CommitSummary> {
 		const latest_commit = this._owner.ng_repository.getBranchCommit(this._ng_reference).catch(() => {
-			throw(createError(BranchError, 500, "Failed to get the latest commit"));
+			throw(createError(ErrorWhere.Branch, FailedError, "get the latest commit"));
 		});
 
 		return {
@@ -37,9 +37,9 @@ export class Branch extends Reference {
 	public static async lookup(owner: Repository, branch: string): Promise<Branch> {
 		const reference = await owner.ng_repository.getBranch(branch).catch(err => {
 			if(err.errno === -3) {
-				throw(createError(BranchError, 404, "Branch not found!"));
+				throw(createError(ErrorWhere.Branch, NotFoundError, "branch"));
 			}
-			throw(createError(BranchError, 500, "Something went wrong."));
+			throw(createError(ErrorWhere.Branch, UnknownError));
 		});
 		return new Branch(owner, reference);
 	}
