@@ -43,6 +43,8 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 
 			const stats = await commit.stats();
 
+			const is_signed = await commit.isSigned();
+
 			const data: APICommit = {
 				message: commit.message,
 				author: {
@@ -50,7 +52,8 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 					email: commit.author().email,
 					fingerprint: await commit.author().fingerprint().catch(() => null)
 				},
-				isSigned: await commit.isSigned(),
+				isSigned: is_signed,
+				signatureVerified: is_signed ? await commit.verifySignature().catch(() => false) : null,
 				date: commit.date,
 				insertions: stats.insertions,
 				deletions: stats.deletions,

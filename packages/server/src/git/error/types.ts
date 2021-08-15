@@ -37,3 +37,9 @@ export class CommitNotSignedError extends ErrorType {
 		super(500, "Commit isn't signed!");
 	}
 }
+
+export class NotInKeyringError extends ErrorType {
+	constructor(email: string) {
+		super(500, `A public key for '${email}' doesn't exist in the server pgp keyring!`);
+	}
+}

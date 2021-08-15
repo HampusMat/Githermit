@@ -3,6 +3,9 @@ import { LogCommit } from "api";
 
 export async function commitMap(commit: Commit): Promise<LogCommit> {
 	const stats = await commit.stats();
+
+	const is_signed = await commit.isSigned();
+
 	return <LogCommit>{
 		id: commit.id,
 		author: {
@@ -10,7 +13,8 @@ export async function commitMap(commit: Commit): Promise<LogCommit> {
 			email: commit.author().email,
 			fingerprint: await commit.author().fingerprint().catch(() => null)
 		},
-		isSigned: await commit.isSigned(),
+		isSigned: is_signed,
+		signatureVerified: is_signed ? await commit.verifySignature().catch(() => false) : null,
 		message: commit.message,
 		date: commit.date,
 		insertions: stats.insertions,

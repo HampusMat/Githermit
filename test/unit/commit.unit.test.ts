@@ -120,5 +120,14 @@ describe("Commit", () => {
 
 			expect(fingerprint).toBeDefined();
 		});
+
+		it("Should verify the commit pgp signature and respond true", async() => {
+			expect.assertions(2);
+
+			const verified = await commit.verifySignature();
+
+			expect(verified).toBeDefined();
+			expect(verified).toBeTruthy();
+		});
 	});
 });
