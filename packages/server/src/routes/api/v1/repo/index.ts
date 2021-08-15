@@ -103,16 +103,16 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 	fastify.route<Route>({
 		method: "GET",
 		url: "/tree/history",
+		schema: {
+			querystring: {
+				path: { type: "string" }
+			}
+		},
 		handler: async(req, reply) => {
 			const tree = await req.repository.tree().catch((err: ServerError) => err);
 
 			if(tree instanceof ServerError) {
 				reply.code(tree.code).send({ error: tree.message });
-				return;
-			}
-
-			if(Object.keys(req.query).length === 0) {
-				reply.code(400).send({ error: "Missing query parameter 'path'!" });
 				return;
 			}
 

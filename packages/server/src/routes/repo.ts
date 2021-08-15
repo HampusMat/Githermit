@@ -61,6 +61,11 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 	fastify.route<Route>({
 		method: "GET",
 		url: "/refs/tags/:tag",
+		schema: {
+			params: {
+				tag: { type: "string" }
+			}
+		},
 		handler: async(req, reply) => {
 			const repository = await Repository.open(opts.config.settings.git_dir, req.params.repo).catch((err: ServerError) => err);
 

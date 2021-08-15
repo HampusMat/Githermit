@@ -24,6 +24,11 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 	fastify.route<Route>({
 		method: "GET",
 		url: "/branches/:branch",
+		schema: {
+			params: {
+				branch: { type: "string" }
+			}
+		},
 		handler: async(req, reply) => {
 			const branch = await Branch.lookup(req.repository, req.params.branch);
 

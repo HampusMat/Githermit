@@ -23,7 +23,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		url: "/log",
 		schema: {
 			querystring: {
-				count: { type: "number" }
+				count: { type: "number", minimum: 1 }
 			}
 		},
 		handler: async(req, reply) => {
@@ -38,6 +38,11 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 	fastify.route<Route>({
 		method: "GET",
 		url: "/log/:commit",
+		schema: {
+			params: {
+				commit: { type: "string" }
+			}
+		},
 		handler: async(req, reply) => {
 			const commit_verification = await verifySHA(req.repository, req.params.commit);
 			if(commit_verification.success === false && commit_verification.code) {

@@ -8,12 +8,12 @@ import { ServerError } from "../../../git/error";
 
 function setHandlers(fastify: FastifyInstance): void {
 	fastify.setErrorHandler((err, req, reply) => {
-		console.log(err);
-
 		if(err.validation) {
 			reply.code(400).send({ error: `${err.validation[0].dataPath} ${err.validation[0].message}` });
 			return;
 		}
+
+		console.log(err);
 
 		reply.code(500).send({ error: "Internal server error!" });
 	});
@@ -49,6 +49,11 @@ function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 	fastify.route<Route>({
 		method: "GET",
 		url: "/repos/:repo",
+		schema: {
+			params: {
+				repo: { type: "string" }
+			}
+		},
 		handler: async(req, reply) => {
 			if(!verifyRepoName(req.params.repo)) {
 				reply.code(400).send({ error: "Bad request" });

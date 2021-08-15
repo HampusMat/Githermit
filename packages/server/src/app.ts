@@ -11,6 +11,11 @@ export default function buildApp(settings: Settings): FastifyInstance {
 	const fastify = fastifyFactory();
 
 	fastify.setErrorHandler((err, req, reply) => {
+		if(err.validation) {
+			reply.code(400).send(`${err.validation[0].dataPath} ${err.validation[0].message}`);
+			return;
+		}
+
 		console.log(err);
 		reply.code(500).send("Internal server error!");
 	});
