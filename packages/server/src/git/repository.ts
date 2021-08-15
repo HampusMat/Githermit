@@ -1,4 +1,4 @@
-import { Object as NodeGitObject, Oid as NodeGitOid, Repository as NodeGitRepository, Revwalk as NodeGitRevwalk } from "nodegit";
+import { Object as NodeGitObject, Oid as NodeGitOid, Repository as NodeGitRepository } from "nodegit";
 import { Request, connect } from "./http";
 import { basename, dirname } from "path";
 import { getDirectory, getFile } from "./misc";
@@ -81,14 +81,11 @@ export class Repository {
 	/**
 	 * Returns the repository's commits
 	 *
+	 * @param [count=20] - The number of commits to get
 	 * @returns An array of commit instances
 	 */
-	public async commits(): Promise<Commit[]> {
-		const walker = NodeGitRevwalk.create(this.ng_repository);
-
-		walker.pushRef(`refs/heads/${this.branch_name}`);
-
-		return Promise.all((await walker.getCommitsUntil(() => true)).map(commit => new Commit(this, commit)));
+	public async commits(count?: number): Promise<Commit[]> {
+		return Commit.getMultiple(this, count);
 	}
 
 	/**

@@ -1,5 +1,3 @@
-import { Commit, CommitAuthor } from "server/src/git/commit";
-
 export type EnvironmentVariables = {
 	GIT_DIR: string,
 	AVAIL_REPO: string,
@@ -9,16 +7,4 @@ export type EnvironmentVariables = {
 	UNAVAIL_OBJECT: string,
 	AVAIL_COMMIT: string,
 	UNAVAIL_COMMIT: string
-}
-
-export function expectCommitProperties(commit: Commit): void {
-	expect(commit).toHaveProperty("id");
-	expect(commit).toHaveProperty("author");
-
-	const author = commit.author();
-	expect(author).toBeInstanceOf(CommitAuthor);
-
-	expect(commit).toHaveProperty("date");
-	expect(commit).toHaveProperty("message");
-	expect(commit).toHaveProperty("isSigned");
 }

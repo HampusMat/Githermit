@@ -1,6 +1,6 @@
 import { Repository } from "server/src/git/repository";
 import { Commit } from "server/src/git/commit";
-import { EnvironmentVariables, expectCommitProperties } from "../util";
+import { EnvironmentVariables } from "../util";
 import { Diff } from "server/src/git/diff";
 import { Tree } from "server/src/git/tree";
 
@@ -15,14 +15,12 @@ describe("Commit", () => {
 
 	describe("Class methods", () => {
 		it("Should look up a commit", async() => {
-			expect.assertions(8);
+			expect.assertions(2);
 
 			const commit = await Commit.lookup(repository, env.AVAIL_COMMIT);
 
 			expect(commit).toBeDefined();
 			expect(commit).toBeInstanceOf(Commit);
-
-			expectCommitProperties(commit);
 		});
 
 		it("Should look up a nonexistant commit and throw", async() => {
@@ -41,6 +39,20 @@ describe("Commit", () => {
 			expect.assertions(1);
 
 			await expect(Commit.lookupExists(repository, env.UNAVAIL_COMMIT)).resolves.toBeFalsy();
+		});
+
+		it("Should get multiple commits", async() => {
+			expect.hasAssertions();
+
+			const commits = await Commit.getMultiple(repository);
+
+			expect(commits).toBeDefined();
+			expect(commits).toHaveLength(20);
+
+			for(const commit of commits) {
+				expect(commit).toBeDefined();
+				expect(commit).toBeInstanceOf(Commit);
+			}
 		});
 	});
 

@@ -1,4 +1,4 @@
-import { Commit as NodeGitCommit, Oid as NodeGitOid } from "nodegit";
+import { Commit as NodeGitCommit, Oid as NodeGitOid, Revwalk as NodeGitRevwalk } from "nodegit";
 import { Author } from "api";
 import { Diff } from "./diff";
 import { Repository } from "./repository";
@@ -208,5 +208,20 @@ export class Commit {
 	 */
 	public static async branchCommit(owner: Repository): Promise<Commit> {
 		return new Commit(owner, await owner.ng_repository.getBranchCommit(owner.branch_name));
+	}
+
+	/**
+	 * Returns a number of commits in a repository
+	 *
+	 * @param owner - The repository which the commits are in
+	 * @param [count=20] - The number of commits to get
+	 * @returns An array of commit instances
+	 */
+	public static async getMultiple(owner: Repository, count = 20): Promise<Commit[]> {
+		const walker = NodeGitRevwalk.create(owner.ng_repository);
+
+		walker.pushRef(`refs/heads/${owner.branch_name}`);
+
+		return Promise.all((await walker.getCommits(count)).map(commit => new Commit(owner, commit)));
 	}
 }

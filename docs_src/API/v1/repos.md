@@ -113,10 +113,11 @@ Retrieves a repository's log.
 
 **Parameters:**<br>
 
-| Name   | Location | Description    | Required | Schema |
-|--------|----------|----------------|----------|--------|
-| repo   | path     | The repository | true     | string |
-| branch | query    | A branch       | false    | string |
+| Name   | Location | Description       | Required | Schema |
+|--------|----------|-------------------|----------|--------|
+| repo   | path     | The repository    | true     | string |
+| branch | query    | A branch          | false    | string |
+| count  | query    | Number of commits | false    | number |
 
 **Response:**<br>
 

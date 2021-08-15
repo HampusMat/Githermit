@@ -21,8 +21,13 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 	fastify.route<Route>({
 		method: "GET",
 		url: "/log",
+		schema: {
+			querystring: {
+				count: { type: "number" }
+			}
+		},
 		handler: async(req, reply) => {
-			const commits = await req.repository.commits();
+			const commits = await req.repository.commits(Number(req.query.count));
 
 			reply.send({
 				data: await Promise.all(commits.map(commitMap))

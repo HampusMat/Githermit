@@ -3,7 +3,7 @@ import { Commit } from "server/src/git/commit";
 import { Tree } from "server/src/git/tree";
 import { Branch } from "server/src/git/branch";
 import { Tag } from "server/src/git/tag";
-import { EnvironmentVariables, expectCommitProperties } from "../util";
+import { EnvironmentVariables } from "../util";
 import { ServerError } from "server/src/git/error";
 
 const env = process.env as EnvironmentVariables;
@@ -105,14 +105,12 @@ describe("Repository", () => {
 		});
 
 		it("Should get the head commit", async() => {
-			expect.assertions(8);
+			expect.assertions(2);
 
 			const master_commit = await repository.head();
 
 			expect(master_commit).toBeDefined();
 			expect(master_commit).toBeInstanceOf(Commit);
-
-			expectCommitProperties(master_commit);
 		});
 
 		it("Should get the commits", async() => {
@@ -125,8 +123,6 @@ describe("Repository", () => {
 			for(const commit of commits) {
 				expect(commit).toBeDefined();
 				expect(commit).toBeInstanceOf(Commit);
-
-				expectCommitProperties(commit);
 			}
 		});
 

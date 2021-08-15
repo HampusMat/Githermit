@@ -9,6 +9,12 @@ import { ServerError } from "../../../git/error";
 function setHandlers(fastify: FastifyInstance): void {
 	fastify.setErrorHandler((err, req, reply) => {
 		console.log(err);
+
+		if(err.validation) {
+			reply.code(400).send({ error: `${err.validation[0].dataPath} ${err.validation[0].message}` });
+			return;
+		}
+
 		reply.code(500).send({ error: "Internal server error!" });
 	});
 	fastify.setNotFoundHandler((req, reply) => {
