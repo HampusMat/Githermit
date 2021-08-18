@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from "fastify";
-import { sources } from "../../../../cache";
-import { Commit } from "../../../../git/commit";
-import { Route, FastifyPluginOptions } from "../../../../types/fastify";
+import { sources } from "cache";
+import { Commit } from "git/commit";
+import { Route, FastifyPluginOptions } from "types/fastify";
 import { verifySHA } from "../../util";
 import { getCommit, getLogCommits } from "../data";
 

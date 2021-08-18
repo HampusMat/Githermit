@@ -1,15 +1,15 @@
-import { CoolFastifyRequest, Route, FastifyPluginOptions } from "../../../../types/fastify";
+import { CoolFastifyRequest, Route, FastifyPluginOptions } from "types/fastify";
 import { FastifyInstance, FastifyPluginCallback } from "fastify";
-import { Repository } from "../../../../git/repository";
-import { BaseTreeEntry, BlobTreeEntry, TreeEntry } from "../../../../git/tree_entry";
+import { Repository } from "git/repository";
+import { BaseTreeEntry, BlobTreeEntry, TreeEntry } from "git/tree_entry";
 import { basename } from "path";
 import branches from "./branches";
 import log from "./log";
 import { verifyRepoName } from "../../util";
 import { Tree as APITree, TreeEntry as APITreeEntry } from "api";
-import { ServerError } from "../../../../git/error";
+import { ServerError } from "git/error";
 import { getLogCommits, getTags } from "../data";
-import { sources } from "../../../../cache";
+import { sources } from "cache";
 
 declare module "fastify" {
 	interface FastifyRequest {

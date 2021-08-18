@@ -1,9 +1,9 @@
-import { Repository } from "../git/repository";
-import { CoolFastifyRequest, Route, FastifyPluginOptions } from "../types/fastify";
-import { Tag } from "../git/tag";
+import { Repository } from "git/repository";
+import { CoolFastifyRequest, Route, FastifyPluginOptions } from "types/fastify";
+import { Tag } from "git/tag";
 import { FastifyPluginCallback } from "fastify";
-import { verifyRepoName } from "../routes/api/util";
-import { ServerError } from "../git/error";
+import { verifyRepoName } from "./api/util";
+import { ServerError } from "git/error";
 
 const repo: FastifyPluginCallback<FastifyPluginOptions> = (fastify, opts, done): void => {
 	fastify.addHook("onRequest", async(req: CoolFastifyRequest, reply) => {

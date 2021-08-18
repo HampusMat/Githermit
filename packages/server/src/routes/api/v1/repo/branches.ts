@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from "fastify";
-import { sources } from "../../../../cache";
-import { Branch } from "../../../../git/branch";
-import { FastifyPluginOptions, Route } from "../../../../types/fastify";
+import { sources } from "cache";
+import { Branch } from "git/branch";
+import { FastifyPluginOptions, Route } from "types/fastify";
 import { getBranch, getBranches } from "../data";
 
 const branches: FastifyPluginCallback<FastifyPluginOptions> = (fastify, opts, done) => {

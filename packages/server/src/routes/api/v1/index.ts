@@ -1,12 +1,12 @@
 import { FastifyPluginCallback } from "fastify";
-import { Repository } from "../../../git/repository";
-import { FastifyPluginOptions, Route } from "../../../types/fastify";
+import { Repository } from "git/repository";
+import { FastifyPluginOptions, Route } from "types/fastify";
 import repo from "./repo";
 import { verifyRepoName } from "../util";
 import { Info as APIInfo } from "api";
-import { ServerError } from "../../../git/error";
+import { ServerError } from "git/error";
 import { getRepositories, getRepository } from "./data";
-import { sources } from "../../../cache";
+import { sources } from "cache";
 
 const reposEndpoints: FastifyPluginCallback<FastifyPluginOptions> = (fastify, opts, done) => {
 	fastify.route({

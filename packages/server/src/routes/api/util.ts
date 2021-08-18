@@ -1,5 +1,5 @@
-import { Commit } from "../../git/commit";
-import { Repository } from "../../git/repository";
+import { Commit } from "git/commit";
+import { Repository } from "git/repository";
 
 type VerificationResultType = "SUCCESS" | "NOT_FOUND" | "INVALID";
 

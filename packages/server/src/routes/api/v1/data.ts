@@ -7,7 +7,7 @@ import {
 	BranchSummary,
 	Branch as APIBranch
 } from "api";
-import { Branch, Commit, Patch, Repository, Tag } from "../../../git";
+import { Branch, Commit, Patch, Repository, Tag } from "git";
 
 export async function getLogCommits(commits: Commit[]): Promise<LogCommit[]> {
 	return Promise.all(commits.map(async(commit: Commit) => {
