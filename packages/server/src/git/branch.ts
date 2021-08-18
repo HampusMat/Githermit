@@ -10,6 +10,10 @@ import { createError, ErrorWhere, FailedError, NotFoundError, UnknownError } fro
  * @extends Reference
  */
 export class Branch extends Reference {
+	public async repository(): Promise<Repository> {
+		return this._owner.withBranch(this.name);
+	}
+
 	/**
 	 * Returns the branch's latest commit
 	 *
@@ -41,6 +45,7 @@ export class Branch extends Reference {
 			}
 			throw(createError(ErrorWhere.Branch, UnknownError));
 		});
+
 		return new Branch(owner, reference);
 	}
 

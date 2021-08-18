@@ -1,47 +1,24 @@
-import { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { FastifyPluginCallback } from "fastify";
 import { Repository } from "../../../git/repository";
-import { Route } from "../../../types/fastify";
+import { FastifyPluginOptions, Route } from "../../../types/fastify";
 import repo from "./repo";
 import { verifyRepoName } from "../util";
-import { Info as APIInfo, RepositorySummary as APIRepositorySummary, Repository as APIRepository } from "api";
+import { Info as APIInfo } from "api";
 import { ServerError } from "../../../git/error";
+import { getRepositories, getRepository } from "./data";
+import { sources } from "../../../cache";
 
-function setHandlers(fastify: FastifyInstance): void {
-	fastify.setErrorHandler((err, req, reply) => {
-		if(err.validation) {
-			reply.code(400).send({ error: `${err.validation[0].dataPath} ${err.validation[0].message}` });
-			return;
-		}
-
-		console.log(err);
-
-		reply.code(500).send({ error: "Internal server error!" });
-	});
-	fastify.setNotFoundHandler((req, reply) => {
-		reply.code(404).send({ error: "Endpoint not found!" });
-	});
-}
-
-function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, done: (err?: Error) => void): void {
+const reposEndpoints: FastifyPluginCallback<FastifyPluginOptions> = (fastify, opts, done) => {
 	fastify.route({
 		method: "GET",
 		url: "/repos",
 		handler: async(req, reply) => {
-			const repos = await Repository.openAll(opts.config.settings.git_dir);
-
-			if(!repos) {
-				reply.send({ data: [] });
-				return;
-			}
+			const repositories = await Repository.openAll(opts.config.settings.git_dir);
 
 			reply.send({
-				data: await Promise.all(repos.map(async repository => {
-					return <APIRepositorySummary>{
-						name: repository.name.short,
-						description: await repository.description(),
-						last_updated: (await repository.head()).date
-					};
-				}))
+				data: await (opts.config.cache
+					? opts.config.cache.receive(sources.RepositoriesSource, repositories)
+					: getRepositories(repositories))
 			});
 		}
 	});
@@ -67,20 +44,30 @@ function reposEndpoints(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 				return;
 			}
 
-			const data: APIRepository = {
-				name: repository.name.short,
-				description: await repository.description(),
-				has_readme: await (await repository.tree()).findExists("README.md")
-			};
-
-			reply.send({ data: data });
+			reply.send({
+				data: await (opts.config.cache
+					? opts.config.cache.receive(sources.RepositorySource, repository)
+					: getRepository(repository))
+			});
 		}
 	});
 	done();
-}
+};
 
-export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, done: (err?: Error) => void): void {
-	setHandlers(fastify);
+const api: FastifyPluginCallback<FastifyPluginOptions> = (fastify, opts, done) => {
+	fastify.setErrorHandler((err, req, reply) => {
+		if(err.validation) {
+			reply.code(400).send({ error: `${err.validation[0].dataPath} ${err.validation[0].message}` });
+			return;
+		}
+
+		console.log(err);
+
+		reply.code(500).send({ error: "Internal server error!" });
+	});
+	fastify.setNotFoundHandler((req, reply) => {
+		reply.code(404).send({ error: "Endpoint not found!" });
+	});
 
 	fastify.route({
 		method: "GET",
@@ -95,8 +82,10 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		}
 	});
 
-	fastify.register(reposEndpoints, { config: { settings: opts.config.settings } });
-	fastify.register(repo, { prefix: "/repos/:repo", config: { settings: opts.config.settings } });
+	fastify.register(reposEndpoints, { config: opts.config });
+	fastify.register(repo, { prefix: "/repos/:repo", config: opts.config });
 
 	done();
-}
+};
+
+export default api;

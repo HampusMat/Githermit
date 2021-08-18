@@ -1,9 +1,10 @@
-import { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { FastifyPluginCallback } from "fastify";
+import { sources } from "../../../../cache";
 import { Branch } from "../../../../git/branch";
-import { Route } from "../../../../types/fastify";
-import { BranchSummary as APIBranchSummary, Branch as APIBranch } from "api";
+import { FastifyPluginOptions, Route } from "../../../../types/fastify";
+import { getBranch, getBranches } from "../data";
 
-export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, done: (err?: Error) => void): void {
+const branches: FastifyPluginCallback<FastifyPluginOptions> = (fastify, opts, done) => {
 	fastify.route<Route>({
 		method: "GET",
 		url: "/branches",
@@ -11,12 +12,9 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 			const branches = await req.repository.branches();
 
 			reply.send({
-				data: branches.map(branch => {
-					return <APIBranchSummary>{
-						id: branch.id,
-						name: branch.name
-					};
-				})
+				data: opts.config.cache
+					? await opts.config.cache.receive(sources.BranchesSource, req.repository, branches)
+					: getBranches(branches)
 			});
 		}
 	});
@@ -32,22 +30,15 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		handler: async(req, reply) => {
 			const branch = await Branch.lookup(req.repository, req.params.branch);
 
-			if(!branch) {
-				reply.code(404).send({ error: "Branch not found!" });
-				return;
-			}
-
-			const data: APIBranch = {
-				id: branch.id,
-				name: branch.name,
-				latest_commit: await branch.latestCommit()
-			};
-
 			reply.send({
-				data: data
+				data: await (opts.config.cache
+					? opts.config.cache.receive(sources.BranchSource, req.repository, branch)
+					: getBranch(branch))
 			});
 		}
 	});
 
 	done();
-}
+};
+
+export default branches;

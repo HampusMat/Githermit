@@ -16,16 +16,19 @@ describe("API", () => {
 	let app: FastifyInstance;
 
 	beforeAll(async() => {
-		app = buildApp({
+		app = await buildApp({
 			host: host,
 			port: port,
 			title: "Bob's cool projects",
 			about: "All of my personal projects. Completely FOSS.",
 			git_dir: env.GIT_DIR,
+			cache: {
+				enabled: false
+			},
 			dev: {
 				port: 0
 			}
-		});
+		}, null);
 
 		await app.listen(port);
 

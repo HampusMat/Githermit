@@ -1,6 +1,7 @@
 {
 	"name": "Githermit docs",
 	"entryPoints": [
+		"packages/server/src/cache/index.ts",
 		"packages/server/src/git/index.ts",
 		"packages/api/src/index.d.ts"
 	],

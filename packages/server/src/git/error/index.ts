@@ -21,7 +21,8 @@ export enum ErrorWhere {
 	Commit = "commit",
 	Diff = "diff",
 	Misc = "misc",
-	Blob = "blob"
+	Blob = "blob",
+	Patch = "patch"
 }
 
 /**

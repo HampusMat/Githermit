@@ -86,7 +86,7 @@ describe("Repository", () => {
 		it("Should get the branch", async() => {
 			expect.assertions(2);
 
-			const branch = await repository.branch();
+			const branch = await repository.getBranch();
 
 			expect(branch).toBeDefined();
 			expect(branch).toBeInstanceOf(Branch);

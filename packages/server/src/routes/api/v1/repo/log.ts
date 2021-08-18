@@ -1,23 +1,11 @@
-import { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { FastifyPluginCallback } from "fastify";
+import { sources } from "../../../../cache";
 import { Commit } from "../../../../git/commit";
-import { Patch } from "../../../../git/patch";
-import { Route } from "../../../../types/fastify";
+import { Route, FastifyPluginOptions } from "../../../../types/fastify";
 import { verifySHA } from "../../util";
-import { Patch as APIPatch, Commit as APICommit } from "api";
-import { commitMap } from "./map";
+import { getCommit, getLogCommits } from "../data";
 
-async function patchMap(patch: Patch) {
-	return <APIPatch>{
-		additions: patch.additions,
-		deletions: patch.deletions,
-		from: patch.from,
-		to: patch.to,
-		too_large: await patch.isTooLarge(),
-		hunks: await patch.getHunks()
-	};
-}
-
-export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, done: (err?: Error) => void): void {
+const log: FastifyPluginCallback<FastifyPluginOptions> = (fastify, opts, done) => {
 	fastify.route<Route>({
 		method: "GET",
 		url: "/log",
@@ -27,10 +15,12 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 			}
 		},
 		handler: async(req, reply) => {
-			const commits = await req.repository.commits(Number(req.query.count));
+			const commits = await req.repository.commits(Number(req.query.count) || undefined);
 
 			reply.send({
-				data: await Promise.all(commits.map(commitMap))
+				data: await (opts.config.cache
+					? opts.config.cache.receive(sources.LogCommitsSource, req.repository, Number(req.query.count) || undefined)
+					: getLogCommits(commits))
 			});
 		}
 	});
@@ -51,31 +41,15 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 
 			const commit = await Commit.lookup(req.repository, req.params.commit);
 
-			const stats = await commit.stats();
-
-			const is_signed = await commit.isSigned();
-
-			const data: APICommit = {
-				message: commit.message,
-				author: {
-					name: commit.author().name,
-					email: commit.author().email,
-					fingerprint: await commit.author().fingerprint().catch(() => null)
-				},
-				isSigned: is_signed,
-				signatureVerified: is_signed ? await commit.verifySignature().catch(() => false) : null,
-				date: commit.date,
-				insertions: stats.insertions,
-				deletions: stats.deletions,
-				files_changed: stats.files_changed,
-				diff: await Promise.all((await (await commit.diff()).patches()).map(patchMap))
-			};
-
 			reply.send({
-				data: data
+				data: await (opts.config.cache
+					? opts.config.cache.receive(sources.CommitSource, req.repository, commit)
+					: getCommit(commit))
 			});
 		}
 	});
 
 	done();
-}
+};
+
+export default log;

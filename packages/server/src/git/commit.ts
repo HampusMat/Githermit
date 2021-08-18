@@ -207,21 +207,28 @@ export class Commit {
 	 * @returns An instance of a commit
 	 */
 	public static async branchCommit(owner: Repository): Promise<Commit> {
-		return new Commit(owner, await owner.ng_repository.getBranchCommit(owner.branch_name));
+		return new Commit(owner, await owner.ng_repository.getBranchCommit(owner.branch));
 	}
 
 	/**
 	 * Returns a number of commits in a repository
 	 *
 	 * @param owner - The repository which the commits are in
-	 * @param [count=20] - The number of commits to get
+	 * @param [amount=20] - The number of commits to get or whether or not to get all commits
 	 * @returns An array of commit instances
 	 */
-	public static async getMultiple(owner: Repository, count = 20): Promise<Commit[]> {
+	public static async getMultiple(owner: Repository, amount: number | boolean = 20): Promise<Commit[]> {
 		const walker = NodeGitRevwalk.create(owner.ng_repository);
 
-		walker.pushRef(`refs/heads/${owner.branch_name}`);
+		walker.pushRef(`refs/heads/${owner.branch}`);
 
-		return Promise.all((await walker.getCommits(count)).map(commit => new Commit(owner, commit)));
+		if(typeof amount === "boolean") {
+			return Promise.all((await (amount
+				? walker.getCommitsUntil(() => true)
+				: walker.getCommits(20)
+			)).map(commit => new Commit(owner, commit)));
+		}
+
+		return Promise.all((await walker.getCommits(amount)).map(commit => new Commit(owner, commit)));
 	}
 }

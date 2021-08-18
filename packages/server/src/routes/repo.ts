@@ -1,11 +1,11 @@
 import { Repository } from "../git/repository";
-import { CoolFastifyRequest, Route } from "../types/fastify";
+import { CoolFastifyRequest, Route, FastifyPluginOptions } from "../types/fastify";
 import { Tag } from "../git/tag";
-import { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { FastifyPluginCallback } from "fastify";
 import { verifyRepoName } from "../routes/api/util";
 import { ServerError } from "../git/error";
 
-export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, done: (err?: Error) => void): void {
+const repo: FastifyPluginCallback<FastifyPluginOptions> = (fastify, opts, done): void => {
 	fastify.addHook("onRequest", async(req: CoolFastifyRequest, reply) => {
 		if(!verifyRepoName(req.params.repo)) {
 			reply.code(400).send("Bad request");
@@ -86,4 +86,6 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 	});
 
 	done();
-}
+};
+
+export default repo;

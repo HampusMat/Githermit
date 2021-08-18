@@ -1,5 +1,5 @@
 import { Diff as NodeGitDiff } from "nodegit";
-import { createError, ErrorWhere, NotFoundError } from "./error";
+import { createError, DiffTooLargeError, ErrorWhere, NotFoundError } from "./error";
 import { Patch } from "./patch";
 
 type PatchHeaderData = {
@@ -63,6 +63,10 @@ export class Diff {
 	 * @returns An array of patch instances
 	 */
 	public async patches(): Promise<Patch[]> {
+		if((await this.rawPatches()).split("\n").length > 50000) {
+			throw(createError(ErrorWhere.Diff, DiffTooLargeError));
+		}
+
 		return (await this.ng_diff.patches()).map((patch, index) => new Patch(this, patch, index));
 	}
 

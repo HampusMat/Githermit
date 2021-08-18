@@ -1,5 +1,6 @@
 import { Diff } from "./diff";
 import { ConvenientPatch as NodeGitPatch } from "nodegit";
+import { createError, ErrorWhere, PatchTooLargeError } from "./error";
 
 type Hunk = {
 	new_start: number,
@@ -87,10 +88,9 @@ export class Patch {
 	 *
 	 * These bounds are in the context of it's whole diff
 	 *
-	 * @returns A patch bounds instance which contains a start & an end property
+	 * @returns The patch's bounds
 	 */
-	private async _bounds(): Promise<PatchBounds> {
-		const raw_patches = (await this._diff.rawPatches()).split("\n");
+	private async _bounds(raw_patches: string[]): Promise<PatchBounds> {
 		const patch_header_data = await this._diff.patchHeaderData();
 
 		return {
@@ -104,7 +104,7 @@ export class Patch {
 	 */
 	private async _content(): Promise<string> {
 		const raw_patches = (await this._diff.rawPatches()).split("\n");
-		const bounds = await this._bounds();
+		const bounds = await this._bounds(raw_patches);
 
 		return raw_patches.slice(bounds.start, bounds.end).join("\n");
 	}
@@ -115,10 +115,14 @@ export class Patch {
 	 * @returns Whether or not the patch is too large
 	 */
 	public async isTooLarge(): Promise<boolean> {
+		if(this.additions > 2000 || this.deletions > 2000) {
+			return true;
+		}
+
 		const content = (await this._content()).split("\n");
 		const line_lengths = content.map(line => line.length).reduce((result, length) => result + length);
 
-		if(content.length > 5000 || line_lengths > 5000) {
+		if(content.length > 10000 || line_lengths > 10000) {
 			return true;
 		}
 
@@ -131,6 +135,10 @@ export class Patch {
 	 * @returns An array of hunk instances
 	 */
 	public async getHunks(): Promise<Hunk[]> {
+		if(await this.isTooLarge()) {
+			throw(createError(ErrorWhere.Patch, PatchTooLargeError));
+		}
+
 		const content = (await this._content()).split("\n");
 		const hunks = await this._ng_patch.hunks();
 

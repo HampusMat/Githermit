@@ -31,11 +31,11 @@ export abstract class BaseTreeEntry {
 	 */
 	public async latestCommit(): Promise<Commit> {
 		const rev_walk = NodeGitRevwalk.create(this._owner.ng_repository);
-		rev_walk.pushRef(`refs/heads/${this._owner.branch_name}`);
+		rev_walk.pushRef(`refs/heads/${this._owner.branch}`);
 
 		const commit_cnt = (await rev_walk.getCommitsUntil(() => true)).length;
 
-		rev_walk.pushRef(`refs/heads/${this._owner.branch_name}`);
+		rev_walk.pushRef(`refs/heads/${this._owner.branch}`);
 		const file_hist = await rev_walk.fileHistoryWalk(this.path, commit_cnt);
 
 		return new Commit(this._owner, file_hist[0].commit);
@@ -48,11 +48,11 @@ export abstract class BaseTreeEntry {
 	 */
 	public async history(count?: number): Promise<Commit[]> {
 		const rev_walk = NodeGitRevwalk.create(this._owner.ng_repository);
-		rev_walk.pushRef(`refs/heads/${this._owner.branch_name}`);
+		rev_walk.pushRef(`refs/heads/${this._owner.branch}`);
 
 		const commit_cnt = (await rev_walk.getCommitsUntil(() => true)).length;
 
-		rev_walk.pushRef(`refs/heads/${this._owner.branch_name}`);
+		rev_walk.pushRef(`refs/heads/${this._owner.branch}`);
 		const file_hist = await rev_walk.fileHistoryWalk(this.path, commit_cnt);
 
 		const commit_history = await Promise.all(file_hist.map(async hist_entry => new Commit(this._owner, await NodeGitCommit.lookup(this._owner.ng_repository, hist_entry.commit))));

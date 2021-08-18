@@ -43,3 +43,15 @@ export class NotInKeyringError extends ErrorType {
 		super(500, `A public key for '${email}' doesn't exist in the server pgp keyring!`);
 	}
 }
+
+export class PatchTooLargeError extends ErrorType {
+	constructor() {
+		super(500, "Patch is too large for parsing!");
+	}
+}
+
+export class DiffTooLargeError extends ErrorType {
+	constructor() {
+		super(500, "Diff is too large for parsing!");
+	}
+}

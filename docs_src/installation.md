@@ -39,6 +39,8 @@ The final step is to create a file called `settings.json` with the following con
 }
 ```
 
+You can find more in-depth information about configuring Githermit in [configuring](/docs_src/configuring.md).
+
 ## Starting
 You can now run Githermit with
 `$ yarn start`

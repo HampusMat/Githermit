@@ -38,7 +38,7 @@ export class Repository {
 
 	public name: RepositoryName;
 	public git_dir: string;
-	public branch_name: string;
+	private _branch: string;
 
 	/**
 	 * @param repository - An instance of a Nodegit repository
@@ -52,7 +52,7 @@ export class Repository {
 		};
 		this.git_dir = dirname(repository.path());
 
-		this.branch_name = branch;
+		this._branch = branch;
 	}
 
 	/**
@@ -69,23 +69,31 @@ export class Repository {
 		return getFile(this.git_dir, this.name.full, "owner");
 	}
 
+	get branch(): string {
+		return this._branch;
+	}
+
+	set branch(branch: string) {
+		this._branch = branch;
+	}
+
 	/**
 	 * Returns the repository's branch
 	 *
 	 * @returns An instance of a branch
 	 */
-	public branch(): Promise<Branch> {
-		return Branch.lookup(this, this.branch_name);
+	public getBranch(): Promise<Branch> {
+		return Branch.lookup(this, this._branch);
 	}
 
 	/**
 	 * Returns the repository's commits
 	 *
-	 * @param [count=20] - The number of commits to get
+	 * @param [amount=20] - The number of commits to get or whether or not to get all commits
 	 * @returns An array of commit instances
 	 */
-	public async commits(count?: number): Promise<Commit[]> {
-		return Commit.getMultiple(this, count);
+	public async commits(amount?: number | boolean): Promise<Commit[]> {
+		return Commit.getMultiple(this, amount);
 	}
 
 	/**
@@ -116,6 +124,20 @@ export class Repository {
 		return NodeGitObject.lookup(this.ng_repository, NodeGitOid.fromString(id), NodeGitObject.TYPE.ANY)
 			.then(() => true)
 			.catch(() => false);
+	}
+
+	/**
+	 * Returns this repository instance with a different branch
+	 *
+	 * @param branch - The branch to switch to
+	 * @returns An instance of a repository
+	 */
+	public async withBranch(branch: string): Promise<Repository> {
+		if(!await Branch.lookupExists(this.ng_repository, branch)) {
+			throw(createError(ErrorWhere.Repository, NotFoundError, "branch"));
+		}
+
+		return new Repository(this.ng_repository, branch);
 	}
 
 	/**

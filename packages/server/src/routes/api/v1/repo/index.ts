@@ -1,15 +1,15 @@
-import { CoolFastifyRequest, Route } from "../../../../types/fastify";
-import { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { CoolFastifyRequest, Route, FastifyPluginOptions } from "../../../../types/fastify";
+import { FastifyInstance, FastifyPluginCallback } from "fastify";
 import { Repository } from "../../../../git/repository";
-import { Tag } from "../../../../git/tag";
 import { BaseTreeEntry, BlobTreeEntry, TreeEntry } from "../../../../git/tree_entry";
 import { basename } from "path";
 import branches from "./branches";
 import log from "./log";
 import { verifyRepoName } from "../../util";
-import { Tree as APITree, Tag as APITag, TreeEntry as APITreeEntry } from "api";
+import { Tree as APITree, TreeEntry as APITreeEntry } from "api";
 import { ServerError } from "../../../../git/error";
-import { commitMap } from "./map";
+import { getLogCommits, getTags } from "../data";
+import { sources } from "../../../../cache";
 
 declare module "fastify" {
 	interface FastifyRequest {
@@ -48,20 +48,11 @@ async function treeEntryMap(entry: BaseTreeEntry) {
 	};
 }
 
-async function tagMap(tag: Tag) {
-	const author = await tag.author();
-	return <APITag>{
-		name: tag.name,
-		author: { name: author.name, email: author.email },
-		date: await tag.date()
-	};
-}
-
-export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, done: (err?: Error) => void): void {
+const repo: FastifyPluginCallback<FastifyPluginOptions> = (fastify, opts, done) => {
 	addHooks(fastify, opts);
 
-	fastify.register(log);
-	fastify.register(branches);
+	fastify.register(log, { config: opts.config });
+	fastify.register(branches, { config: opts.config });
 
 	fastify.route<Route>({
 		method: "GET",
@@ -127,7 +118,7 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 
 			const history = await tree_entry.history(Number(req.query.count));
 
-			reply.send({ data: await Promise.all(history.map(commitMap)) });
+			reply.send({ data: await getLogCommits(history) });
 		}
 	});
 
@@ -137,10 +128,14 @@ export default function(fastify: FastifyInstance, opts: FastifyPluginOptions, do
 		handler: async(req, reply) => {
 			const tags = await req.repository.tags();
 			reply.send({
-				data: await Promise.all(tags.map(tagMap))
+				data: await (opts.config.cache
+					? opts.config.cache.receive(sources.TagsSource, req.repository, tags)
+					: getTags(tags))
 			});
 		}
 	});
 
 	done();
-}
+};
+
+export default repo;

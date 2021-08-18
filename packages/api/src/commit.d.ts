@@ -30,7 +30,8 @@ export interface Commit {
 	insertions: number,
 	deletions: number,
 	files_changed: number,
-	diff: Patch[]
+	too_large: boolean,
+	diff: Patch[] | null
 }
 
 export type LogCommit = {
