@@ -50,7 +50,7 @@ module.exports = {
 		],
 		eqeqeq: "error",
 		"func-names": "off",
-		"func-style": [ "error", "declaration" ],
+		"func-style": [ "error", "declaration", { allowArrowFunctions: true } ],
 		"id-length": "off",
 		"implicit-arrow-linebreak": [
 			"error",
