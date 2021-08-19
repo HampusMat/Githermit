@@ -61,4 +61,16 @@ export class Branch extends Reference {
 			.then(() => true)
 			.catch(() => false);
 	}
+
+	/**
+	 * Returns all of a repository's branches
+	 *
+	 * @param owner - An instance of a repository
+	 * @returns An array of branch instances
+	 */
+	public static async getAll(owner: Repository): Promise<Branch[]> {
+		const references = await owner.ng_repository.getReferences();
+
+		return references.filter(ref => ref.isBranch()).map(ref => new Branch(owner, ref));
+	}
 }

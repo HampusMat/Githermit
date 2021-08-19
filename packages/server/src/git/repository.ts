@@ -146,8 +146,7 @@ export class Repository {
 	 * @returns An array of branch instances
 	 */
 	public async branches(): Promise<Branch[]> {
-		const references = await this.ng_repository.getReferences();
-		return references.filter(ref => ref.isBranch()).map(ref => new Branch(this, ref));
+		return Branch.getAll(this);
 	}
 
 	/**
@@ -156,8 +155,7 @@ export class Repository {
 	 * @returns An array of tag instances
 	 */
 	public async tags(): Promise<Tag[]> {
-		const references = await this.ng_repository.getReferences();
-		return references.filter(ref => ref.isTag()).map(ref => new Tag(this, ref));
+		return Tag.getAll(this);
 	}
 
 	/**

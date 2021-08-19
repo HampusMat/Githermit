@@ -96,4 +96,16 @@ export class Tag extends Reference {
 
 		return new Tag(owner, reference);
 	}
+
+	/**
+	 * Returns all of a repository's tags
+	 *
+	 * @param owner - An instance of a repository
+	 * @returns An array of tag instances
+	 */
+	public static async getAll(owner: Repository): Promise<Tag[]> {
+		const references = await owner.ng_repository.getReferences();
+
+		return references.filter(ref => ref.isTag()).map(ref => new Tag(owner, ref));
+	}
 }
