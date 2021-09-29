@@ -40,6 +40,8 @@ Any contribution or support is very welcome.
 ## Hacking
 You can find information about development in [the documentation](/docs_src/hacking.md)
 
+Join the [mailing list](https://lists.hampusmat.com/mailman3/lists/githermit.lists.hampusmat.com/) for discussions, news & submitting patches.
+
 ## Donating
 Monero: `49nv1PMFiamBhiiNkzP66H7zmogDEWsDaaUxDdQN2Ne5g7mErYy1upRRgPeVwPYB1r9YArktDiJSFdKUnRF1zf5fECoJRss`
 

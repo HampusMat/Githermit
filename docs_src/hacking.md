@@ -26,3 +26,13 @@ You may want to add the following to your settings.json
 You can use the following command to run a live-updating instance of Githermit.
 
 `$ yarn dev`
+
+## Submitting patches
+Contributing your code should be done through the [mailing list](https://lists.hampusmat.com/mailman3/lists/githermit.lists.hampusmat.com/).
+
+Here's some guidelines for a higher possibility of a merge.
+- Write short & descriptive commit messages that follow the [Conventional Commits specification](https://www.conventionalcommits.org)
+- Make separate commits for logically separate changes.
+- Sign off your patches
+
+
