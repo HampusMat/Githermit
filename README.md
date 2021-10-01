@@ -30,6 +30,7 @@ Githermit requires no such thing. All the steps to get it set up are in [Usage](
 - [ ] [Redesign](https://www.figma.com/file/r8P4m4SFTFkPfxkfoRrhtV/Githermit)
 - [x] Documentation
 - [x] GPG support
+- [ ] Refactor
 
 # Installation
 You can find installation instructions in [the documentation](/docs_src/installation.md)
